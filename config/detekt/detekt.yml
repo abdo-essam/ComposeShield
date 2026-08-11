@@ -24,10 +24,18 @@ style:
   ReturnCount:
     max: 6
 
+  # detekt's defaults exempt all KMP test source sets but omit androidHostTest (the AGP+KMP
+  # host-test source set); test constants like the 100-cycle stress loop stay conventional.
+  MagicNumber:
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**', '**/androidHostTest/**', '**/*.kts']
+
 naming:
   FunctionNaming:
     # Composables are PascalCase by convention.
     ignoreAnnotated: ['Composable']
+    # Backtick names are the project's testing convention; detekt's defaults exempt all KMP test
+    # source sets but omit androidHostTest (the AGP+KMP host-test source set).
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**', '**/androidHostTest/**']
 
   # expect/actual pairs must share a file name across source sets — PlatformProtection.kt declares
   # the interface, PlatformProtection.android.kt and .ios.kt implement it. The platform class inside
