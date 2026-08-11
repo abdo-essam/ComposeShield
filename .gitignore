@@ -1,0 +1,53 @@
+# Gradle
+.gradle/
+build/
+out/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Kotlin
+.kotlin/
+*.class
+*.jar
+!gradle-wrapper.jar
+
+# Android
+local.properties
+*.apk
+*.aab
+*.ap_
+*.dex
+captures/
+.cxx/
+
+# Kotlin/Native & iOS
+*.klib
+xcuserdata/
+DerivedData/
+*.xcuserstate
+.build/
+Pods/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.claude/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
+
+# Logs & secrets
+*.log
+*.hprof
+.env*
+!.env.example
+
+# Specify & Specs
+.specify/
+specs/

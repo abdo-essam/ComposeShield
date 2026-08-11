@@ -1,0 +1,61 @@
+style:
+  # Constitution Principle V: reflection is forbidden in library code. It breaks R8/ProGuard and
+  # is not viable at all on Kotlin/Native. This is the syntactic half of the enforcement — the
+  # Gradle-level kotlin-reflect exclusion in the root build script is the unsuppressable half.
+  ForbiddenImport:
+    active: true
+    imports:
+      - value: 'kotlin.reflect.**'
+        reason: 'Reflection is forbidden (Constitution Principle V). Not viable on Kotlin/Native.'
+      - value: 'java.lang.reflect.**'
+        reason: 'Reflection is forbidden (Constitution Principle V). Breaks R8 and Native.'
+      - value: 'kotlin.js.Reflect'
+        reason: 'Reflection is forbidden (Constitution Principle V).'
+
+  MaxLineLength:
+    active: true
+    maxLineLength: 120
+
+  # FR-021 is implemented as guard clauses: every public operation checks the states it cannot
+  # serve and returns a SupportLevel for each, rather than throwing. SupportResolver.resolve has
+  # one return per Unsupported.Reason it can report, and the flat sequence is the readable form —
+  # nesting four reasons into a single expression to satisfy a count would obscure the ordering,
+  # which is load-bearing and documented at each site.
+  ReturnCount:
+    max: 6
+
+naming:
+  FunctionNaming:
+    # Composables are PascalCase by convention.
+    ignoreAnnotated: ['Composable']
+
+  # expect/actual pairs must share a file name across source sets — PlatformProtection.kt declares
+  # the interface, PlatformProtection.android.kt and .ios.kt implement it. The platform class inside
+  # is necessarily named for its platform, so the rule can never be satisfied without breaking the
+  # naming convention that makes the pairs greppable.
+  MatchingDeclarationName:
+    active: false
+
+complexity:
+  LongParameterList:
+    # The opt-in call deliberately takes capability + posture + acknowledgement together
+    # (FR-023b) — a capability cannot be enabled without stating both.
+    functionThreshold: 6
+    constructorThreshold: 7
+
+  # ProtectionRegistry is the single place all protection state lives, by constitution Principle II.
+  # Its function count is the count of state transitions the domain has — acquire, acquireShared,
+  # release, releaseWindow, bindWindow, grantOptIn, setAppSwitcherMode, plus private reconcilers.
+  # Splitting it to satisfy a threshold would put one state machine behind two objects that must
+  # then stay in sync, which is the coupling the single-registry design exists to avoid.
+  TooManyFunctions:
+    thresholdInClasses: 14
+
+exceptions:
+  # FR-021: no public operation may throw for non-support. Swallowing a platform failure and
+  # reporting Unsupported is the required behaviour here, not a code smell — but each site
+  # must still be deliberate, so these stay active and are suppressed individually.
+  TooGenericExceptionCaught:
+    active: true
+  SwallowedException:
+    active: true

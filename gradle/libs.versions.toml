@@ -1,0 +1,63 @@
+[versions]
+# Pinned to the Kotlin 2.4.x tested ceiling — see research.md R9.
+# Gradle 9.7 / AGP 9.3 exist but fall outside that matrix; CI reproducibility wins over currency.
+kotlin = "2.4.10"
+agp = "9.1.0"
+compose = "1.11.1"
+coroutines = "1.11.0"
+
+# Consumer-facing Android dependency. Provides LocalActivity, which walks the ContextWrapper
+# chain correctly — LocalContext.current as Activity is wrong and lint-flagged (research.md R4).
+activityCompose = "1.12.4"
+
+# Test
+turbine = "1.2.1"
+robolectric = "4.16.1"
+
+# Quality gates. Detekt 2.0 is alpha and moved group IDs — do not adopt (research.md R12).
+detekt = "1.23.8"
+spotless = "8.9.0"
+ktlint = "1.8.0"
+
+# 0.37.0 specifically: it flipped publishToMavenCentral() to target the Central Portal by
+# default. OSSRH is shut down; pre-0.33 SonatypeHost config is wrong (research.md R13).
+mavenPublish = "0.37.0"
+
+# Android SDK levels
+minSdk = "24"
+compileSdk = "36"
+
+[libraries]
+# Declared as explicit coordinates rather than via the `compose.runtime` shorthand — the Compose
+# plugin's DSL accessors are deprecated in favour of direct dependency notation.
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
+compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose" }
+
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+
+# Referenced so the version catalog drives the Spotless ktlint version too.
+ktlint-cli = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint" }
+
+[plugins]
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }
+
+# The AGP KMP library plugin. androidTarget {} is deprecated as of Kotlin 2.3.0 and the
+# com.android.library KMP path relies on APIs slated for removal in AGP 10 (research.md R9).
+android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+android-application = { id = "com.android.application", version.ref = "agp" }
+
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }

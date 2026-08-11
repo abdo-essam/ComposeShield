@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Everything that does not need an Apple host. Robolectric asserts FLAG_SECURE was requested,
+  # which is the correct contract test for the library's own behaviour, and it runs free here.
+  jvm:
+    name: Common, Android & static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Common logic tests
+        run: ./gradlew :composeguard:testAndroidHostTest
+
+      - name: Static analysis and formatting
+        run: ./gradlew detekt spotlessCheck
+
+  # Pinned deliberately. `macos-latest` migrated to macOS 26 / Xcode 26 in June 2026, silently
+  # jumping an Xcode major version for unpinned workflows. `macos-*-large`/`-intel` are Intel and
+  # cannot run iosSimulatorArm64 at all (research.md R11).
+  apple:
+    name: iOS tests & ABI check
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: iOS simulator tests
+        run: ./gradlew :composeguard:iosSimulatorArm64Test
+
+      # Must run here, not on Ubuntu: keepLocallyUnsupportedTargets = false means the Apple ABI
+      # is never inferred, so this check is only meaningful where Apple targets compile.
+      - name: Binary compatibility
+        run: ./gradlew :composeguard:checkKotlinAbi

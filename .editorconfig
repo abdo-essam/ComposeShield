@@ -1,0 +1,21 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{kt,kts}]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+# Composables are PascalCase by convention — the same exemption detekt's FunctionNaming carries.
+# Without this, ktlint rejects `SecureContent`, which is the library's primary public API.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+
+# Produces worse code than it prevents on the version-catalog accessors this build uses:
+# `libs.versions.compileSdk.get().toInt()` is one idea and reads as one line, but the rule splits
+# it across four. The line-length limit above already bounds genuinely long chains.
+ktlint_standard_chain-method-continuation = disabled
