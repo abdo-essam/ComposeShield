@@ -19,8 +19,6 @@ import io.github.composeguard.SupportLevel
 internal actual fun expectedSupport(capability: Capability): SupportLevel =
     when (capability) {
         Capability.ScreenshotPrevention, Capability.RecordingPrevention -> SupportLevel.RequiresOptIn
-
         Capability.CaptureDetection, Capability.ScreenshotEvents -> SupportLevel.Supported
-
         Capability.AppSwitcherProtection -> SupportLevel.Supported
     }

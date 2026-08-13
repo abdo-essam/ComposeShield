@@ -26,7 +26,12 @@ kotlin {
         // Both test source sets are disabled by default under the AGP KMP library plugin and
         // need explicit opt-in. Names differ from the legacy layout: androidHostTest, not
         // androidUnitTest (research.md R9).
-        withHostTest {}
+        withHostTest {
+            // Robolectric needs the merged resources and the generated R classes of the library's
+            // transitive dependencies. Without this, composing anything fails at runtime with
+            // NoClassDefFoundError on androidx.customview.poolingcontainer.R$id.
+            isIncludeAndroidResources = true
+        }
         withDeviceTest {}
     }
 

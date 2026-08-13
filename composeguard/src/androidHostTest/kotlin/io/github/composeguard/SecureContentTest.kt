@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.v2.runComposeUiTest
+import org.junit.Rule
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import kotlin.test.Test
@@ -33,6 +34,9 @@ import kotlin.test.assertTrue
 @RunWith(RobolectricTestRunner::class)
 @OptIn(ExperimentalTestApi::class)
 class SecureContentTest {
+    @get:Rule
+    internal val host: RobolectricComposeHost = RobolectricComposeHost()
+
     @Test
     fun `C1 - entering composition acquires protection and leaving releases it`() =
         runComposeUiTest {
