@@ -1,7 +1,6 @@
 package io.github.composeguard.internal
 
 import io.github.composeguard.Capability
-import io.github.composeguard.FailurePosture
 import io.github.composeguard.SupportLevel
 import io.github.composeguard.SupportLevel.Unsupported.Reason
 import kotlin.test.Test
@@ -77,28 +76,6 @@ class SupportResolverTest {
         assertEquals(
             SupportLevel.Unsupported(Reason.OsVersionTooLow),
             resolver.resolve(Capability.ScreenshotEvents, registry.current),
-        )
-    }
-
-    @Test
-    fun `an unsanctioned capability stays inert until opted into`() {
-        val platform =
-            FakePlatformProtection(
-                support = mapOf(Capability.ScreenshotPrevention to SupportLevel.RequiresOptIn),
-            )
-        val registry = ProtectionRegistry(platform)
-        val resolver = SupportResolver(platform)
-
-        assertEquals(
-            SupportLevel.RequiresOptIn,
-            resolver.resolve(Capability.ScreenshotPrevention, registry.current),
-        )
-
-        registry.grantOptIn(Capability.ScreenshotPrevention, FailurePosture.FailClosed)
-
-        assertEquals(
-            SupportLevel.Supported,
-            resolver.resolve(Capability.ScreenshotPrevention, registry.current),
         )
     }
 

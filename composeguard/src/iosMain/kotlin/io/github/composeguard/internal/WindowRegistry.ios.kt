@@ -42,12 +42,20 @@ internal fun forget(key: WindowKey) {
  * prevention may have reparented content — the two subsystems stay decoupled by construction.
  */
 internal fun activeWindowScene(): UIWindowScene? =
-    UIApplication.sharedApplication.connectedScenes
-        .filterIsInstance<UIWindowScene>()
-        .firstOrNull()
+    try {
+        val app: UIApplication? = UIApplication.sharedApplication
+        val scenes = app?.connectedScenes
+        scenes?.filterIsInstance<UIWindowScene>()?.firstOrNull()
+    } catch (_: Throwable) {
+        null
+    }
 
 /** The key window of the active scene, which is what an imperative request applies to. */
 internal fun activeWindow(): UIWindow? =
-    activeWindowScene()?.windows?.filterIsInstance<UIWindow>()?.firstOrNull {
-        it.isKeyWindow()
+    try {
+        val scene = activeWindowScene()
+        val sceneWindows = scene?.windows
+        sceneWindows?.filterIsInstance<UIWindow>()?.firstOrNull { it.isKeyWindow() }
+    } catch (_: Throwable) {
+        null
     }

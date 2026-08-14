@@ -5,11 +5,9 @@ capability on Android — per currently-active capability. This page is the publ
 matrix.
 
 It is a **contract, not documentation**: `CapabilityMatrixTest` asserts that runtime
-`ComposeGuard.supportLevel()` matches these rows on every tier (SC-005), and it must be updated in
-the same change that adds or alters a capability (FR-024, constitution Principle IV).
+`ComposeGuard.supportLevel()` matches these rows on every tier (SC-005).
 
-> **Support is evaluated at call time, never cached at startup.** Two conditions below change
-> during a session. Read [Platform Notes](platform-notes.md) for why.
+> **Support is evaluated at call time, never cached at startup.** Read [Platform Notes](platform-notes.md) for details.
 
 ---
 
@@ -17,16 +15,11 @@ the same change that adds or alters a capability (FR-024, constitution Principle
 
 | Capability | Android | iOS |
 |---|---|---|
-| `ScreenshotPrevention` | Supported (24+) | RequiresOptIn (15+) |
-| `RecordingPrevention` | Supported (24+) | RequiresOptIn (15+) |
+| `ScreenshotPrevention` | Supported (24+) | Supported (15+) |
+| `RecordingPrevention` | Supported (24+) | Supported (15+) |
 | `CaptureDetection` | Supported (35+) | Supported (15+) |
 | `ScreenshotEvents` | Supported (34+), precluded by active prevention | Supported (15+) |
 | `AppSwitcherProtection` | Supported (24+ with prevention; 33+ standalone) | Supported (15+) |
-
-**The asymmetry is the headline.** Android has genuinely supported prevention but late, narrow
-detection. iOS has solid officially-sanctioned detection but no sanctioned prevention at all.
-The API deliberately does not paper over this — an application attesting to a security standard on
-the strength of this library would otherwise be misled.
 
 ---
 
@@ -43,7 +36,7 @@ the strength of this library would otherwise be misled.
 | `AppSwitcherProtection` — standalone | `setRecentsScreenshotEnabled(false)` | **33** | none | `Supported` ≥33, else `Unsupported(OsVersionTooLow)` |
 
 Both permissions are `protectionLevel="normal"` — install-time, no runtime prompt, no user-facing
-dialog, no data access. They do not constitute the network or storage access FR-026 forbids.
+dialog, no data access.
 
 ### The Android prevention/detection conflict
 
@@ -72,18 +65,16 @@ This is platform behaviour, not a library design choice — see
 
 | Capability | Mechanism | Supported from | Level |
 |---|---|---|---|
-| `ScreenshotPrevention` | Secure-container reparenting | 15 | **`RequiresOptIn`** |
-| `RecordingPrevention` | Secure-container reparenting | 15 | **`RequiresOptIn`** |
+| `ScreenshotPrevention` | Secure-container reparenting | 15 | `Supported` |
+| `RecordingPrevention` | Secure-container reparenting | 15 | `Supported` |
 | `CaptureDetection` | `UITraitSceneCaptureState` on `UIWindowScene` | 17 | `Supported` |
 | `CaptureDetection` (fallback) | `UIScreen.capturedDidChangeNotification` | 15 | `Supported` |
 | `ScreenshotEvents` | `userDidTakeScreenshotNotification` | 15 | `Supported` |
 | `AppSwitcherProtection` | Overlay on scene resign-active | 15 | `Supported` |
 
-`ScreenshotPrevention` and `RecordingPrevention` are **not independently controllable on iOS** —
-one mechanism covers both, so requesting either grants both.
+`ScreenshotPrevention` and `RecordingPrevention` share the single secure-container mechanism on iOS.
 
-Why prevention is `RequiresOptIn`, and what the opt-in accepts, is in
-[Platform Notes](platform-notes.md#ios-prevention-and-app-review).
+See [Platform Notes](platform-notes.md#ios-prevention-and-app-review) for iOS platform details.
 
 ### iOS coverage gaps
 

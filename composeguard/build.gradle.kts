@@ -5,6 +5,44 @@ plugins {
     alias(libs.plugins.kotlin.compose.compiler)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
+    alias(libs.plugins.maven.publish)
+}
+
+group = "io.github.abdo-essam"
+version = "0.1.0"
+
+mavenPublishing {
+    publishToMavenCentral()
+    if (project.hasProperty("signing.keyId") || System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey") != null) {
+        signAllPublications()
+    }
+    coordinates("io.github.abdo-essam", "composeguard", "0.1.0")
+
+    pom {
+        name.set("ComposeGuard")
+        description.set("Screen capture protection for Compose Multiplatform")
+        inceptionYear.set("2026")
+        url.set("https://github.com/abdo-essam/ComposeGuard")
+        licenses {
+            license {
+                name.set("The Apache License, Version 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                distribution.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+            }
+        }
+        developers {
+            developer {
+                id.set("abdo-essam")
+                name.set("Abdelrahman Essam")
+                url.set("https://github.com/abdo-essam")
+            }
+        }
+        scm {
+            url.set("https://github.com/abdo-essam/ComposeGuard")
+            connection.set("scm:git:git://github.com/abdo-essam/ComposeGuard.git")
+            developerConnection.set("scm:git:ssh://git@github.com/abdo-essam/ComposeGuard.git")
+        }
+    }
 }
 
 kotlin {
@@ -36,8 +74,22 @@ kotlin {
     }
 
     // CMP 1.11 removed iosX64 — declaring it would fail to resolve (research.md R9).
-    iosArm64()
-    iosSimulatorArm64()
+    iosArm64 {
+        binaries {
+            framework {
+                baseName = "ComposeGuard"
+                isStatic = true
+            }
+        }
+    }
+    iosSimulatorArm64 {
+        binaries {
+            framework {
+                baseName = "ComposeGuard"
+                isStatic = true
+            }
+        }
+    }
 
     // Calling this block is what enables ABI validation — there is no longer an `enabled` flag.
     @OptIn(ExperimentalAbiValidation::class)

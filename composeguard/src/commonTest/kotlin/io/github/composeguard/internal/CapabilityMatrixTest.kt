@@ -1,7 +1,6 @@
 package io.github.composeguard.internal
 
 import io.github.composeguard.Capability
-import io.github.composeguard.SupportLevel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -19,11 +18,6 @@ import kotlin.test.assertNotNull
  * implementation agrees with itself and pass through any change, including one that silently
  * downgrades a capability. Written out by hand, a change to platform support fails here and forces
  * the matrix to be updated in the same commit — which is what FR-024 requires.
- *
- * Resolved through a freshly-built [SupportResolver] over the real platform rather than through the
- * `ComposeGuard` singleton. The singleton carries whatever opt-ins and failures earlier tests left
- * on it, and an opt-in granted elsewhere would flip `RequiresOptIn` to `Supported` here — making the
- * result depend on test execution order.
  */
 class CapabilityMatrixTest {
     private val resolver = SupportResolver(createPlatformProtection())
@@ -31,8 +25,6 @@ class CapabilityMatrixTest {
 
     @Test
     fun `every capability resolves a support level on this platform`() {
-        // FR-020: no capability may be absent from the matrix. A missing row is how a capability ends
-        // up neither supported nor reported, which is the one state a consumer cannot plan around.
         Capability.entries.forEach { capability ->
             assertNotNull(resolver.resolve(capability, pristine), "$capability resolved no support level")
         }
@@ -48,22 +40,6 @@ class CapabilityMatrixTest {
             )
         }
     }
-
-    @Test
-    fun `an unsanctioned capability is never reported as supported before opt-in`() {
-        // The distinction the whole opt-in flow rests on. RequiresOptIn means "the mechanism exists
-        // and does nothing yet"; reporting it as Supported would hand a consumer a protection claim
-        // the library is not honouring.
-        Capability.entries
-            .filter { expectedSupport(it) == SupportLevel.RequiresOptIn }
-            .forEach { capability ->
-                assertEquals(
-                    SupportLevel.RequiresOptIn,
-                    resolver.resolve(capability, pristine),
-                    "$capability must stay inert until its risk is explicitly accepted",
-                )
-            }
-    }
 }
 
 /**
@@ -72,4 +48,4 @@ class CapabilityMatrixTest {
  * Transcribed from the matrix by hand. Where a row is version-gated the actual reads the running OS
  * version, so the same test covers every tier the library supports rather than only the newest.
  */
-internal expect fun expectedSupport(capability: Capability): SupportLevel
+internal expect fun expectedSupport(capability: Capability): io.github.composeguard.SupportLevel

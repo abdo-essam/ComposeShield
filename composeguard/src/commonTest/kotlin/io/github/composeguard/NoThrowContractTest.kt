@@ -10,11 +10,6 @@ import kotlin.test.Test
  * A capability that threw on an unsupported device would crash the host app precisely where the
  * stakes are highest. Unsupported is reported through [SupportLevel]; it is never raised.
  *
- * Every public entry point is exercised here against the real platform for whichever target this
- * runs on — the iOS simulator reports prevention as `RequiresOptIn` and Android host tests report
- * per-API-level support, so between the two targets both the supported and unsupported paths are
- * covered without either needing a stub.
- *
  * No assertions: the contract is "does not throw", so completing the test body *is* the assertion.
  */
 class NoThrowContractTest {
@@ -22,7 +17,6 @@ class NoThrowContractTest {
     fun `every query operation completes without throwing`() {
         Capability.entries.forEach { ComposeGuard.supportLevel(it) }
         ComposeGuard.isProtectionActive()
-        ComposeGuard.grantedOptIns()
         ComposeGuard.captureState.value
         ComposeGuard.screenshotEvents
         ComposeGuard.protectionFailures
@@ -47,40 +41,5 @@ class NoThrowContractTest {
     fun `setting every app-switcher mode completes without throwing`() {
         AppSwitcherProtection.entries.forEach { ComposeGuard.appSwitcherProtection = it }
         ComposeGuard.appSwitcherProtection = AppSwitcherProtection.Automatic
-    }
-
-    @Test
-    fun `opting in does not throw - including on the paths that are deliberately no-ops`() {
-        Capability.entries.forEach { capability ->
-            ComposeGuard.optInToUnsanctionedCapability(
-                capability = capability,
-                failurePosture = FailurePosture.FailOpen,
-                acknowledgement = UnsanctionedMechanismAcknowledgement(capability, acceptedPolicyRisk = true),
-            )
-        }
-    }
-
-    @Test
-    fun `a mismatched or unaccepted acknowledgement is ignored rather than throwing`() {
-        ComposeGuard.optInToUnsanctionedCapability(
-            capability = Capability.ScreenshotPrevention,
-            failurePosture = FailurePosture.FailClosed,
-            acknowledgement =
-                UnsanctionedMechanismAcknowledgement(
-                    // Names a different capability than the one being enabled.
-                    capability = Capability.CaptureDetection,
-                    acceptedPolicyRisk = true,
-                ),
-        )
-
-        ComposeGuard.optInToUnsanctionedCapability(
-            capability = Capability.ScreenshotPrevention,
-            failurePosture = FailurePosture.FailClosed,
-            acknowledgement =
-                UnsanctionedMechanismAcknowledgement(
-                    capability = Capability.ScreenshotPrevention,
-                    acceptedPolicyRisk = false,
-                ),
-        )
     }
 }

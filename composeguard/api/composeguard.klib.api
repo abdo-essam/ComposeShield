@@ -1,0 +1,113 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <io.github.abdo-essam:composeguard>
+open annotation class io.github.composeguard/InternalComposeGuardApi : kotlin/Annotation { // io.github.composeguard/InternalComposeGuardApi|null[0]
+    constructor <init>() // io.github.composeguard/InternalComposeGuardApi.<init>|<init>(){}[0]
+}
+
+final enum class io.github.composeguard/AppSwitcherProtection : kotlin/Enum<io.github.composeguard/AppSwitcherProtection> { // io.github.composeguard/AppSwitcherProtection|null[0]
+    enum entry Always // io.github.composeguard/AppSwitcherProtection.Always|null[0]
+    enum entry Automatic // io.github.composeguard/AppSwitcherProtection.Automatic|null[0]
+    enum entry Disabled // io.github.composeguard/AppSwitcherProtection.Disabled|null[0]
+
+    final val entries // io.github.composeguard/AppSwitcherProtection.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.composeguard/AppSwitcherProtection> // io.github.composeguard/AppSwitcherProtection.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.composeguard/AppSwitcherProtection // io.github.composeguard/AppSwitcherProtection.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.composeguard/AppSwitcherProtection> // io.github.composeguard/AppSwitcherProtection.values|values#static(){}[0]
+}
+
+final enum class io.github.composeguard/Capability : kotlin/Enum<io.github.composeguard/Capability> { // io.github.composeguard/Capability|null[0]
+    enum entry AppSwitcherProtection // io.github.composeguard/Capability.AppSwitcherProtection|null[0]
+    enum entry CaptureDetection // io.github.composeguard/Capability.CaptureDetection|null[0]
+    enum entry RecordingPrevention // io.github.composeguard/Capability.RecordingPrevention|null[0]
+    enum entry ScreenshotEvents // io.github.composeguard/Capability.ScreenshotEvents|null[0]
+    enum entry ScreenshotPrevention // io.github.composeguard/Capability.ScreenshotPrevention|null[0]
+
+    final val entries // io.github.composeguard/Capability.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.composeguard/Capability> // io.github.composeguard/Capability.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.composeguard/Capability // io.github.composeguard/Capability.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.composeguard/Capability> // io.github.composeguard/Capability.values|values#static(){}[0]
+}
+
+final enum class io.github.composeguard/CaptureState : kotlin/Enum<io.github.composeguard/CaptureState> { // io.github.composeguard/CaptureState|null[0]
+    enum entry Active // io.github.composeguard/CaptureState.Active|null[0]
+    enum entry Inactive // io.github.composeguard/CaptureState.Inactive|null[0]
+    enum entry Unknown // io.github.composeguard/CaptureState.Unknown|null[0]
+
+    final val entries // io.github.composeguard/CaptureState.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.composeguard/CaptureState> // io.github.composeguard/CaptureState.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.composeguard/CaptureState // io.github.composeguard/CaptureState.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.composeguard/CaptureState> // io.github.composeguard/CaptureState.values|values#static(){}[0]
+}
+
+abstract interface io.github.composeguard/ProtectionHandle { // io.github.composeguard/ProtectionHandle|null[0]
+    abstract fun release() // io.github.composeguard/ProtectionHandle.release|release(){}[0]
+}
+
+sealed interface io.github.composeguard/SupportLevel { // io.github.composeguard/SupportLevel|null[0]
+    final class Unsupported : io.github.composeguard/SupportLevel { // io.github.composeguard/SupportLevel.Unsupported|null[0]
+        constructor <init>(io.github.composeguard/SupportLevel.Unsupported.Reason) // io.github.composeguard/SupportLevel.Unsupported.<init>|<init>(io.github.composeguard.SupportLevel.Unsupported.Reason){}[0]
+
+        final val reason // io.github.composeguard/SupportLevel.Unsupported.reason|{}reason[0]
+            final fun <get-reason>(): io.github.composeguard/SupportLevel.Unsupported.Reason // io.github.composeguard/SupportLevel.Unsupported.reason.<get-reason>|<get-reason>(){}[0]
+
+        final fun component1(): io.github.composeguard/SupportLevel.Unsupported.Reason // io.github.composeguard/SupportLevel.Unsupported.component1|component1(){}[0]
+        final fun copy(io.github.composeguard/SupportLevel.Unsupported.Reason = ...): io.github.composeguard/SupportLevel.Unsupported // io.github.composeguard/SupportLevel.Unsupported.copy|copy(io.github.composeguard.SupportLevel.Unsupported.Reason){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.composeguard/SupportLevel.Unsupported.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.composeguard/SupportLevel.Unsupported.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.composeguard/SupportLevel.Unsupported.toString|toString(){}[0]
+
+        final enum class Reason : kotlin/Enum<io.github.composeguard/SupportLevel.Unsupported.Reason> { // io.github.composeguard/SupportLevel.Unsupported.Reason|null[0]
+            enum entry MechanismUnavailable // io.github.composeguard/SupportLevel.Unsupported.Reason.MechanismUnavailable|null[0]
+            enum entry OsVersionTooLow // io.github.composeguard/SupportLevel.Unsupported.Reason.OsVersionTooLow|null[0]
+            enum entry PlatformUnsupported // io.github.composeguard/SupportLevel.Unsupported.Reason.PlatformUnsupported|null[0]
+            enum entry PrecludedByActiveCapability // io.github.composeguard/SupportLevel.Unsupported.Reason.PrecludedByActiveCapability|null[0]
+
+            final val entries // io.github.composeguard/SupportLevel.Unsupported.Reason.entries|#static{}entries[0]
+                final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.composeguard/SupportLevel.Unsupported.Reason> // io.github.composeguard/SupportLevel.Unsupported.Reason.entries.<get-entries>|<get-entries>#static(){}[0]
+
+            final fun valueOf(kotlin/String): io.github.composeguard/SupportLevel.Unsupported.Reason // io.github.composeguard/SupportLevel.Unsupported.Reason.valueOf|valueOf#static(kotlin.String){}[0]
+            final fun values(): kotlin/Array<io.github.composeguard/SupportLevel.Unsupported.Reason> // io.github.composeguard/SupportLevel.Unsupported.Reason.values|values#static(){}[0]
+        }
+    }
+
+    final object Supported : io.github.composeguard/SupportLevel { // io.github.composeguard/SupportLevel.Supported|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.composeguard/SupportLevel.Supported.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.composeguard/SupportLevel.Supported.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.composeguard/SupportLevel.Supported.toString|toString(){}[0]
+    }
+}
+
+final object io.github.composeguard/ComposeGuard { // io.github.composeguard/ComposeGuard|null[0]
+    final val captureState // io.github.composeguard/ComposeGuard.captureState|{}captureState[0]
+        final fun <get-captureState>(): kotlinx.coroutines.flow/StateFlow<io.github.composeguard/CaptureState> // io.github.composeguard/ComposeGuard.captureState.<get-captureState>|<get-captureState>(){}[0]
+    final val protectionFailures // io.github.composeguard/ComposeGuard.protectionFailures|{}protectionFailures[0]
+        final fun <get-protectionFailures>(): kotlinx.coroutines.flow/Flow<io.github.composeguard/Capability> // io.github.composeguard/ComposeGuard.protectionFailures.<get-protectionFailures>|<get-protectionFailures>(){}[0]
+    final val screenshotEvents // io.github.composeguard/ComposeGuard.screenshotEvents|{}screenshotEvents[0]
+        final fun <get-screenshotEvents>(): kotlinx.coroutines.flow/Flow<kotlin/Unit> // io.github.composeguard/ComposeGuard.screenshotEvents.<get-screenshotEvents>|<get-screenshotEvents>(){}[0]
+
+    final var appSwitcherProtection // io.github.composeguard/ComposeGuard.appSwitcherProtection|{}appSwitcherProtection[0]
+        final fun <get-appSwitcherProtection>(): io.github.composeguard/AppSwitcherProtection // io.github.composeguard/ComposeGuard.appSwitcherProtection.<get-appSwitcherProtection>|<get-appSwitcherProtection>(){}[0]
+        final fun <set-appSwitcherProtection>(io.github.composeguard/AppSwitcherProtection) // io.github.composeguard/ComposeGuard.appSwitcherProtection.<set-appSwitcherProtection>|<set-appSwitcherProtection>(io.github.composeguard.AppSwitcherProtection){}[0]
+
+    final fun acquire(kotlin.collections/Set<io.github.composeguard/Capability> = ...): io.github.composeguard/ProtectionHandle // io.github.composeguard/ComposeGuard.acquire|acquire(kotlin.collections.Set<io.github.composeguard.Capability>){}[0]
+    final fun isProtectionActive(): kotlin/Boolean // io.github.composeguard/ComposeGuard.isProtectionActive|isProtectionActive(){}[0]
+    final fun supportLevel(io.github.composeguard/Capability): io.github.composeguard/SupportLevel // io.github.composeguard/ComposeGuard.supportLevel|supportLevel(io.github.composeguard.Capability){}[0]
+}
+
+final val io.github.composeguard/io_github_composeguard_ComposeGuard$stableprop // io.github.composeguard/io_github_composeguard_ComposeGuard$stableprop|#static{}io_github_composeguard_ComposeGuard$stableprop[0]
+final val io.github.composeguard/io_github_composeguard_SupportLevel_Supported$stableprop // io.github.composeguard/io_github_composeguard_SupportLevel_Supported$stableprop|#static{}io_github_composeguard_SupportLevel_Supported$stableprop[0]
+final val io.github.composeguard/io_github_composeguard_SupportLevel_Unsupported$stableprop // io.github.composeguard/io_github_composeguard_SupportLevel_Unsupported$stableprop|#static{}io_github_composeguard_SupportLevel_Unsupported$stableprop[0]
+
+final fun io.github.composeguard/SecureContent(kotlin.collections/Set<io.github.composeguard/Capability>?, kotlin/Function1<io.github.composeguard/Capability, kotlin/Unit>?, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // io.github.composeguard/SecureContent|SecureContent(kotlin.collections.Set<io.github.composeguard.Capability>?;kotlin.Function1<io.github.composeguard.Capability,kotlin.Unit>?;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun io.github.composeguard/io_github_composeguard_ComposeGuard$stableprop_getter(): kotlin/Int // io.github.composeguard/io_github_composeguard_ComposeGuard$stableprop_getter|io_github_composeguard_ComposeGuard$stableprop_getter(){}[0]
+final fun io.github.composeguard/io_github_composeguard_SupportLevel_Supported$stableprop_getter(): kotlin/Int // io.github.composeguard/io_github_composeguard_SupportLevel_Supported$stableprop_getter|io_github_composeguard_SupportLevel_Supported$stableprop_getter(){}[0]
+final fun io.github.composeguard/io_github_composeguard_SupportLevel_Unsupported$stableprop_getter(): kotlin/Int // io.github.composeguard/io_github_composeguard_SupportLevel_Unsupported$stableprop_getter|io_github_composeguard_SupportLevel_Unsupported$stableprop_getter(){}[0]

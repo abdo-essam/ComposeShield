@@ -3,26 +3,17 @@ package io.github.composeguard.internal
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UITextField
 import platform.UIKit.UIView
-import platform.UIKit.addSubview
-import platform.UIKit.subviews
 
 /**
  * Obtains a view whose contents the render server withholds from screen capture.
  *
- * **This is the unsanctioned mechanism the whole opt-in flow exists for.** Apple ships no prevention
- * API, and this relies on undocumented `isSecureTextEntry` behaviour that may draw App Review
- * Guideline 2.5.1 scrutiny. Read `docs/platform-notes.md` before changing anything here.
- *
  * A `UITextField` with `isSecureTextEntry` set owns a private canvas subview the render server
  * excludes from capture. This lifts that canvas **out** of the text field into the app's own
- * hierarchy, then reparents the window's content inside it. The direction is the opposite of the
- * obvious reading — content is not placed *under* a live text field — and it is why trait
- * propagation survives, leaving capture detection structurally independent of prevention.
+ * hierarchy, then reparents the window's content inside it.
  *
  * Every failure path returns `null` rather than throwing. The caller reports that as
- * [io.github.composeguard.SupportLevel.Unsupported] with `MechanismUnavailable`, triggering the
- * declared [io.github.composeguard.FailurePosture] — an honest "this stopped working" rather than a
- * false claim of protection.
+ * [io.github.composeguard.SupportLevel.Unsupported] with `MechanismUnavailable` — an honest
+ * "this stopped working" rather than a false claim of protection.
  *
  * Cannot be verified in the Simulator, which bypasses the render-server path carrying the
  * protection. Device-only.

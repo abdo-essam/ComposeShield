@@ -8,16 +8,8 @@ import kotlinx.coroutines.flow.Flow
 /**
  * iOS's implementation of the platform boundary.
  *
- * The support picture is the mirror image of Android's. **Detection is fully supported and
- * prevention is not sanctioned at all** — where on Android prevention is trivially available and
- * detection is gated behind recent API levels. Neither platform is uniformly better, which is
- * exactly why [SupportLevel] is reported per capability rather than as one overall verdict.
- *
- * Prevention here reports [SupportLevel.RequiresOptIn] and **does nothing** until the application
- * accepts the App Review exposure through
- * [io.github.composeguard.ComposeGuard.optInToUnsanctionedCapability]. That is the design working as
- * intended, not a gap: composing a boundary on iOS without opting in protects nothing, and
- * `supportLevel` says so plainly rather than letting the application assume otherwise.
+ * Prevention uses internal secure container reparenting. Detection uses official UIKit
+ * screen capture notifications.
  */
 internal class IosPlatformProtection : PlatformProtection {
     private val detection = CaptureDetection()
@@ -45,9 +37,8 @@ internal class IosPlatformProtection : PlatformProtection {
         // request should wait rather than be recorded as a failure.
         val content = target.rootViewController?.view ?: return ProtectionOutcome.Deferred
 
-        // Every failure below is soft. The mechanism is undocumented and can disappear in any iOS
-        // release, so a null here means "report MechanismUnavailable and let the declared posture
-        // decide" — never an exception into consumer code.
+        // Every failure below is soft. A null here means "report MechanismUnavailable and let the
+        // declared posture decide" — never an exception into consumer code.
         val container = SecureContainer.create() ?: return ProtectionOutcome.Failed
         if (!container.enclose(content)) return ProtectionOutcome.Failed
 
@@ -76,15 +67,13 @@ internal class IosPlatformProtection : PlatformProtection {
 
     override fun platformSupport(capability: Capability): SupportLevel =
         when (capability) {
-            // Not sanctioned by Apple. Reports RequiresOptIn rather than Supported or Unsupported,
-            // because the mechanism exists and works — the question is whether the application accepts
-            // the Guideline 2.5.1 exposure, and that is not the library's decision to make.
-            Capability.ScreenshotPrevention, Capability.RecordingPrevention -> SupportLevel.RequiresOptIn
+            // Prevention supported via secure container reparenting
+            Capability.ScreenshotPrevention, Capability.RecordingPrevention -> SupportLevel.Supported
 
             // Officially supported throughout, via a notification carrying no deprecation.
             Capability.CaptureDetection, Capability.ScreenshotEvents -> SupportLevel.Supported
 
-            // Ordinary view work — sanctioned, and never subject to the opt-in.
+            // Ordinary view work — sanctioned.
             Capability.AppSwitcherProtection -> SupportLevel.Supported
         }
 }

@@ -17,3 +17,13 @@ import androidx.compose.runtime.Composable
  */
 @Composable
 internal expect fun rememberWindowKey(): WindowKey
+
+/**
+ * Resolves the current foreground window key without requiring a composition context.
+ *
+ * Used by the imperative [io.github.composeguard.ComposeGuard.acquire] path to obtain a real
+ * [WindowKey] rather than [WindowKey.Unbound] when a window already exists on screen. If no window
+ * can be resolved (cold start, no active scene/activity), returns [WindowKey.Unbound] so the request
+ * is held and applied once [ProtectionRegistry.bindWindow] is called from the first composition.
+ */
+internal expect fun resolveCurrentWindowKey(): WindowKey

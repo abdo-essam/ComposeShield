@@ -16,7 +16,8 @@ import java.util.WeakHashMap
  * leaked activity.
  *
  * Access is synchronised on the table itself. Registration happens on the main thread from
- * composition, but lookups arrive from any thread via the imperative API.
+ * composition or from [ComposeGuardInitializer]'s lifecycle callbacks, but lookups arrive from
+ * any thread via the imperative API.
  */
 private val windows = WeakHashMap<Window, Entry>()
 
@@ -25,6 +26,8 @@ private class Entry(
     val key: WindowKey,
     val activity: Activity?,
 )
+
+private var nextWindowId = 0
 
 /**
  * Assigns [window] a stable key, reusing it if one was already assigned.
@@ -50,8 +53,6 @@ internal fun registerWindow(
         windows[window] = Entry(key, activity)
         key
     }
-
-private var nextWindowId = 0
 
 /**
  * The table entry [key] names, or `null` if it was never registered or has since been collected.

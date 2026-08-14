@@ -19,3 +19,15 @@ internal actual fun rememberWindowKey(): WindowKey =
     remember {
         activeWindow()?.let(::registerWindow) ?: WindowKey.Unbound
     }
+
+/**
+ * Resolves the foreground window key without a composition context.
+ *
+ * Used by [io.github.composeguard.ComposeGuard.acquire] so the imperative path targets the active
+ * key window rather than parking under [WindowKey.Unbound] indefinitely.
+ *
+ * Falls back to [WindowKey.Unbound] when no key window exists yet (app launch before the scene is
+ * active); the registry will re-point the pending request via [ProtectionRegistry.bindWindow] once
+ * the first composable runs.
+ */
+internal actual fun resolveCurrentWindowKey(): WindowKey = activeWindow()?.let(::registerWindow) ?: WindowKey.Unbound

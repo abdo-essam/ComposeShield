@@ -3,6 +3,7 @@ package io.github.composeguard
 import io.github.composeguard.internal.ProtectionRequest
 import io.github.composeguard.internal.WindowKey
 import io.github.composeguard.internal.guardCore
+import io.github.composeguard.internal.resolveCurrentWindowKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -45,7 +46,7 @@ public object ComposeGuard {
      *   this capability set.
      */
     public fun acquire(capabilities: Set<Capability> = DefaultPreventionCapabilities): ProtectionHandle =
-        RegistryHandle(guardCore.registry.acquireShared(currentWindow(), capabilities))
+        RegistryHandle(guardCore.registry.acquireShared(resolveCurrentWindowKey(), capabilities))
 
     /** Whether any protection request is currently outstanding, from any source. */
     public fun isProtectionActive(): Boolean = guardCore.registry.current.isProtectedAnywhere()
@@ -90,8 +91,7 @@ public object ComposeGuard {
      * Emits when a prevention mechanism fails to install or stops working.
      *
      * The application-wide counterpart to `SecureContent`'s `onProtectionFailure`, for consumers
-     * using the imperative path. Observable independently of the declared [FailurePosture]: the
-     * posture decides what happens to the *content*, this reports the fact.
+     * using the imperative path.
      */
     public val protectionFailures: Flow<Capability> get() = guardCore.protectionFailures
 
@@ -105,59 +105,6 @@ public object ComposeGuard {
     public var appSwitcherProtection: AppSwitcherProtection
         get() = guardCore.registry.current.appSwitcherMode
         set(value) = guardCore.registry.setAppSwitcherMode(value)
-
-    /**
-     * Accepts the risk of a capability whose mechanism the platform vendor has not sanctioned.
-     *
-     * Until this is called for a capability reporting [SupportLevel.RequiresOptIn], that capability
-     * **does nothing**. That is deliberate: the library will not transfer an unevaluated app-store
-     * policy risk to a consumer silently.
-     *
-     * Consent is **per capability**. There is no switch that enables all of them, and consent granted
-     * here never extends to capabilities added in a later version — a library upgrade cannot broaden
-     * what an application agreed to.
-     *
-     * [failurePosture] is required at this same call, not defaulted, because a mechanism that can
-     * vanish mid-session must have an answer to "what happens to the content then?" before it is
-     * switched on.
-     *
-     * A no-op, not an error, when [capability] needs no opt-in, when [acknowledgement] names a
-     * different capability, or when it does not accept the risk.
-     *
-     * @see UnsanctionedMechanismAcknowledgement for what is being accepted.
-     */
-    public fun optInToUnsanctionedCapability(
-        capability: Capability,
-        failurePosture: FailurePosture,
-        acknowledgement: UnsanctionedMechanismAcknowledgement,
-    ) {
-        if (!acknowledgement.acceptedPolicyRisk) return
-        // An acknowledgement names the capability it was written for, so one cannot be constructed
-        // for a well-understood capability and then passed to enable a different, riskier one.
-        if (acknowledgement.capability != capability) return
-        if (supportLevel(capability) != SupportLevel.RequiresOptIn) return
-
-        guardCore.registry.grantOptIn(capability, failurePosture)
-    }
-
-    /**
-     * Which unsanctioned capabilities have been opted into.
-     *
-     * For audit: an application subject to a security review can report what it enabled without
-     * tracking the consent itself.
-     */
-    public fun grantedOptIns(): Set<Capability> = guardCore.registry.current.optIns.keys
-
-    /**
-     * The window imperative requests are booked against.
-     *
-     * [WindowKey.Unbound] until a host appears, at which point the boundary binds it and the
-     * outstanding requests are re-pointed and applied. Requests made before there is anything to
-     * apply them to are held, never dropped.
-     */
-    private fun currentWindow(): WindowKey =
-        guardCore.registry.current.requests.keys
-            .firstOrNull { it != WindowKey.Unbound } ?: WindowKey.Unbound
 }
 
 /**

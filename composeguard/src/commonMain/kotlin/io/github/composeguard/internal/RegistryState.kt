@@ -2,7 +2,6 @@ package io.github.composeguard.internal
 
 import io.github.composeguard.AppSwitcherProtection
 import io.github.composeguard.Capability
-import io.github.composeguard.FailurePosture
 
 /**
  * A complete, immutable snapshot of the registry.
@@ -21,8 +20,6 @@ internal data class RegistryState(
      * so an empty entry can never be mistaken for an active-but-empty claim.
      */
     val requests: Map<WindowKey, List<ProtectionRequest>> = emptyMap(),
-    /** Capabilities opted into via the unsanctioned-mechanism flow, with the posture declared. */
-    val optIns: Map<Capability, FailurePosture> = emptyMap(),
     /** Capabilities whose mechanism was requested but failed to install, or has stopped working. */
     val failedMechanisms: Set<Capability> = emptySet(),
     /** The application's app-switcher preference. */
@@ -62,36 +59,6 @@ internal data class RegistryState(
      */
     fun isRequestedAnywhere(capability: Capability): Boolean =
         requests.values.any { window -> window.any { capability in it.capabilities } }
-
-    /**
-     * The posture governing failures on [window]: the most protective any outstanding request
-     * declared.
-     *
-     * Postures attach to capabilities but are *applied* per window, because only one physical
-     * protection primitive exists per window. Two boundaries that disagree cannot both be honoured,
-     * so the safer reading wins and a fail-closed request is never silently downgraded.
-     *
-     * `null` when no outstanding request involves an opted-in capability.
-     */
-    fun effectiveFailurePosture(window: WindowKey): FailurePosture? {
-        var resolved: FailurePosture? = null
-        for (capability in effectiveCapabilities(window)) {
-            val posture = optIns[capability] ?: continue
-            resolved = resolved?.let { FailurePosture.mostProtective(it, posture) } ?: posture
-        }
-        return resolved
-    }
-
-    /**
-     * Whether [window]'s content must be obscured because a mechanism it depends on failed.
-     *
-     * Reads the *current* failure set rather than a flag latched at installation, so a mechanism that
-     * installs successfully and stops working later obscures the content just the same.
-     */
-    fun shouldObscureContent(window: WindowKey): Boolean {
-        if (effectiveFailurePosture(window) != FailurePosture.FailClosed) return false
-        return effectiveCapabilities(window).any { it in failedMechanisms }
-    }
 
     /**
      * Whether app-switcher protection should be applied, given the mode and outstanding requests.

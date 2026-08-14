@@ -18,4 +18,23 @@
     <!-- Capability.CaptureDetection — WindowManager.addScreenRecordingCallback, API 35+. -->
     <uses-permission android:name="android.permission.DETECT_SCREEN_RECORDING" />
 
+    <application>
+        <!--
+          Initializes ComposeGuard's activity-lifecycle tracker before any Activity.onCreate runs.
+
+          This is the standard library-initialization pattern (WorkManager, Firebase, Glide) that
+          guarantees ActivityLifecycleCallbacks are registered before the first onResume, so
+          ComposeGuard.acquire() works correctly without any user call-site setup.
+
+          Applications that suppress manifest merging with tools:node="remove" must call
+          ComposeGuardHost() in their root composable or ComposeGuard.acquire() may be unable to
+          locate the target window on the first launch.
+        -->
+        <provider
+            android:name="io.github.composeguard.internal.ComposeGuardInitializer"
+            android:authorities="${applicationId}.composeguard-init"
+            android:exported="false"
+            android:multiprocess="false" />
+    </application>
+
 </manifest>

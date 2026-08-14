@@ -27,7 +27,10 @@ internal class AppSwitcher {
         enabled: Boolean,
     ) {
         if (sdkInt < Build.VERSION_CODES.TIRAMISU) return
-        val activity = activityFor(window) ?: return
+        // activityFor() resolves a registered key; falls through to anyRegisteredActivity() for
+        // WindowKey.Unbound, which the registry passes when Always/Automatic mode is set with no
+        // active boundary (no requests outstanding → no real window key to iterate over).
+        val activity = activityFor(window) ?: anyRegisteredActivity() ?: return
 
         onMainThread(ifDeferred = Unit) {
             // Inverted deliberately: the platform names the flag for the screenshot being *enabled*,

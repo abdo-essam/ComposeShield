@@ -3,16 +3,13 @@ package io.github.composeguard
 /**
  * A named unit of protectable or observable behaviour.
  *
- * Every capability resolves a [SupportLevel] per platform — see [ComposeGuard.supportLevel]. Support
- * is genuinely asymmetric between Android and iOS and the API does not paper over that; see
- * `docs/capability-matrix.md`.
+ * Every capability resolves a [SupportLevel] per platform — see [ComposeGuard.supportLevel].
  *
- * Capabilities are of two kinds, and the distinction is load-bearing:
+ * Capabilities are of two kinds:
  *
  * - **Prevention** ([ScreenshotPrevention], [RecordingPrevention], [AppSwitcherProtection]) stops a
- *   capture from succeeding, and is subject to a [FailurePosture].
- * - **Detection** ([CaptureDetection], [ScreenshotEvents]) reports that a capture happened. Never
- *   subject to a posture — there is nothing to obscure.
+ *   capture from succeeding.
+ * - **Detection** ([CaptureDetection], [ScreenshotEvents]) reports that a capture happened.
  *
  * A closed set: adding a member is an additive ABI change, removing one is breaking.
  *
@@ -24,9 +21,8 @@ public enum class Capability {
      *
      * **Android**: `Supported` on all versions, via `FLAG_SECURE`.
      *
-     * **iOS**: `RequiresOptIn` — see [ComposeGuard.optInToUnsanctionedCapability]. Not
-     * independently controllable from [RecordingPrevention]; one mechanism covers both, so
-     * requesting either grants both.
+     * **iOS**: `Supported` via internal secure container reparenting. Not independently
+     * controllable from [RecordingPrevention]; one mechanism covers both.
      */
     ScreenshotPrevention,
 
@@ -36,7 +32,7 @@ public enum class Capability {
      * **Android**: `Supported` on all versions, via `FLAG_SECURE`. Covers MediaProjection-based
      * recorders and casting to non-secure external displays.
      *
-     * **iOS**: `RequiresOptIn`, sharing the single mechanism with [ScreenshotPrevention].
+     * **iOS**: `Supported`, sharing the single mechanism with [ScreenshotPrevention].
      */
     RecordingPrevention,
 
@@ -77,19 +73,11 @@ public enum class Capability {
      * API 33.
      *
      * **iOS**: `Supported` throughout, via an overlay installed when the scene resigns active.
-     *
-     * Officially sanctioned on both platforms, so it never requires
-     * [ComposeGuard.optInToUnsanctionedCapability].
      */
     AppSwitcherProtection,
     ;
 
-    /**
-     * Whether this capability prevents capture, as opposed to reporting it.
-     *
-     * Only prevention capabilities carry a [FailurePosture]; the posture answers "what should happen
-     * to the content if this stops working", which is meaningless for detection.
-     */
+    /** Whether this capability prevents capture, as opposed to reporting it. */
     internal val isPrevention: Boolean
         get() =
             when (this) {

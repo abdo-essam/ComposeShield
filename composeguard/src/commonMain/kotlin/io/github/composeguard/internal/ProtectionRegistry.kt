@@ -2,7 +2,6 @@ package io.github.composeguard.internal
 
 import io.github.composeguard.AppSwitcherProtection
 import io.github.composeguard.Capability
-import io.github.composeguard.FailurePosture
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,7 +11,7 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
 /**
  * The single place all protection state lives.
  *
- * Reference-counts requests, resolves the effective capability set and failure posture per window,
+ * Reference-counts requests, resolves the effective capability set per window,
  * and drives [PlatformProtection] when — and only when — the outcome actually changes.
  *
  * **Reference counting is a correctness requirement, not an optimisation.** Only one physical
@@ -36,14 +35,7 @@ internal class ProtectionRegistry(
 
     private val _snapshots = MutableStateFlow(RegistryState())
 
-    /**
-     * The snapshot as an observable stream.
-     *
-     * [SecureContent][io.github.composeguard.SecureContent] collects this to honour a fail-closed
-     * posture at the *moment* a mechanism breaks. Polling [current] on recomposition would only
-     * notice a mid-session failure if something else happened to recompose — for a static protected
-     * screen, possibly never.
-     */
+    /** The snapshot as an observable stream. */
     val snapshots: StateFlow<RegistryState> = _snapshots.asStateFlow()
 
     /** The current snapshot. Safe to read from any thread; never a partially-applied state. */
@@ -92,9 +84,11 @@ internal class ProtectionRegistry(
         val request = ProtectionRequest(capabilities, window, isImperative = true)
         mutate { snapshot ->
             val existing = snapshot.requests[window].orEmpty()
-            // Re-check inside the loop: a concurrent acquire may have installed the shared request
-            // between the read above and this compare-and-set.
-            if (existing.any { it.isImperative && it.capabilities == capabilities }) return@mutate snapshot
+            val matches =
+                existing.any {
+                    it.isImperative && it.capabilities == capabilities
+                }
+            if (matches) return@mutate snapshot
             snapshot.copy(requests = snapshot.requests + (window to existing + request))
         }
         reconcile(window)
@@ -175,24 +169,6 @@ internal class ProtectionRegistry(
         reconcileAppSwitcher(window)
     }
 
-    /** Records an opt-in and the posture that must accompany it. */
-    fun grantOptIn(
-        capability: Capability,
-        posture: FailurePosture,
-    ) {
-        mutate { snapshot ->
-            snapshot.copy(
-                optIns = snapshot.optIns + (capability to posture),
-                // A fresh opt-in deserves a fresh attempt: clear any earlier failure so a capability
-                // that failed once is not written off for the rest of the session.
-                failedMechanisms = snapshot.failedMechanisms - capability,
-            )
-        }
-        // The opt-in may have unlocked a capability outstanding requests already asked for, so retry
-        // them rather than waiting for the next navigation.
-        current.requests.keys.forEach(::reconcile)
-    }
-
     /** Sets the app-switcher mode and applies the consequence immediately. */
     fun setAppSwitcherMode(mode: AppSwitcherProtection) {
         mutate { snapshot -> snapshot.copy(appSwitcherMode = mode) }
@@ -218,8 +194,7 @@ internal class ProtectionRegistry(
             when (platform.applyProtection(window, capabilities)) {
                 ProtectionOutcome.Applied -> Unit
 
-                // No host yet. The request stands; bindWindow() will apply it. Reporting a failure
-                // here would fire the posture on ordinary startup ordering.
+                // No host yet. The request stands; bindWindow() will apply it.
                 ProtectionOutcome.Deferred -> Unit
 
                 ProtectionOutcome.Failed -> recordFailure(capabilities)
@@ -253,7 +228,7 @@ internal class ProtectionRegistry(
      * A mechanism that did not install must never be reported as protection. Recording it makes
      * `supportLevel()` tell the truth; reporting it lets the application act at the moment of failure
      * rather than by polling. Only prevention capabilities are recorded — a detection capability has
-     * no mechanism to fail in this path and no posture to govern it.
+     * no mechanism to fail in this path.
      */
     private fun recordFailure(capabilities: Set<Capability>) {
         val prevention = capabilities.filterTo(mutableSetOf()) { it.isPrevention }

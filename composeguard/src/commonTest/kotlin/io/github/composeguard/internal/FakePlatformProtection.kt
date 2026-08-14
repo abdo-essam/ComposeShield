@@ -21,6 +21,9 @@ internal class FakePlatformProtection(
         Capability.entries.associateWith { SupportLevel.Supported },
     override val preventionPrecludesScreenshotEvents: Boolean = true,
 ) : PlatformProtection {
+    /** Guards [protectedWindows], [appSwitcherProtectedWindows], and [applyLog] from concurrent mutation. */
+    private val lock = Any()
+
     /** Windows currently carrying the prevention primitive. */
     val protectedWindows: MutableSet<WindowKey> = mutableSetOf()
 
@@ -57,30 +60,32 @@ internal class FakePlatformProtection(
     override fun applyProtection(
         window: WindowKey,
         capabilities: Set<Capability>,
-    ): ProtectionOutcome {
-        lastRequestedCapabilities = capabilities
+    ): ProtectionOutcome =
+        fakeSynchronized(lock) {
+            lastRequestedCapabilities = capabilities
 
-        when (nextOutcome) {
-            ProtectionOutcome.Applied -> {
-                protectedWindows += window
-                applyLog += "apply:${window.id}"
-            }
+            when (nextOutcome) {
+                ProtectionOutcome.Applied -> {
+                    protectedWindows += window
+                    applyLog += "apply:${window.id}"
+                }
 
-            ProtectionOutcome.Deferred -> {
-                applyLog += "defer:${window.id}"
-            }
+                ProtectionOutcome.Deferred -> {
+                    applyLog += "defer:${window.id}"
+                }
 
-            ProtectionOutcome.Failed -> {
-                applyLog += "fail:${window.id}"
+                ProtectionOutcome.Failed -> {
+                    applyLog += "fail:${window.id}"
+                }
             }
+            nextOutcome
         }
-        return nextOutcome
-    }
 
-    override fun clearProtection(window: WindowKey) {
-        protectedWindows -= window
-        applyLog += "clear:${window.id}"
-    }
+    override fun clearProtection(window: WindowKey): Unit =
+        fakeSynchronized(lock) {
+            protectedWindows -= window
+            applyLog += "clear:${window.id}"
+        }
 
     override fun observeCaptureState(): Flow<PlatformCaptureReading> =
         captureReadings.onSubscription { captureSubscriptions++ }
@@ -92,10 +97,16 @@ internal class FakePlatformProtection(
     override fun applyAppSwitcherProtection(
         window: WindowKey,
         enabled: Boolean,
-    ) {
-        if (enabled) appSwitcherProtectedWindows += window else appSwitcherProtectedWindows -= window
-    }
+    ): Unit =
+        fakeSynchronized(lock) {
+            if (enabled) appSwitcherProtectedWindows += window else appSwitcherProtectedWindows -= window
+        }
 
     override fun platformSupport(capability: Capability): SupportLevel =
         support[capability] ?: SupportLevel.Unsupported(SupportLevel.Unsupported.Reason.PlatformUnsupported)
 }
+
+internal expect inline fun <R> fakeSynchronized(
+    lock: Any,
+    block: () -> R,
+): R

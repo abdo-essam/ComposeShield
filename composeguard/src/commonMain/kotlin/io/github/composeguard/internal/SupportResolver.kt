@@ -7,20 +7,15 @@ import io.github.composeguard.SupportLevel
  * Answers "can this capability be relied on right now?" — at the moment it is asked.
  *
  * The platform actual reports only what is intrinsic: this OS version, this platform, this
- * mechanism. Three things that change *during a session* are layered on here:
+ * mechanism. Two things that change *during a session* are layered on here:
  *
  * 1. **Mechanism failure.** A mechanism can install successfully and stop working later.
  * 2. **Preclusion by an active capability.** On Android, active prevention silently disables
  *    screenshot events. See `docs/platform-notes.md`.
- * 3. **Opt-in state.** An unsanctioned mechanism does nothing until the risk is accepted.
  *
  * **This is why support is never resolved once at startup.** A matrix computed at launch would keep
  * reporting [SupportLevel.Supported] for a capability that had since been precluded or had silently
  * broken.
- *
- * The order above is the order they are checked, and it is load-bearing: a broken mechanism is
- * unusable whatever else is true of it, and reporting it as merely "precluded" would suggest it
- * comes back when prevention releases.
  */
 internal class SupportResolver(
     private val platform: PlatformProtection,
@@ -40,12 +35,6 @@ internal class SupportResolver(
         // prevention brings it back, which is false and would send a consumer down a dead end.
         if (platformLevel == SupportLevel.Supported && isPrecludedByActivePrevention(capability, state)) {
             return SupportLevel.Unsupported(SupportLevel.Unsupported.Reason.PrecludedByActiveCapability)
-        }
-
-        // An unsanctioned mechanism does nothing until its risk is explicitly accepted. Once it is,
-        // the capability is as supported as the platform allows.
-        if (platformLevel == SupportLevel.RequiresOptIn && capability in state.optIns) {
-            return SupportLevel.Supported
         }
 
         return platformLevel
