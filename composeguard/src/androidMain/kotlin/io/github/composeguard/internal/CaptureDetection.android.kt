@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.callbackFlow
  * - **External displays** via `DisplayManager` (API 24+), which covers casting to a non-secure
  *   display even where recording detection is unavailable.
  *
- * Below API 35 the recording half reports unsupported with no fallback (research.md R6).
+ * Below API 35 the recording half reports unsupported with no fallback.
  */
 internal class CaptureDetection {
     fun support(): SupportLevel = supportedFromApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
@@ -43,7 +43,7 @@ internal class CaptureDetection {
             if (activity == null) {
                 // Nothing to observe through yet. Indeterminate, never NotCapturing: with no window we
                 // genuinely do not know, and saying "not being recorded" here would be a guess in the
-                // most dangerous direction (FR-009).
+                // most dangerous direction.
                 trySend(PlatformCaptureReading.Indeterminate)
                 awaitClose { }
                 return@callbackFlow
@@ -97,7 +97,7 @@ internal class CaptureDetection {
                 // SECURITY-CRITICAL: this returns the *current* state, and discarding it is a real
                 // vulnerability rather than an untidiness. An attacker who starts recording before the
                 // app launches produces no transition, so a callback-only implementation would report
-                // "not recording" for the entire session (research.md R6).
+                // "not recording" for the entire session.
                 val initial = windowManager.addScreenRecordingCallback(activity.mainExecutor, callback)
                 recording = initial == WindowManager.SCREEN_RECORDING_STATE_VISIBLE
             }
@@ -128,7 +128,7 @@ internal class CaptureDetection {
 private fun DisplayManager?.hasExternalDisplay(): Boolean =
     this?.displays?.any { display ->
         // `Display.isSecure` is hidden API; the FLAG_SECURE bit is the public equivalent and needs
-        // no reflection to read (Principle V).
+        // no reflection to read.
         val secure = display.flags and Display.FLAG_SECURE != 0
         display.displayId != Display.DEFAULT_DISPLAY && !secure
     } == true

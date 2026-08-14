@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.Flow
  *
  * **Android, not iOS, is the constrained platform for detection.** Prevention has been available
  * since API 1, but screenshot events need API 34, recording detection needs API 35, and active
- * prevention *silently disables* screenshot events at the platform level. Everything below reports
- * that honestly rather than substituting a heuristic (research.md R5, R6).
+ * prevention *silently disables* screenshot events. Everything below reports that honestly rather
+ * than substituting a heuristic. See `docs/platform-notes.md`.
  */
 internal class AndroidPlatformProtection : PlatformProtection {
     private val detection = CaptureDetection()
@@ -41,7 +41,7 @@ internal class AndroidPlatformProtection : PlatformProtection {
 
         return onMainThread(ifDeferred = ProtectionOutcome.Deferred) {
             // addFlags, never setFlags(flags, ALL): the latter clobbers every unrelated window flag
-            // the host app set, which is someone else's bug to debug (research.md R4).
+            // the host app set, which is someone else's bug to debug.
             target.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
             ProtectionOutcome.Applied
         }
@@ -89,11 +89,9 @@ internal val sdkInt: Int = Build.VERSION.SDK_INT
  * Reports [Reason.OsVersionTooLow] below [floor], or [SupportLevel.Supported] at or above it.
  *
  * Every Android capability except prevention is gated this way, and each deliberately has **no
- * fallback below its floor**. The alternatives were considered and rejected in research.md R6: a
- * MediaStore `ContentObserver` for screenshots needs a storage permission FR-026 forbids, and
- * inferring recording from `DisplayManager` misses MediaProjection recorders that create no visible
- * display. Both would produce a false "you are not being captured" — for a security library, worse
- * than an honest "unsupported".
+ * fallback below its floor** — every candidate fallback would produce a false "you are not being
+ * captured", which for a security library is worse than an honest "unsupported". See
+ * `docs/platform-notes.md`.
  */
 internal fun supportedFromApi(floor: Int): SupportLevel =
     if (sdkInt >= floor) SupportLevel.Supported else SupportLevel.Unsupported(Reason.OsVersionTooLow)

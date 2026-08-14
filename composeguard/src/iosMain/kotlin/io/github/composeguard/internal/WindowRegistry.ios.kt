@@ -37,7 +37,7 @@ internal fun forget(key: WindowKey) {
 /**
  * The application's foreground-active window scene.
  *
- * Detection attaches here rather than to any view (research.md R2). The scene is the root trait
+ * Detection attaches here rather than to any view. The scene is the root trait
  * environment and the source of the capture trait, which puts it above the question of where
  * prevention may have reparented content — the two subsystems stay decoupled by construction.
  */

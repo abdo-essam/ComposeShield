@@ -14,30 +14,22 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * Turns raw platform readings into the capture state consumers actually see.
  *
- * The platform's word is not the library's answer. Three transformations sit between them, and all
- * three exist because of a specific documented platform defect rather than as defensive padding:
+ * Three transformations sit between the platform's word and the library's answer, each existing
+ * because of a documented platform defect rather than as defensive padding:
  *
- * 1. **Cold-launch seeding** (FR-009). Both platforms under-report at launch, for unrelated
- *    reasons: iOS has a bug where the first read returns inactive while recording is already
- *    running (FB14607048), and Android reports state through a callback whose initial value is easy
- *    to discard. If capture began *before* the app launched, no transition ever occurs. So the
- *    published state starts at [CaptureState.Unknown] and stays there until the platform
- *    affirmatively says otherwise — it is never seeded to [CaptureState.Inactive].
- *
- * 2. **Spurious-inactive suppression** (FR-010). iOS 26.2 flips the state to inactive when a Live
- *    Activity expands from the Dynamic Island, while recording continues. A transition *to*
- *    inactive is therefore held for [SUPPRESSION_WINDOW] and published only if it survives.
- *
+ * 1. **Cold-launch seeding.** The published state starts at [CaptureState.Unknown] and stays there
+ *    until the platform affirmatively says otherwise — never seeded to [CaptureState.Inactive].
+ * 2. **Spurious-inactive suppression.** A transition *to* inactive is held for [SUPPRESSION_WINDOW]
+ *    and published only if it survives.
  * 3. **Asymmetry.** A transition to [CaptureState.Active] is published immediately and never
- *    delayed. The asymmetry is the entire point: a false negative in a security library — telling a
- *    banking app it is unobserved while it is being recorded — is far worse than a false positive.
+ *    delayed, because a false negative is far worse than a false positive.
  *
- * [CaptureState.Unknown] is never coerced to [CaptureState.Inactive] anywhere in this class (C9).
+ * See `docs/platform-notes.md` for the underlying platform defects. [CaptureState.Unknown] is never
+ * coerced to [CaptureState.Inactive] anywhere in this class.
  *
- * **A single shared upstream** (FR-008). One collection of the platform flow feeds one
- * [MutableStateFlow], so every collector and every read of `.value` observe the same value by
- * construction rather than by convention (C7). Per-observer polling would let two collectors
- * disagree about whether the screen is being recorded.
+ * **A single shared upstream**: one collection of the platform flow feeds one [MutableStateFlow], so
+ * every collector and every read of `.value` observe the same value by construction. Per-observer
+ * polling would let two collectors disagree about whether the screen is being recorded.
  */
 internal class CaptureStateSource(
     private val platform: PlatformProtection,
@@ -86,15 +78,13 @@ internal class CaptureStateSource(
     /**
      * Re-reads capture state on return to foreground.
      *
-     * Change notifications alone are not enough on either platform: capture that began while the
-     * app was backgrounded may have produced no transition the app was alive to observe
-     * (research.md R3, R6). Re-subscribing is what forces a fresh read — both actuals emit the
-     * current reading on collection — so the old subscription is cancelled first rather than left
-     * running alongside the new one.
+     * Capture that began while the app was backgrounded may have produced no transition the app was
+     * alive to observe. Re-subscribing forces a fresh read — both actuals emit the current reading
+     * on collection — so the old subscription is cancelled first rather than left running alongside
+     * the new one.
      *
-     * The published state is deliberately *not* reset to [CaptureState.Unknown] first. A live
-     * `Active` is a stronger claim than the absence of a fresh reading, and blanking it would
-     * momentarily tell a consumer the screen is no longer being recorded when nothing said so.
+     * The published state is deliberately *not* reset to [CaptureState.Unknown] first: a live
+     * `Active` is a stronger claim than the absence of a fresh reading.
      */
     fun refresh() {
         collection?.cancel()
@@ -130,7 +120,7 @@ internal class CaptureStateSource(
 
     /**
      * Holds a transition to inactive for [SUPPRESSION_WINDOW], publishing only if nothing contradicts
-     * it (FR-010).
+     * it.
      *
      * An already-pending suppression is left alone rather than restarted, so a platform emitting
      * inactive repeatedly cannot keep pushing the deadline out and stall the transition forever.
@@ -155,10 +145,8 @@ internal class CaptureStateSource(
         /**
          * How long a "capture stopped" reading must hold before it is believed.
          *
-         * Sized against the two constraints that bracket it: long enough to absorb the iOS Live
-         * Activity flap, which resolves in well under a second, and short enough that genuine
-         * transitions stay observable within the 1s budget SC-004 sets. It only ever delays the
-         * *reassuring* direction, so erring long costs nothing but a stale warning.
+         * Long enough to absorb the iOS Live Activity flap, short enough that genuine transitions
+         * stay observable within the 1 s budget. Only ever delays the *reassuring* direction.
          */
         val SUPPRESSION_WINDOW: Duration = 750.milliseconds
     }

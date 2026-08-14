@@ -17,7 +17,7 @@ import androidx.compose.ui.window.DialogWindowProvider
  *
  * [LocalActivity] rather than `LocalContext.current as Activity`: the cast is wrong under any
  * `ContextWrapper` and activity-compose ships a `ContextCastToActivity` lint check flagging it.
- * `LocalActivity` walks the wrapper chain properly and needs no reflection (research.md R4).
+ * `LocalActivity` walks the wrapper chain properly and needs no reflection.
  */
 @Composable
 internal actual fun rememberWindowKey(): WindowKey {

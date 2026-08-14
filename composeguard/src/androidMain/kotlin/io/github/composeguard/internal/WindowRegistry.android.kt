@@ -9,14 +9,14 @@ import java.util.WeakHashMap
  *
  * Common code coordinates protection per window but must never hold a platform window — it would
  * outlive the activity and leak the whole view hierarchy with it. So common code carries a string
- * key and this table, which lives entirely in `androidMain`, holds the association.
+ * key and this table holds the association.
  *
  * **Weakly**, and that is the point: a destroyed activity's window becomes collectable even if a
- * stale [WindowKey] is still referenced somewhere. A strong map here would turn every rotation into
- * a leaked activity, which is the classic Android library defect this design is avoiding.
+ * stale [WindowKey] is still referenced somewhere. A strong map would turn every rotation into a
+ * leaked activity.
  *
  * Access is synchronised on the table itself. Registration happens on the main thread from
- * composition, but lookups arrive from any thread via the imperative API (FR-018).
+ * composition, but lookups arrive from any thread via the imperative API.
  */
 private val windows = WeakHashMap<Window, Entry>()
 
@@ -53,20 +53,20 @@ internal fun registerWindow(
 
 private var nextWindowId = 0
 
+/**
+ * The table entry [key] names, or `null` if it was never registered or has since been collected.
+ *
+ * Callers hold the lock; the map is keyed by window rather than by [WindowKey], so this is a scan.
+ * The table holds one entry per live window — single digits in practice — so a linear scan is
+ * cheaper than maintaining a second index.
+ */
+private fun entryFor(key: WindowKey): Map.Entry<Window, Entry>? = windows.entries.firstOrNull { it.value.key == key }
+
 /** The window [key] names, or `null` if it was never registered or has since been collected. */
-internal fun windowFor(key: WindowKey): Window? =
-    synchronized(windows) {
-        windows.entries.firstOrNull { it.value.key == key }?.key
-    }
+internal fun windowFor(key: WindowKey): Window? = synchronized(windows) { entryFor(key)?.key }
 
 /** The activity owning the window [key] names, or `null` for a dialog with no resolvable host. */
-internal fun activityFor(key: WindowKey): Activity? =
-    synchronized(windows) {
-        windows.entries
-            .firstOrNull { it.value.key == key }
-            ?.value
-            ?.activity
-    }
+internal fun activityFor(key: WindowKey): Activity? = synchronized(windows) { entryFor(key)?.value?.activity }
 
 /** The activity of any currently-registered window, for application-scoped platform callbacks. */
 internal fun anyRegisteredActivity(): Activity? =

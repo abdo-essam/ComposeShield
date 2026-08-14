@@ -13,7 +13,7 @@ import platform.UIKit.UIApplicationDidBecomeActiveNotification
  * `didBecomeActive` rather than `willEnterForeground`: the re-poll it drives reads
  * `UIScreen.captured`, and that read is only trustworthy once the app is actually active. Reading it
  * mid-transition risks the same stale answer as the cold-launch defect the re-poll exists to correct
- * (research.md R3).
+ *.
  *
  * Also fires after a transient interruption — a notification banner, the control centre — where no
  * capture state changed. That is the right trade: the re-poll is cheap and idempotent, whereas a

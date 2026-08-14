@@ -16,29 +16,21 @@ import platform.UIKit.UIScreenCapturedDidChangeNotification
 /**
  * Reports whether the screen is being recorded, mirrored, or streamed.
  *
- * **Change signal and state read are deliberately different APIs**, because the best available
- * choice differs for each:
+ * **Change signal and state read are deliberately different APIs**, because the best choice differs
+ * for each:
  *
  * - *When to re-read* comes from `UIScreen.capturedDidChangeNotification`, which — contrary to a
- *   widely repeated claim — carries **no deprecation** and works uniformly from iOS 15 up. Using it
- *   for every version avoids branching for a difference that would not change the answer, and it is
- *   hierarchy-independent, so prevention's reparenting cannot disturb it (research.md R2).
+ *   widely repeated claim — carries **no deprecation** and works uniformly from iOS 15 up. It is
+ *   also hierarchy-independent, so prevention's reparenting cannot disturb it.
  * - *What the state is* comes from `UIWindowScene.sceneCaptureState` on iOS 17+, falling back to
  *   `UIScreen.isCaptured` below it. `isCaptured` is deprecated at 27.0, and the scene answer is
  *   narrower in the right way — this scene's capture, not the whole device's.
  *
- * ### Two platform defects this cannot fix, and does not hide
- *
- * - **Cold-launch under-report** (FB14607048): if recording is already running at launch, the first
- *   read returns inactive. The *change* path is correct; only the initial read is wrong. This is
- *   why the first emission below is [PlatformCaptureReading.Indeterminate] rather than a reading —
- *   common code publishes `Unknown` rather than a false "you are not being recorded".
- * - **Scene-scoped false negative** (iOS 26.2): expanding a Live Activity from the Dynamic Island
- *   flips the state to inactive while recording continues. Absorbed by the suppression window in
- *   [io.github.composeguard.internal.CaptureStateSource], not here — an actual that debounced on its
- *   own behalf would be making policy, which Principle II forbids.
- *
- * Both affect `isCaptured` and `sceneCaptureState` identically, so neither API avoids them.
+ * Two platform defects are visible here and neither is hidden: cold-launch under-reporting (hence
+ * the [PlatformCaptureReading.Indeterminate] seed) and an iOS 26.2 Live Activity false negative
+ * (absorbed by [CaptureStateSource], not here — an actual that debounced on its own behalf would be
+ * making policy). Both affect `isCaptured` and `sceneCaptureState` identically. See
+ * `docs/platform-notes.md`.
  */
 @OptIn(ExperimentalForeignApi::class)
 internal class CaptureDetection {
@@ -46,7 +38,7 @@ internal class CaptureDetection {
         callbackFlow {
             // Seed indeterminate, never a reading. At cold launch iOS reports "not captured" while
             // recording is already in progress, and publishing that would be a false negative in the
-            // one direction a security library must never get wrong (FR-009).
+            // one direction a security library must never get wrong.
             trySend(PlatformCaptureReading.Indeterminate)
 
             val observer =
@@ -68,18 +60,14 @@ internal class CaptureDetection {
     /**
      * The present reading, from the scene where iOS offers one.
      *
-     * `UIWindowScene.sceneCaptureState` (iOS 17+) is preferred over `UIScreen.isCaptured`, which is
-     * deprecated at 27.0. The scene answer is also the more accurate one for a windowed app: it
-     * reports whether *this scene's* content is being captured, where `isCaptured` reports the whole
-     * device and would flag an app that is merely alongside a recorded one.
+     * `UIWindowScene.sceneCaptureState` (iOS 17+) is preferred over the 27.0-deprecated
+     * `UIScreen.isCaptured`, and is the more accurate answer for a windowed app: it reports whether
+     * *this scene's* content is being captured, where `isCaptured` would flag an app merely
+     * alongside a recorded one.
      *
-     * `Unspecified` maps to [PlatformCaptureReading.Indeterminate] rather than to "not capturing" —
-     * the scene is telling us it does not know, and resolving that to the reassuring answer is the
-     * one inference this library must never make.
-     *
-     * Falls back to `isCaptured` below iOS 17, where no scene trait exists. Both carry the
-     * cold-launch and Live Activity defects identically, so the fallback is a narrower reading, not
-     * a less trustworthy one.
+     * `Unspecified` maps to [PlatformCaptureReading.Indeterminate], never to "not capturing" —
+     * resolving "I don't know" to the reassuring answer is the one inference this library must never
+     * make.
      */
     private fun currentReading(): PlatformCaptureReading {
         val traits = activeWindowScene()?.traitCollection
@@ -102,9 +90,9 @@ internal class CaptureDetection {
         /**
          * `sceneCaptureState` arrived in iOS 17; below that the trait collection does not carry it.
          *
-         * Compared against the major version only. `NSProcessInfo`'s structured comparison takes a
-         * `CValue<NSOperatingSystemVersion>`, which needs a memory scope to build — more machinery
-         * than a single integer comparison warrants.
+         * Major version only: `NSProcessInfo`'s structured comparison takes a
+         * `CValue<NSOperatingSystemVersion>` needing a memory scope to build — more machinery than a
+         * single integer comparison warrants.
          */
         val supportsSceneCaptureState: Boolean
             get() = NSProcessInfo.processInfo.operatingSystemVersion.useContents { majorVersion >= 17 }

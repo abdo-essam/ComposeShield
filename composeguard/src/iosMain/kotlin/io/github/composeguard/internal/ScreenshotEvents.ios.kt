@@ -14,8 +14,8 @@ import platform.UIKit.UIApplicationUserDidTakeScreenshotNotification
  * while prevention is active, which is why `preventionPrecludesScreenshotEvents` is `false` here.
  *
  * Strictly after the fact: the notification arrives once the screenshot has already been written,
- * so it cannot prevent the capture that triggered it (FR-013). It carries no payload and the library
- * adds none, since anything attached would risk conveying the content being protected (FR-025).
+ * so it cannot prevent the capture that triggered it. It carries no payload and the library
+ * adds none, since anything attached would risk conveying the content being protected.
  */
 internal class ScreenshotEvents {
     fun events(): Flow<Unit> =

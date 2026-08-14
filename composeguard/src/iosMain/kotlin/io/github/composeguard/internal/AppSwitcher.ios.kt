@@ -10,7 +10,6 @@ import platform.UIKit.UIBlurEffectStyle
 import platform.UIKit.UIViewAutoresizingFlexibleHeight
 import platform.UIKit.UIViewAutoresizingFlexibleWidth
 import platform.UIKit.UIVisualEffectView
-import platform.UIKit.addSubview
 import platform.darwin.NSObjectProtocol
 
 /**
@@ -18,7 +17,7 @@ import platform.darwin.NSObjectProtocol
  * reveals nothing.
  *
  * Officially sanctioned on iOS — this is ordinary view work, with none of the App Review exposure
- * that iOS *prevention* carries — so it never requires the FR-023 opt-in (FR-016a).
+ * that iOS *prevention* carries — so it never requires the unsanctioned-mechanism opt-in.
  *
  * **Timing is the whole problem.** The system photographs the app for the switcher shortly after it
  * resigns active, so the overlay must be installed on `willResignActive` and not on any later
@@ -84,7 +83,7 @@ internal class AppSwitcher {
     /**
      * Installs the blur, reusing any existing one.
      *
-     * The reuse check is what satisfies FR-016's "no accumulation across cycles" — a fresh overlay
+     * The reuse check is what prevents accumulation across cycles — a fresh overlay
      * per background/foreground cycle would stack invisibly, and after enough cycles the app would
      * be rendering through a pile of blur views.
      */
@@ -102,7 +101,7 @@ internal class AppSwitcher {
         overlay = blur
     }
 
-    /** Removes the blur, leaving no residual artifact on return to foreground (FR-016). */
+    /** Removes the blur, leaving no residual artifact on return to foreground. */
     private fun hideOverlay() {
         overlay?.removeFromSuperview()
         overlay = null

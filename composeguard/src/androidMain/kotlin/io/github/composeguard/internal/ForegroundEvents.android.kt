@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.callbackFlow
  * Emits each time the application returns to the foreground.
  *
  * Observed through `ActivityLifecycleCallbacks` rather than a `ProcessLifecycleOwner`, which would
- * add an androidx.lifecycle dependency the library does not otherwise need (Principle V).
+ * add an androidx.lifecycle dependency the library does not otherwise need.
  *
  * **Counts started activities rather than reacting to each `onStart`.** A configuration change or a
  * navigation between activities momentarily has two activities started, and a rotation destroys and

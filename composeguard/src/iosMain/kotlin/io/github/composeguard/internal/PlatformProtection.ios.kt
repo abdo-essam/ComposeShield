@@ -47,7 +47,7 @@ internal class IosPlatformProtection : PlatformProtection {
 
         // Every failure below is soft. The mechanism is undocumented and can disappear in any iOS
         // release, so a null here means "report MechanismUnavailable and let the declared posture
-        // decide" — never an exception into consumer code (FR-021).
+        // decide" — never an exception into consumer code.
         val container = SecureContainer.create() ?: return ProtectionOutcome.Failed
         if (!container.enclose(content)) return ProtectionOutcome.Failed
 
@@ -78,13 +78,13 @@ internal class IosPlatformProtection : PlatformProtection {
         when (capability) {
             // Not sanctioned by Apple. Reports RequiresOptIn rather than Supported or Unsupported,
             // because the mechanism exists and works — the question is whether the application accepts
-            // the Guideline 2.5.1 exposure, and that is not the library's decision to make (FR-023).
+            // the Guideline 2.5.1 exposure, and that is not the library's decision to make.
             Capability.ScreenshotPrevention, Capability.RecordingPrevention -> SupportLevel.RequiresOptIn
 
             // Officially supported throughout, via a notification carrying no deprecation.
             Capability.CaptureDetection, Capability.ScreenshotEvents -> SupportLevel.Supported
 
-            // Ordinary view work — sanctioned, and never subject to the opt-in (FR-016a).
+            // Ordinary view work — sanctioned, and never subject to the opt-in.
             Capability.AppSwitcherProtection -> SupportLevel.Supported
         }
 }

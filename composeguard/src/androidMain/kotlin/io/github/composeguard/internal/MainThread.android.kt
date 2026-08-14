@@ -15,7 +15,7 @@ private val isOnMainThread: Boolean
  * `CalledFromWrongThreadException` off the main thread. The trap is that it throws only
  * *sometimes*: with no decor view attached yet the flags are merely stored and nothing complains.
  * That makes an off-main call an intermittent crash that passes testing and fails in the field, so
- * FR-018's "safe from any thread" has to be met by marshalling rather than by hoping.
+ * the "safe from any thread" guarantee has to be met by marshalling rather than by hoping.
  *
  * The return value is why this is not simply `post {}`. A caller on a background thread cannot be
  * given a synchronous answer without blocking it, and blocking a caller on the main thread is how

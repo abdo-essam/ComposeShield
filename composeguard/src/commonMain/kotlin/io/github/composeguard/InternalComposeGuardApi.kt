@@ -3,8 +3,8 @@ package io.github.composeguard
 /**
  * Marks a declaration as an implementation detail of ComposeGuard.
  *
- * Anything annotated with this is **outside the binary-compatibility promise** (constitution
- * Principle VI) and may change or disappear in any release, including a patch. It is filtered out
+ * Anything annotated with this is **outside the binary-compatibility promise** and may change or
+ * disappear in any release, including a patch. It is filtered out
  * of the committed ABI dump, so changes to it never register as API breakage.
  *
  * Some declarations must be `public` for the Kotlin compiler to reach them across source sets —

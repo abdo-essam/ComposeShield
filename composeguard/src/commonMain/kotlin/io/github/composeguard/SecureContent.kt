@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.map
  * Protects the window from screen capture for as long as this is composed.
  *
  * The recommended way to use the library. Protection is acquired when the boundary enters
- * composition and released when it leaves (FR-002) — there is no teardown call to forget, which is
+ * composition and released when it leaves — there is no teardown call to forget, which is
  * where hand-managed protection usually leaks.
  *
  * ```kotlin
@@ -27,30 +27,28 @@ import kotlinx.coroutines.flow.map
  * }
  * ```
  *
- * **Protection is window-scoped, not subtree-scoped** (FR-001a). While this is composed, the
- * *entire window* is protected, not only [content]. This is the most likely misunderstanding of the
- * API and it is a platform constraint rather than a design choice: both platforms apply capture
- * prevention at window level, so a sibling composable outside this boundary is protected too, and
- * content in a *different* window (a dialog with its own window, the other half of a split screen)
- * is not. It is named `SecureContent` rather than `SecureScreen` precisely so it does not promise a
- * subtree guarantee the platform cannot honour.
+ * **Protection is window-scoped, not subtree-scoped.** While this is composed, the *entire window*
+ * is protected, not only [content] — so a sibling composable outside this boundary is protected too,
+ * and content in a *different* window (a dialog with its own window, the other half of a split
+ * screen) is not. This is a platform constraint rather than a design choice, and it is the most
+ * likely misunderstanding of the API; see `docs/platform-notes.md`.
  *
- * Nesting is safe: protection releases only when the last boundary leaves (FR-004). It survives
- * configuration change and background/restore without re-invocation (FR-003), and renders [content]
- * identically to an unwrapped call (FR-006).
+ * Nesting is safe: protection releases only when the last boundary leaves. It survives configuration
+ * change and background/restore without re-invocation, and renders [content] identically to an
+ * unwrapped call.
  *
  * **Support is not uniform.** On Android this is genuinely preventive. On iOS the underlying
  * mechanism is not sanctioned by Apple and does nothing until
- * [ComposeGuard.optInToUnsanctionedCapability] is called — composing this on iOS without that
- * opt-in protects nothing, by design. Query [ComposeGuard.supportLevel] rather than assuming.
+ * [ComposeGuard.optInToUnsanctionedCapability] is called — composing this on iOS without that opt-in
+ * protects nothing, by design. Query [ComposeGuard.supportLevel] rather than assuming.
  *
- * @param capabilities which preventions to request (FR-005). The default is a compile-time
- *   constant, not a fresh set per recomposition (Principle V).
+ * @param capabilities which preventions to request. The default is a compile-time constant, not a
+ *   fresh set per recomposition.
  * @param onProtectionFailure invoked when a requested mechanism fails to install or stops working
- *   mid-session (FR-022c). Reports the failure whatever the declared [FailurePosture] — the posture
- *   governs the content, this governs what the application knows.
+ *   mid-session. Reports the failure whatever the declared [FailurePosture] — the posture governs
+ *   the content, this governs what the application knows.
  * @param content the protected content. Rendered unchanged, except when a fail-closed posture is in
- *   force and the mechanism has broken, in which case it is obscured (FR-022b).
+ *   force and the mechanism has broken, in which case it is obscured.
  */
 @Composable
 public fun SecureContent(
@@ -62,7 +60,7 @@ public fun SecureContent(
 
     // Read through a snapshot state so a callback that changes between recompositions does not
     // restart the DisposableEffect below — restarting it would release and re-apply protection,
-    // which on a visible window is a surface teardown the user sees as a black frame (R8).
+    // which on a visible window is a surface teardown the user sees as a black frame.
     val currentOnFailure by rememberUpdatedState(onProtectionFailure)
 
     DisposableEffect(window, capabilities) {
@@ -79,7 +77,7 @@ public fun SecureContent(
         }
     }
 
-    // FR-022b, evaluated continuously rather than once at installation: a mechanism that installs
+    // Evaluated continuously rather than once at installation: a mechanism that installs
     // successfully and breaks later must obscure the content at the moment of loss, not stay
     // visible until something unrelated happens to recompose.
     val obscured by remember(window) {
