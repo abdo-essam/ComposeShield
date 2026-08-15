@@ -4,8 +4,8 @@ import ComposeShield
 
 /// A SwiftUI view that applies ComposeShield's iOS screen capture protection to its content.
 ///
-/// While this view is in the view hierarchy, the scene's window is protected (when the opt-in has
-/// been granted). Protection releases when the view disappears — there is no teardown call to forget.
+/// While this view is in the view hierarchy, the scene's window is protected. Protection releases
+/// when the view disappears — there is no teardown call to forget.
 ///
 /// ```swift
 /// SecureShieldView {
@@ -21,9 +21,9 @@ import ComposeShield
 ///
 /// - Parameters:
 ///   - simulateFailure: When true, a test hook forces the mechanism to report failure, exercising
-///     both failure postures. Used by the sample app to demonstrate M10.
-///   - content: The protected content. Rendered unchanged under `FailOpen`; obscured under
-///     `FailClosed` while the mechanism is broken.
+///     the failure-observability path. Used by the sample app to demonstrate M10.
+///   - content: The protected content. Rendered unchanged even while the mechanism is broken; the
+///     failure is reported through `onFailure`.
 ///   - onFailure: Invoked when the protection mechanism fails or stops working.
 struct SecureShieldView<Content: View>: View {
     @Binding var simulateFailure: Bool
@@ -119,7 +119,7 @@ private final class _SecureShieldViewController<Content: View>: UIViewController
     /// Test hook — forces the mechanism to report failure without removing the view.
     func updateSimulateFailure(_ simulate: Bool) {
         if simulate {
-            // Signal the failure observer so the sample can demonstrate both postures (M10).
+            // Signal the failure observer so the sample can demonstrate M10.
             onFailure?(.screenshotprevention)
         }
     }

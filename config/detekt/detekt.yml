@@ -45,17 +45,17 @@ naming:
     active: false
 
 complexity:
-  LongParameterList:
-    # The opt-in call deliberately takes capability + posture + acknowledgement together
-    # (FR-023b) — a capability cannot be enabled without stating both.
-    functionThreshold: 6
-    constructorThreshold: 7
+  # LongParameterList is at detekt's defaults (functionThreshold 5, constructorThreshold 6): no
+  # public or internal signature in the library currently needs more. The former deviation
+  # (threshold 6) existed for the removed opt-in call, which took capability + posture +
+  # acknowledgement together (FR-023b) — that call is gone (spec decision 2026-08-15).
 
   # ProtectionRegistry is the single place all protection state lives, by constitution Principle II.
   # Its function count is the count of state transitions the domain has — acquire, acquireShared,
-  # release, releaseWindow, bindWindow, grantOptIn, setAppSwitcherMode, plus private reconcilers.
-  # Splitting it to satisfy a threshold would put one state machine behind two objects that must
-  # then stay in sync, which is the coupling the single-registry design exists to avoid.
+  # release, releaseWindow, bindWindow, setAppSwitcherMode, plus the private reconcilers and the
+  # CAS mutate loop. Splitting it to satisfy a threshold would put one state machine behind two
+  # objects that must then stay in sync, which is the coupling the single-registry design exists
+  # to avoid.
   TooManyFunctions:
     thresholdInClasses: 14
 

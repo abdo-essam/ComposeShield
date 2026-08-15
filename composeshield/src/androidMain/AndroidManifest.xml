@@ -26,9 +26,10 @@
           guarantees ActivityLifecycleCallbacks are registered before the first onResume, so
           ComposeShield.acquire() works correctly without any user call-site setup.
 
-          Applications that suppress manifest merging with tools:node="remove" must call
-          ComposeShieldHost() in their root composable or ComposeShield.acquire() may be unable to
-          locate the target window on the first launch.
+          Applications that suppress manifest merging with tools:node="remove" must register their
+          own ActivityLifecycleCallbacks on the Application before any activity resumes (the
+          equivalent of installActivityTracker) or ComposeShield.acquire() may be unable to locate
+          the target window on the first launch.
         -->
         <provider
             android:name="io.github.composeshield.internal.ComposeShieldInitializer"

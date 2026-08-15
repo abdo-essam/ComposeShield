@@ -4,11 +4,13 @@ import android.app.Activity
 import android.view.WindowManager
 import io.github.composeshield.internal.AndroidPlatformProtection
 import io.github.composeshield.internal.ProtectionRegistry
+import io.github.composeshield.internal.installActivityTracker
 import io.github.composeshield.internal.registerWindow
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -77,6 +79,28 @@ class LifecycleReleaseTest {
         assertFalse(
             activity.window.isFlagSecureSet(),
             "a window torn down without its boundaries disposing cleanly must not leave the flag set",
+        )
+    }
+
+    @Test
+    fun `the lifecycle tracker releases a destroyed activity's requests`() {
+        // The production path: the tracker the ContentProvider installs. The global shieldCore it
+        // drives is what clears the flag — exactly the wiring under test.
+        installActivityTracker(RuntimeEnvironment.getApplication())
+
+        val controller = Robolectric.buildActivity(Activity::class.java).setup()
+        val activity = controller.get()
+        val registry = ProtectionRegistry(AndroidPlatformProtection())
+        val window = registerWindow(activity.window, activity)
+
+        registry.acquire(window, setOf(Capability.ScreenshotPrevention))
+        assertTrue(activity.window.isFlagSecureSet(), "protection must apply on entry")
+
+        controller.destroy()
+
+        assertFalse(
+            activity.window.isFlagSecureSet(),
+            "SC-007: a destroyed activity must clear the flag even when its boundary never disposed",
         )
     }
 }

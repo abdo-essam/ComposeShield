@@ -1,8 +1,8 @@
 import SwiftUI
 import ComposeShield
 
-/// Entry point — sets up the singleton opt-in before the root view appears,
-/// so the first screenshot of the launch screen is already protected on iOS.
+/// Entry point. Protection is applied on demand via SecureShieldView in ContentView — there is no
+/// setup to perform at launch.
 @main
 struct SampleApp: App {
     var body: some Scene {

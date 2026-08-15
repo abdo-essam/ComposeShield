@@ -99,7 +99,13 @@ internal fun installActivityTracker(application: Application) {
                 outState: Bundle,
             ) = Unit
 
-            override fun onActivityDestroyed(activity: Activity) = Unit
+            override fun onActivityDestroyed(activity: Activity) {
+                // SC-007: a window torn down without its boundaries disposing cleanly must not leave
+                // its requests outstanding — that would surface as a permanently black screenshot on
+                // some unrelated screen. The weak table keeps the key lookup safe even once the
+                // activity is collectable, and releaseWindow is idempotent on a stale key.
+                keyForActivity(activity)?.let(shieldCore.registry::releaseWindow)
+            }
         },
     )
 }

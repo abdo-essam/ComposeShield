@@ -29,9 +29,31 @@ internal fun registerWindow(window: UIWindow): WindowKey {
 /** The window [key] names, or `null` if it was never registered or has been forgotten. */
 internal fun windowFor(key: WindowKey): UIWindow? = windows[key]
 
+/** The key [window] was registered under, or `null` if it was never registered or has been forgotten. */
+internal fun keyForWindow(window: UIWindow): WindowKey? = windows.entries.firstOrNull { it.value === window }?.key
+
 /** Drops [key]'s entry, so a dismissed window is not retained by this table. */
 internal fun forget(key: WindowKey) {
     windows.remove(key)
+}
+
+/**
+ * Releases every protection request on [scene]'s windows and drops their table entries.
+ *
+ * A disconnecting scene takes its windows with it — the multi-window close button, or a SwiftUI
+ * `WindowGroup` being dismissed. Without this, requests for those windows would sit outstanding
+ * forever (SC-007), and the strong [windows] entries would retain the dead `UIWindow`s.
+ *
+ * Releases **before** [forget] so the platform boundary can still resolve each window and
+ * dismantle its secure container.
+ */
+internal fun dismissScene(scene: UIWindowScene) {
+    scene.windows.filterIsInstance<UIWindow>().forEach { window ->
+        keyForWindow(window)?.let { key ->
+            shieldCore.registry.releaseWindow(key)
+            forget(key)
+        }
+    }
 }
 
 /**

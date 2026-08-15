@@ -69,6 +69,12 @@ internal fun windowFor(key: WindowKey): Window? = synchronized(windows) { entryF
 /** The activity owning the window [key] names, or `null` for a dialog with no resolvable host. */
 internal fun activityFor(key: WindowKey): Activity? = synchronized(windows) { entryFor(key)?.value?.activity }
 
+/** The key of the window [activity] owns, or `null` if it was never registered. */
+internal fun keyForActivity(activity: Activity): WindowKey? =
+    synchronized(windows) {
+        windows.entries.firstOrNull { it.value.activity === activity }?.value?.key
+    }
+
 /** The activity of any currently-registered window, for application-scoped platform callbacks. */
 internal fun anyRegisteredActivity(): Activity? =
     synchronized(windows) {

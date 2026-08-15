@@ -4,6 +4,11 @@ import io.github.composeshield.Capability
 import io.github.composeshield.SupportLevel
 import io.github.composeshield.SupportLevel.Unsupported.Reason
 import kotlinx.coroutines.flow.Flow
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSOperationQueue
+import platform.UIKit.UISceneDidDisconnectNotification
+import platform.UIKit.UIWindowScene
+import platform.darwin.NSObjectProtocol
 
 /**
  * iOS's implementation of the platform boundary.
@@ -16,6 +21,27 @@ internal class IosPlatformProtection : PlatformProtection {
     private val screenshots = ScreenshotEvents()
     private val appSwitcher = AppSwitcher()
     private val foreground = ForegroundEvents()
+
+    /**
+     * Retained observer token for scene teardown.
+     *
+     * The notification center does not keep the block-based observer's block alive on its own, so
+     * this must be stored for the instance's lifetime or the observer silently stops firing.
+     */
+    @Suppress("unused", "UnusedPrivateMember")
+    private val sceneDisconnectObserver: NSObjectProtocol
+
+    init {
+        sceneDisconnectObserver =
+            NSNotificationCenter.defaultCenter.addObserverForName(
+                name = UISceneDidDisconnectNotification,
+                `object` = null,
+                queue = NSOperationQueue.mainQueue,
+            ) { note ->
+                // For UIScene lifecycle notifications the posting scene is the notification's object.
+                (note?.`object` as? UIWindowScene)?.let(::dismissScene)
+            }
+    }
 
     /** Live secure containers, one per protected window, so protection can be undone precisely. */
     private val containers = mutableMapOf<WindowKey, SecureContainer>()
