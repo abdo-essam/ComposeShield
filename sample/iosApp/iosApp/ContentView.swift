@@ -1,9 +1,9 @@
 import SwiftUI
-import ComposeGuard
+import ComposeShield
 
 // MARK: - Root view
 
-/// Demonstrates all five ComposeGuard capabilities on iOS.
+/// Demonstrates all five ComposeShield capabilities on iOS.
 ///
 /// The marker is the proof: screenshot the app with protection on and it should be absent,
 /// then again with protection off and it should be present. Everything else — live support
@@ -48,7 +48,7 @@ struct ContentView: View {
                 }
                 .padding()
             }
-            .navigationTitle("ComposeGuard iOS")
+            .navigationTitle("ComposeShield iOS")
             .navigationBarTitleDisplayMode(.inline)
         }
         .navigationViewStyle(.stack)
@@ -113,7 +113,7 @@ struct ContentView: View {
                         selected: switcherMode == mode
                     ) {
                         switcherMode = mode
-                        ComposeGuard.shared.appSwitcherProtection = mode
+                        ComposeShield.shared.appSwitcherProtection = mode
                         appendLog("app-switcher mode = \(switcherLabel(mode))")
                     }
                 }
@@ -155,7 +155,7 @@ struct ContentView: View {
 
     private func refreshSupportLevels() {
         for cap in allCapabilities {
-            let level = ComposeGuard.shared.supportLevel(capability: cap)
+            let level = ComposeShield.shared.supportLevel(capability: cap)
             let desc: String
             if level is SupportLevelSupported {
                 desc = "Supported"
@@ -175,23 +175,23 @@ struct ContentView: View {
     }
 
     private func startObserving() {
-        if let initial = ComposeGuard.shared.captureState.value as? CaptureState {
+        if let initial = ComposeShield.shared.captureState.value as? CaptureState {
             self.captureState = initial
         }
 
-        ComposeGuard.shared.captureState.collect(collector: FlowCollector<CaptureState> { state in
+        ComposeShield.shared.captureState.collect(collector: FlowCollector<CaptureState> { state in
             Task { @MainActor in
                 self.captureState = state
             }
         }) { _ in }
 
-        ComposeGuard.shared.screenshotEvents.collect(collector: FlowCollector<AnyObject> { _ in
+        ComposeShield.shared.screenshotEvents.collect(collector: FlowCollector<AnyObject> { _ in
             Task { @MainActor in
                 self.appendLog("screenshot taken")
             }
         }) { _ in }
 
-        ComposeGuard.shared.protectionFailures.collect(collector: FlowCollector<Capability> { cap in
+        ComposeShield.shared.protectionFailures.collect(collector: FlowCollector<Capability> { cap in
             Task { @MainActor in
                 self.appendLog("PROTECTION FAILED: \(self.capabilityLabel(cap))")
                 self.refreshSupportLevels()

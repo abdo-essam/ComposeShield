@@ -3,7 +3,7 @@
 
     <application
         android:allowBackup="false"
-        android:label="ComposeGuard Sample"
+        android:label="ComposeShield Sample"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
 

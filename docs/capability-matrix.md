@@ -1,11 +1,11 @@
 # Capability Matrix
 
-Every ComposeGuard capability resolves a `SupportLevel` per platform, per OS version, and — for one
+Every ComposeShield capability resolves a `SupportLevel` per platform, per OS version, and — for one
 capability on Android — per currently-active capability. This page is the published form of that
 matrix.
 
 It is a **contract, not documentation**: `CapabilityMatrixTest` asserts that runtime
-`ComposeGuard.supportLevel()` matches these rows on every tier (SC-005).
+`ComposeShield.supportLevel()` matches these rows on every tier (SC-005).
 
 > **Support is evaluated at call time, never cached at startup.** Read [Platform Notes](platform-notes.md) for details.
 

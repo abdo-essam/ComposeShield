@@ -5,14 +5,14 @@ plugins {
 }
 
 android {
-    namespace = "io.github.composeguard.sample"
+    namespace = "io.github.composeshield.sample"
     compileSdk =
         libs.versions.compileSdk
             .get()
             .toInt()
 
     defaultConfig {
-        applicationId = "io.github.composeguard.sample"
+        applicationId = "io.github.composeshield.sample"
         minSdk =
             libs.versions.minSdk
                 .get()
@@ -27,7 +27,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":composeguard"))
+    implementation(project(":composeshield"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.runtime)
     implementation(libs.compose.foundation)

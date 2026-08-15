@@ -1,4 +1,4 @@
-rootProject.name = "ComposeGuard"
+rootProject.name = "ComposeShield"
 
 pluginManagement {
     repositories {
@@ -27,5 +27,5 @@ dependencyResolutionManagement {
     }
 }
 
-include(":composeguard")
+include(":composeshield")
 include(":sample:androidApp")

@@ -116,7 +116,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT/../..\"\nif [ \"$SDK_NAME\" =~ \"simulator\" ] || [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n    if [ \"$CONFIGURATION\" = \"Release\" ]; then\n        ./gradlew :composeguard:linkReleaseFrameworkIosSimulatorArm64\n    else\n        ./gradlew :composeguard:linkDebugFrameworkIosSimulatorArm64\n    fi\nelse\n    if [ \"$CONFIGURATION\" = \"Release\" ]; then\n        ./gradlew :composeguard:linkReleaseFrameworkIosArm64\n    else\n        ./gradlew :composeguard:linkDebugFrameworkIosArm64\n    fi\nfi\n";
+			shellScript = "cd \"$SRCROOT/../..\"\nif [ \"$SDK_NAME\" =~ \"simulator\" ] || [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n    if [ \"$CONFIGURATION\" = \"Release\" ]; then\n        ./gradlew :composeshield:linkReleaseFrameworkIosSimulatorArm64\n    else\n        ./gradlew :composeshield:linkDebugFrameworkIosSimulatorArm64\n    fi\nelse\n    if [ \"$CONFIGURATION\" = \"Release\" ]; then\n        ./gradlew :composeshield:linkReleaseFrameworkIosArm64\n    else\n        ./gradlew :composeshield:linkDebugFrameworkIosArm64\n    fi\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -222,10 +222,10 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../../composeguard/build/bin/iosSimulatorArm64/debugFramework",
-					"$(SRCROOT)/../../composeguard/build/bin/iosArm64/debugFramework",
-					"$(SRCROOT)/../../composeguard/build/bin/iosSimulatorArm64/$(CONFIGURATION:lower)Framework",
-					"$(SRCROOT)/../../composeguard/build/bin/iosArm64/$(CONFIGURATION:lower)Framework",
+					"$(SRCROOT)/../../composeshield/build/bin/iosSimulatorArm64/debugFramework",
+					"$(SRCROOT)/../../composeshield/build/bin/iosArm64/debugFramework",
+					"$(SRCROOT)/../../composeshield/build/bin/iosSimulatorArm64/$(CONFIGURATION:lower)Framework",
+					"$(SRCROOT)/../../composeshield/build/bin/iosArm64/$(CONFIGURATION:lower)Framework",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -243,9 +243,9 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
-					"ComposeGuard",
+					"ComposeShield",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.github.composeguard.sample;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.composeshield.sample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -263,10 +263,10 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../../composeguard/build/bin/iosSimulatorArm64/releaseFramework",
-					"$(SRCROOT)/../../composeguard/build/bin/iosArm64/releaseFramework",
-					"$(SRCROOT)/../../composeguard/build/bin/iosSimulatorArm64/$(CONFIGURATION:lower)Framework",
-					"$(SRCROOT)/../../composeguard/build/bin/iosArm64/$(CONFIGURATION:lower)Framework",
+					"$(SRCROOT)/../../composeshield/build/bin/iosSimulatorArm64/releaseFramework",
+					"$(SRCROOT)/../../composeshield/build/bin/iosArm64/releaseFramework",
+					"$(SRCROOT)/../../composeshield/build/bin/iosSimulatorArm64/$(CONFIGURATION:lower)Framework",
+					"$(SRCROOT)/../../composeshield/build/bin/iosArm64/$(CONFIGURATION:lower)Framework",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -282,9 +282,9 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
-					"ComposeGuard",
+					"ComposeShield",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.github.composeguard.sample;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.composeshield.sample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

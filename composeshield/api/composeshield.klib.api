@@ -1,0 +1,113 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <io.github.abdo-essam:composeshield>
+open annotation class io.github.composeshield/InternalComposeShieldApi : kotlin/Annotation { // io.github.composeshield/InternalComposeShieldApi|null[0]
+    constructor <init>() // io.github.composeshield/InternalComposeShieldApi.<init>|<init>(){}[0]
+}
+
+final enum class io.github.composeshield/AppSwitcherProtection : kotlin/Enum<io.github.composeshield/AppSwitcherProtection> { // io.github.composeshield/AppSwitcherProtection|null[0]
+    enum entry Always // io.github.composeshield/AppSwitcherProtection.Always|null[0]
+    enum entry Automatic // io.github.composeshield/AppSwitcherProtection.Automatic|null[0]
+    enum entry Disabled // io.github.composeshield/AppSwitcherProtection.Disabled|null[0]
+
+    final val entries // io.github.composeshield/AppSwitcherProtection.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.composeshield/AppSwitcherProtection> // io.github.composeshield/AppSwitcherProtection.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.composeshield/AppSwitcherProtection // io.github.composeshield/AppSwitcherProtection.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.composeshield/AppSwitcherProtection> // io.github.composeshield/AppSwitcherProtection.values|values#static(){}[0]
+}
+
+final enum class io.github.composeshield/Capability : kotlin/Enum<io.github.composeshield/Capability> { // io.github.composeshield/Capability|null[0]
+    enum entry AppSwitcherProtection // io.github.composeshield/Capability.AppSwitcherProtection|null[0]
+    enum entry CaptureDetection // io.github.composeshield/Capability.CaptureDetection|null[0]
+    enum entry RecordingPrevention // io.github.composeshield/Capability.RecordingPrevention|null[0]
+    enum entry ScreenshotEvents // io.github.composeshield/Capability.ScreenshotEvents|null[0]
+    enum entry ScreenshotPrevention // io.github.composeshield/Capability.ScreenshotPrevention|null[0]
+
+    final val entries // io.github.composeshield/Capability.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.composeshield/Capability> // io.github.composeshield/Capability.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.composeshield/Capability // io.github.composeshield/Capability.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.composeshield/Capability> // io.github.composeshield/Capability.values|values#static(){}[0]
+}
+
+final enum class io.github.composeshield/CaptureState : kotlin/Enum<io.github.composeshield/CaptureState> { // io.github.composeshield/CaptureState|null[0]
+    enum entry Active // io.github.composeshield/CaptureState.Active|null[0]
+    enum entry Inactive // io.github.composeshield/CaptureState.Inactive|null[0]
+    enum entry Unknown // io.github.composeshield/CaptureState.Unknown|null[0]
+
+    final val entries // io.github.composeshield/CaptureState.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.composeshield/CaptureState> // io.github.composeshield/CaptureState.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.composeshield/CaptureState // io.github.composeshield/CaptureState.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.composeshield/CaptureState> // io.github.composeshield/CaptureState.values|values#static(){}[0]
+}
+
+abstract interface io.github.composeshield/ProtectionHandle { // io.github.composeshield/ProtectionHandle|null[0]
+    abstract fun release() // io.github.composeshield/ProtectionHandle.release|release(){}[0]
+}
+
+sealed interface io.github.composeshield/SupportLevel { // io.github.composeshield/SupportLevel|null[0]
+    final class Unsupported : io.github.composeshield/SupportLevel { // io.github.composeshield/SupportLevel.Unsupported|null[0]
+        constructor <init>(io.github.composeshield/SupportLevel.Unsupported.Reason) // io.github.composeshield/SupportLevel.Unsupported.<init>|<init>(io.github.composeshield.SupportLevel.Unsupported.Reason){}[0]
+
+        final val reason // io.github.composeshield/SupportLevel.Unsupported.reason|{}reason[0]
+            final fun <get-reason>(): io.github.composeshield/SupportLevel.Unsupported.Reason // io.github.composeshield/SupportLevel.Unsupported.reason.<get-reason>|<get-reason>(){}[0]
+
+        final fun component1(): io.github.composeshield/SupportLevel.Unsupported.Reason // io.github.composeshield/SupportLevel.Unsupported.component1|component1(){}[0]
+        final fun copy(io.github.composeshield/SupportLevel.Unsupported.Reason = ...): io.github.composeshield/SupportLevel.Unsupported // io.github.composeshield/SupportLevel.Unsupported.copy|copy(io.github.composeshield.SupportLevel.Unsupported.Reason){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.composeshield/SupportLevel.Unsupported.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.composeshield/SupportLevel.Unsupported.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.composeshield/SupportLevel.Unsupported.toString|toString(){}[0]
+
+        final enum class Reason : kotlin/Enum<io.github.composeshield/SupportLevel.Unsupported.Reason> { // io.github.composeshield/SupportLevel.Unsupported.Reason|null[0]
+            enum entry MechanismUnavailable // io.github.composeshield/SupportLevel.Unsupported.Reason.MechanismUnavailable|null[0]
+            enum entry OsVersionTooLow // io.github.composeshield/SupportLevel.Unsupported.Reason.OsVersionTooLow|null[0]
+            enum entry PlatformUnsupported // io.github.composeshield/SupportLevel.Unsupported.Reason.PlatformUnsupported|null[0]
+            enum entry PrecludedByActiveCapability // io.github.composeshield/SupportLevel.Unsupported.Reason.PrecludedByActiveCapability|null[0]
+
+            final val entries // io.github.composeshield/SupportLevel.Unsupported.Reason.entries|#static{}entries[0]
+                final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.composeshield/SupportLevel.Unsupported.Reason> // io.github.composeshield/SupportLevel.Unsupported.Reason.entries.<get-entries>|<get-entries>#static(){}[0]
+
+            final fun valueOf(kotlin/String): io.github.composeshield/SupportLevel.Unsupported.Reason // io.github.composeshield/SupportLevel.Unsupported.Reason.valueOf|valueOf#static(kotlin.String){}[0]
+            final fun values(): kotlin/Array<io.github.composeshield/SupportLevel.Unsupported.Reason> // io.github.composeshield/SupportLevel.Unsupported.Reason.values|values#static(){}[0]
+        }
+    }
+
+    final object Supported : io.github.composeshield/SupportLevel { // io.github.composeshield/SupportLevel.Supported|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.composeshield/SupportLevel.Supported.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.composeshield/SupportLevel.Supported.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.composeshield/SupportLevel.Supported.toString|toString(){}[0]
+    }
+}
+
+final object io.github.composeshield/ComposeShield { // io.github.composeshield/ComposeShield|null[0]
+    final val captureState // io.github.composeshield/ComposeShield.captureState|{}captureState[0]
+        final fun <get-captureState>(): kotlinx.coroutines.flow/StateFlow<io.github.composeshield/CaptureState> // io.github.composeshield/ComposeShield.captureState.<get-captureState>|<get-captureState>(){}[0]
+    final val protectionFailures // io.github.composeshield/ComposeShield.protectionFailures|{}protectionFailures[0]
+        final fun <get-protectionFailures>(): kotlinx.coroutines.flow/Flow<io.github.composeshield/Capability> // io.github.composeshield/ComposeShield.protectionFailures.<get-protectionFailures>|<get-protectionFailures>(){}[0]
+    final val screenshotEvents // io.github.composeshield/ComposeShield.screenshotEvents|{}screenshotEvents[0]
+        final fun <get-screenshotEvents>(): kotlinx.coroutines.flow/Flow<kotlin/Unit> // io.github.composeshield/ComposeShield.screenshotEvents.<get-screenshotEvents>|<get-screenshotEvents>(){}[0]
+
+    final var appSwitcherProtection // io.github.composeshield/ComposeShield.appSwitcherProtection|{}appSwitcherProtection[0]
+        final fun <get-appSwitcherProtection>(): io.github.composeshield/AppSwitcherProtection // io.github.composeshield/ComposeShield.appSwitcherProtection.<get-appSwitcherProtection>|<get-appSwitcherProtection>(){}[0]
+        final fun <set-appSwitcherProtection>(io.github.composeshield/AppSwitcherProtection) // io.github.composeshield/ComposeShield.appSwitcherProtection.<set-appSwitcherProtection>|<set-appSwitcherProtection>(io.github.composeshield.AppSwitcherProtection){}[0]
+
+    final fun acquire(kotlin.collections/Set<io.github.composeshield/Capability> = ...): io.github.composeshield/ProtectionHandle // io.github.composeshield/ComposeShield.acquire|acquire(kotlin.collections.Set<io.github.composeshield.Capability>){}[0]
+    final fun isProtectionActive(): kotlin/Boolean // io.github.composeshield/ComposeShield.isProtectionActive|isProtectionActive(){}[0]
+    final fun supportLevel(io.github.composeshield/Capability): io.github.composeshield/SupportLevel // io.github.composeshield/ComposeShield.supportLevel|supportLevel(io.github.composeshield.Capability){}[0]
+}
+
+final val io.github.composeshield/io_github_composeshield_ComposeShield$stableprop // io.github.composeshield/io_github_composeshield_ComposeShield$stableprop|#static{}io_github_composeshield_ComposeShield$stableprop[0]
+final val io.github.composeshield/io_github_composeshield_SupportLevel_Supported$stableprop // io.github.composeshield/io_github_composeshield_SupportLevel_Supported$stableprop|#static{}io_github_composeshield_SupportLevel_Supported$stableprop[0]
+final val io.github.composeshield/io_github_composeshield_SupportLevel_Unsupported$stableprop // io.github.composeshield/io_github_composeshield_SupportLevel_Unsupported$stableprop|#static{}io_github_composeshield_SupportLevel_Unsupported$stableprop[0]
+
+final fun io.github.composeshield/SecureContent(kotlin.collections/Set<io.github.composeshield/Capability>?, kotlin/Function1<io.github.composeshield/Capability, kotlin/Unit>?, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // io.github.composeshield/SecureContent|SecureContent(kotlin.collections.Set<io.github.composeshield.Capability>?;kotlin.Function1<io.github.composeshield.Capability,kotlin.Unit>?;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun io.github.composeshield/io_github_composeshield_ComposeShield$stableprop_getter(): kotlin/Int // io.github.composeshield/io_github_composeshield_ComposeShield$stableprop_getter|io_github_composeshield_ComposeShield$stableprop_getter(){}[0]
+final fun io.github.composeshield/io_github_composeshield_SupportLevel_Supported$stableprop_getter(): kotlin/Int // io.github.composeshield/io_github_composeshield_SupportLevel_Supported$stableprop_getter|io_github_composeshield_SupportLevel_Supported$stableprop_getter(){}[0]
+final fun io.github.composeshield/io_github_composeshield_SupportLevel_Unsupported$stableprop_getter(): kotlin/Int // io.github.composeshield/io_github_composeshield_SupportLevel_Unsupported$stableprop_getter|io_github_composeshield_SupportLevel_Unsupported$stableprop_getter(){}[0]

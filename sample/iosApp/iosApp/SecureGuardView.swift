@@ -1,8 +1,8 @@
 import SwiftUI
 import UIKit
-import ComposeGuard
+import ComposeShield
 
-/// A SwiftUI view that applies ComposeGuard's iOS screen capture protection to its content.
+/// A SwiftUI view that applies ComposeShield's iOS screen capture protection to its content.
 ///
 /// While this view is in the view hierarchy, the scene's window is protected (when the opt-in has
 /// been granted). Protection releases when the view disappears — there is no teardown call to forget.
@@ -53,7 +53,7 @@ struct SecureGuardView<Content: View>: View {
 // MARK: - UIKit bridge
 
 /// UIViewControllerRepresentable bridge that acquires and releases protection through
-/// `ComposeGuard.shared`.
+/// `ComposeShield.shared`.
 private struct _SecureGuardViewRepresentable<Content: View>: UIViewControllerRepresentable {
     let simulateFailure: Bool
     let onFailure: ((Capability) -> Void)?
@@ -107,7 +107,7 @@ private final class _SecureGuardViewController<Content: View>: UIViewController 
         super.viewWillAppear(animated)
         // Acquire protection when entering the view hierarchy. The handle is held by this
         // controller, so it cannot outlive the presentation.
-        handle = ComposeGuard.shared.acquire(capabilities: Set([.screenshotprevention, .recordingprevention]))
+        handle = ComposeShield.shared.acquire(capabilities: Set([.screenshotprevention, .recordingprevention]))
     }
 
     override func viewWillDisappear(_ animated: Bool) {

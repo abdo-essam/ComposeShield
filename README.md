@@ -1,8 +1,8 @@
-# ComposeGuard
+# ComposeShield
 
 **Screen capture protection for Compose Multiplatform.**
 
-ComposeGuard protects sensitive content from screenshots and recordings, detects when the screen is
+ComposeShield protects sensitive content from screenshots and recordings, detects when the screen is
 being captured, and hides app content in the OS task switcher — all behind a single Compose-first
 API on Android 24+ and iOS 15+.
 
@@ -24,7 +24,7 @@ automatically when it leaves — there is no teardown call to forget.
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.abdo-essam:composeguard:<version>")
+    implementation("io.github.abdo-essam:composeshield:<version>")
 }
 ```
 
@@ -51,7 +51,7 @@ fun PaymentScreen() {
 ### 3. Check whether it worked
 
 ```kotlin
-val level = ComposeGuard.supportLevel(Capability.ScreenshotPrevention)
+val level = ComposeShield.supportLevel(Capability.ScreenshotPrevention)
 when (level) {
     SupportLevel.Supported      -> // protection is active
     is SupportLevel.Unsupported -> // reason in level.reason
@@ -81,7 +81,7 @@ On iOS, screenshot and recording prevention relies on internal secure container 
 
 ### Handling Protection Failures
 
-If an underlying platform protection mechanism cannot be applied or breaks mid-session, ComposeGuard **does not break your user interface or hide content automatically** — preserving app usability. Instead, it emits a failure event and updates `supportLevel`:
+If an underlying platform protection mechanism cannot be applied or breaks mid-session, ComposeShield **does not break your user interface or hide content automatically** — preserving app usability. Instead, it emits a failure event and updates `supportLevel`:
 
 ```kotlin
 // In Compose:
@@ -95,7 +95,7 @@ SecureContent(
 
 // Or globally:
 LaunchedEffect(Unit) {
-    ComposeGuard.protectionFailures.collect { failedCapability ->
+    ComposeShield.protectionFailures.collect { failedCapability ->
         // App-specific response: log, show security warning, navigate away, etc.
     }
 }
@@ -108,7 +108,7 @@ LaunchedEffect(Unit) {
 ```kotlin
 @Composable
 fun SensitiveScreen() {
-    val captureState by ComposeGuard.captureState.collectAsState()
+    val captureState by ComposeShield.captureState.collectAsState()
 
     if (captureState == CaptureState.Active) {
         RecordingWarningBanner()
@@ -130,7 +130,7 @@ fun SensitiveScreen() {
 
 ```kotlin
 LaunchedEffect(Unit) {
-    ComposeGuard.screenshotEvents.collect {
+    ComposeShield.screenshotEvents.collect {
         // A screenshot was taken — log it, show a toast, etc.
         // No payload: any payload would risk carrying the content you are protecting.
     }
@@ -146,13 +146,13 @@ On Android, this capability is precluded while screenshot prevention is active. 
 
 ```kotlin
 // Default: automatic — hidden whenever any SecureContent boundary is composed.
-ComposeGuard.appSwitcherProtection = AppSwitcherProtection.Automatic
+ComposeShield.appSwitcherProtection = AppSwitcherProtection.Automatic
 
 // Always hide — even with no boundary composed:
-ComposeGuard.appSwitcherProtection = AppSwitcherProtection.Always
+ComposeShield.appSwitcherProtection = AppSwitcherProtection.Always
 
 // Never hide — useful for testing:
-ComposeGuard.appSwitcherProtection = AppSwitcherProtection.Disabled
+ComposeShield.appSwitcherProtection = AppSwitcherProtection.Disabled
 ```
 
 ---
@@ -163,7 +163,7 @@ For architectures that are not Composables — navigation observers, background 
 
 ```kotlin
 // Acquire protection from anywhere, on any thread.
-val handle: ProtectionHandle = ComposeGuard.acquire()
+val handle: ProtectionHandle = ComposeShield.acquire()
 
 // Later — from any thread:
 handle.release()
@@ -181,7 +181,7 @@ on every navigation would otherwise leak protection permanently.
 ## What the library does not claim
 
 No software mechanism prevents photographing a screen with a second device, or capture on a rooted
-or jailbroken device. ComposeGuard provides the best protection available on each platform.
+or jailbroken device. ComposeShield provides the best protection available on each platform.
 
 See [docs/capability-matrix.md](docs/capability-matrix.md) for the full per-platform, per-OS-version
 breakdown.
@@ -195,9 +195,9 @@ breakdown.
 ./gradlew check
 
 # By layer
-./gradlew :composeguard:allTests                # unit test suites
-./gradlew :composeguard:testAndroidHostTest     # Robolectric — FLAG_SECURE assertions
-./gradlew :composeguard:iosSimulatorArm64Test   # macOS arm64 only
+./gradlew :composeshield:allTests                # unit test suites
+./gradlew :composeshield:testAndroidHostTest     # Robolectric — FLAG_SECURE assertions
+./gradlew :composeshield:iosSimulatorArm64Test   # macOS arm64 only
 ```
 
 Actual capture prevention cannot be verified by automated tests — only a physical device and a

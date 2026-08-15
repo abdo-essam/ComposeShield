@@ -26,7 +26,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Common logic tests
-        run: ./gradlew :composeguard:testAndroidHostTest
+        run: ./gradlew :composeshield:testAndroidHostTest
 
       - name: Static analysis and formatting
         run: ./gradlew detekt spotlessCheck
@@ -48,9 +48,9 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: iOS simulator tests
-        run: ./gradlew :composeguard:iosSimulatorArm64Test
+        run: ./gradlew :composeshield:iosSimulatorArm64Test
 
       # Must run here, not on Ubuntu: keepLocallyUnsupportedTargets = false means the Apple ABI
       # is never inferred, so this check is only meaningful where Apple targets compile.
       - name: Binary compatibility
-        run: ./gradlew :composeguard:checkKotlinAbi
+        run: ./gradlew :composeshield:checkKotlinAbi

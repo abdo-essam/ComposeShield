@@ -52,7 +52,7 @@ detekt {
     // ForbiddenImport is syntactic, so unlike ForbiddenMethodCall it analyses commonMain too.
     // Type-resolution rules only run on JVM source sets and would silently skip shared code
     // (detekt #7073) — the zero-reflection gate therefore has to be syntactic. See research.md R12.
-    source.setFrom(files("composeguard/src", "sample"))
+    source.setFrom(files("composeshield/src", "sample"))
     config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
     parallel = true

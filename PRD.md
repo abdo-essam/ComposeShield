@@ -1,6 +1,6 @@
-# ComposeGuard PRD
+# ComposeShield PRD
 
-> **Project Name:** ComposeGuard  
+> **Project Name:** ComposeShield  
 > **Type:** Open Source Kotlin Multiplatform Library  
 > **Status:** MVP / Version 1.0  
 > **Platforms:** Android, iOS (Compose Multiplatform)
@@ -9,11 +9,11 @@
 
 # 1. Overview
 
-ComposeGuard is an open-source Kotlin Multiplatform library that provides a unified API for protecting sensitive UI content from screenshots, screen recording, screen sharing, and other forms of visual capture across Android and iOS.
+ComposeShield is an open-source Kotlin Multiplatform library that provides a unified API for protecting sensitive UI content from screenshots, screen recording, screen sharing, and other forms of visual capture across Android and iOS.
 
 The library abstracts platform-specific implementations behind a simple, Compose-first API, allowing developers to protect their applications with minimal code while maintaining a consistent developer experience across platforms.
 
-ComposeGuard is designed specifically for Kotlin Multiplatform and Compose Multiplatform applications and aims to become the standard security library for protecting sensitive UI content.
+ComposeShield is designed specifically for Kotlin Multiplatform and Compose Multiplatform applications and aims to become the standard security library for protecting sensitive UI content.
 
 ---
 
@@ -37,7 +37,7 @@ This leads to duplicated code, inconsistent implementations, and increased maint
 
 Become the standard security library for Compose Multiplatform applications by providing a clean, unified, and extensible API for protecting sensitive UI across Android and iOS.
 
-ComposeGuard should feel as simple and intuitive as libraries such as:
+ComposeShield should feel as simple and intuitive as libraries such as:
 
 - Koin
 - Coil
@@ -131,7 +131,7 @@ SecureScreen {
 Enable protection for the entire application.
 
 ```kotlin
-ComposeGuard.enable()
+ComposeShield.enable()
 ```
 
 ---
@@ -141,11 +141,11 @@ ComposeGuard.enable()
 Protect only selected screens.
 
 ```kotlin
-ComposeGuard.enable()
+ComposeShield.enable()
 
 // ...
 
-ComposeGuard.disable()
+ComposeShield.disable()
 ```
 
 or
@@ -163,7 +163,7 @@ SecureScreen {
 Expose the current recording status.
 
 ```kotlin
-ComposeGuard.isRecording
+ComposeShield.isRecording
 ```
 
 ---
@@ -173,7 +173,7 @@ ComposeGuard.isRecording
 Notify applications when screenshots occur (where supported).
 
 ```kotlin
-ComposeGuard.screenshotEvents
+ComposeShield.screenshotEvents
 ```
 
 ---
@@ -291,15 +291,15 @@ SecureScreen(
 ## Imperative API
 
 ```kotlin
-ComposeGuard.enable()
+ComposeShield.enable()
 
-ComposeGuard.disable()
+ComposeShield.disable()
 
-ComposeGuard.isEnabled
+ComposeShield.isEnabled
 
-ComposeGuard.isRecording
+ComposeShield.isRecording
 
-ComposeGuard.screenshotEvents
+ComposeShield.screenshotEvents
 ```
 
 ---
@@ -329,9 +329,9 @@ SecureScreen(
 # 11. Architecture
 
 ```
-composeguard/
+composeshield/
 │
-├── composeguard/
+├── composeshield/
 │   ├── commonMain/
 │   ├── androidMain/
 │   ├── iosMain/
@@ -351,7 +351,7 @@ composeguard/
 
 ## Android
 
-Internally ComposeGuard should
+Internally ComposeShield should
 
 - Obtain the current Window
 - Enable or disable `FLAG_SECURE`
@@ -364,7 +364,7 @@ No reflection should be used.
 
 ## iOS
 
-Internally ComposeGuard should
+Internally ComposeShield should
 
 - Create a secure `UITextField`
 - Enable `isSecureTextEntry`
@@ -411,7 +411,7 @@ No platform-specific code should be required.
 
 # 15. Long-Term Vision
 
-ComposeGuard aims to become the standard security toolkit for Kotlin Multiplatform applications.
+ComposeShield aims to become the standard security toolkit for Kotlin Multiplatform applications.
 
 Beyond screenshot prevention, it will evolve into a comprehensive UI security framework providing:
 

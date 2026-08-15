@@ -1,6 +1,6 @@
 # Platform Notes
 
-The reasoning behind ComposeGuard's less obvious behaviour: which platform defects it works around,
+The reasoning behind ComposeShield's less obvious behaviour: which platform defects it works around,
 which it refuses to paper over, and why several capabilities report `Unsupported` where a fallback
 would have been possible.
 
@@ -18,7 +18,7 @@ Frameworks engineer has stated publicly that blocking screenshots is unsupported
 user can photograph the screen with a second device regardless.
 
 The working mechanism relies on behaviour of `UITextField.isSecureTextEntry`. A secure text field
-owns a canvas subview that the render server excludes from screen capture. ComposeGuard lifts that
+owns a canvas subview that the render server excludes from screen capture. ComposeShield lifts that
 canvas into the app's hierarchy and reparents the window's content inside it.
 
 Two consequences follow from that direction:
@@ -51,7 +51,7 @@ directly and bypasses the render-server path that carries the protection. Device
 states that the screen-capture callback "is not invoked if the activity window has `FLAG_SECURE`
 set."
 
-This is platform behaviour, not a library design choice, and it cannot be worked around. ComposeGuard
+This is platform behaviour, not a library design choice, and it cannot be worked around. ComposeShield
 reports it rather than hiding it: while prevention is active, `ScreenshotEvents` resolves to
 `Unsupported(PrecludedByActiveCapability)`, and recovers on its own when prevention is released.
 
@@ -78,7 +78,7 @@ unrelated reasons:
 In both cases, if capture began *before* the app launched, no transition ever occurs and a naive
 implementation reports "not being captured" for the entire session.
 
-ComposeGuard absorbs both: `CaptureState` starts at `Unknown` and is **never seeded to `Inactive`**.
+ComposeShield absorbs both: `CaptureState` starts at `Unknown` and is **never seeded to `Inactive`**.
 
 ---
 
