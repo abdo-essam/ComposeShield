@@ -19,7 +19,7 @@ import kotlin.test.assertTrue
  * releases and re-applies `FLAG_SECURE` on a live window, producing the surface teardown
  * documented in research.md R8.
  *
- * The key property: `SecureContent` reads `guardCore.registry.snapshots` (to decide whether to
+ * The key property: `SecureContent` reads `shieldCore.registry.snapshots` (to decide whether to
  * obscure content) but must not read `ComposeShield.captureState`. The two are independent flows.
  * A subscription to captureState inside `SecureContent` would drive gratuitous content
  * recompositions every time the capture state transitions — exactly what SC-006 forbids.

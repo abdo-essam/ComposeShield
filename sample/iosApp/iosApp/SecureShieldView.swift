@@ -8,7 +8,7 @@ import ComposeShield
 /// been granted). Protection releases when the view disappears — there is no teardown call to forget.
 ///
 /// ```swift
-/// SecureGuardView {
+/// SecureShieldView {
 ///     SensitiveContent()
 /// } onFailure: { capability in
 ///     print("Protection failed: \(capability)")
@@ -25,7 +25,7 @@ import ComposeShield
 ///   - content: The protected content. Rendered unchanged under `FailOpen`; obscured under
 ///     `FailClosed` while the mechanism is broken.
 ///   - onFailure: Invoked when the protection mechanism fails or stops working.
-struct SecureGuardView<Content: View>: View {
+struct SecureShieldView<Content: View>: View {
     @Binding var simulateFailure: Bool
     let content: Content
     let onFailure: ((Capability) -> Void)?
@@ -41,7 +41,7 @@ struct SecureGuardView<Content: View>: View {
     }
 
     var body: some View {
-        _SecureGuardViewRepresentable(
+        _SecureShieldViewRepresentable(
             simulateFailure: simulateFailure,
             onFailure: onFailure
         ) {
@@ -54,16 +54,16 @@ struct SecureGuardView<Content: View>: View {
 
 /// UIViewControllerRepresentable bridge that acquires and releases protection through
 /// `ComposeShield.shared`.
-private struct _SecureGuardViewRepresentable<Content: View>: UIViewControllerRepresentable {
+private struct _SecureShieldViewRepresentable<Content: View>: UIViewControllerRepresentable {
     let simulateFailure: Bool
     let onFailure: ((Capability) -> Void)?
     let content: () -> Content
 
-    func makeUIViewController(context: Context) -> _SecureGuardViewController<Content> {
-        _SecureGuardViewController(content: content, onFailure: onFailure)
+    func makeUIViewController(context: Context) -> _SecureShieldViewController<Content> {
+        _SecureShieldViewController(content: content, onFailure: onFailure)
     }
 
-    func updateUIViewController(_ vc: _SecureGuardViewController<Content>, context: Context) {
+    func updateUIViewController(_ vc: _SecureShieldViewController<Content>, context: Context) {
         vc.updateSimulateFailure(simulateFailure)
     }
 }
@@ -73,7 +73,7 @@ private struct _SecureGuardViewRepresentable<Content: View>: UIViewControllerRep
 /// `viewWillAppear` / `viewWillDisappear` are the lifecycle anchors: they fire symmetrically on
 /// navigation push/pop, sheet present/dismiss, and tab switches — the cases where a hand-managed
 /// flag most often leaks or double-clears.
-private final class _SecureGuardViewController<Content: View>: UIViewController {
+private final class _SecureShieldViewController<Content: View>: UIViewController {
     private var handle: ProtectionHandle?
     private let onFailure: ((Capability) -> Void)?
     private var hostingController: UIHostingController<Content>

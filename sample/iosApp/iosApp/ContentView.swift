@@ -63,9 +63,9 @@ struct ContentView: View {
     /// The visible secret — absent from a screenshot when protection is working.
     @ViewBuilder private var markerSection: some View {
         if boundaryActive {
-            // SecureGuardView wraps the marker. While composed, the whole scene is protected.
+            // SecureShieldView wraps the marker. While composed, the whole scene is protected.
             // Protection releases automatically when the view disappears.
-            SecureGuardView(simulateFailure: $simulateFailure) {
+            SecureShieldView(simulateFailure: $simulateFailure) {
                 SecretMarker()
             } onFailure: { cap in
                 appendLog("boundary reported failure: \(capabilityLabel(cap))")
@@ -78,7 +78,7 @@ struct ContentView: View {
     @ViewBuilder private var preventionSection: some View {
         SampleSection("Prevention") {
             SampleToggle(
-                label: "Declarative boundary (SecureGuardView)",
+                label: "Declarative boundary (SecureShieldView)",
                 on: $boundaryActive
             ) { on in
                 appendLog(on ? "boundary entered hierarchy" : "boundary left hierarchy")

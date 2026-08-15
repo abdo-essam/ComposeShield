@@ -1,8 +1,7 @@
 package io.github.composeshield
 
 import io.github.composeshield.internal.ProtectionRequest
-import io.github.composeshield.internal.WindowKey
-import io.github.composeshield.internal.guardCore
+import io.github.composeshield.internal.shieldCore
 import io.github.composeshield.internal.resolveCurrentWindowKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,10 +45,10 @@ public object ComposeShield {
      *   this capability set.
      */
     public fun acquire(capabilities: Set<Capability> = DefaultPreventionCapabilities): ProtectionHandle =
-        RegistryHandle(guardCore.registry.acquireShared(resolveCurrentWindowKey(), capabilities))
+        RegistryHandle(shieldCore.registry.acquireShared(resolveCurrentWindowKey(), capabilities))
 
     /** Whether any protection request is currently outstanding, from any source. */
-    public fun isProtectionActive(): Boolean = guardCore.registry.current.isProtectedAnywhere()
+    public fun isProtectionActive(): Boolean = shieldCore.registry.current.isProtectedAnywhere()
 
     /**
      * Whether [capability] can be relied on **right now**.
@@ -59,7 +58,7 @@ public object ComposeShield {
      * activating screenshot prevention precludes [Capability.ScreenshotEvents] while it is active.
      */
     public fun supportLevel(capability: Capability): SupportLevel =
-        guardCore.supportResolver.resolve(capability, guardCore.registry.current)
+        shieldCore.supportResolver.resolve(capability, shieldCore.registry.current)
 
     /**
      * Whether the screen is being recorded, mirrored, or streamed.
@@ -72,7 +71,7 @@ public object ComposeShield {
      * capture", not "not being captured".
      */
     public val captureState: StateFlow<CaptureState>
-        get() = guardCore.captureStates.also { it.start() }.state
+        get() = shieldCore.captureStates.also { it.start() }.state
 
     /**
      * Emits once per screenshot, after the fact.
@@ -85,7 +84,7 @@ public object ComposeShield {
      * [Capability.ScreenshotEvents] to distinguish "no screenshots taken" from "this platform cannot
      * tell you".
      */
-    public val screenshotEvents: Flow<Unit> get() = guardCore.screenshotEvents
+    public val screenshotEvents: Flow<Unit> get() = shieldCore.screenshotEvents
 
     /**
      * Emits when a prevention mechanism fails to install or stops working.
@@ -93,7 +92,7 @@ public object ComposeShield {
      * The application-wide counterpart to `SecureContent`'s `onProtectionFailure`, for consumers
      * using the imperative path.
      */
-    public val protectionFailures: Flow<Capability> get() = guardCore.protectionFailures
+    public val protectionFailures: Flow<Capability> get() = shieldCore.protectionFailures
 
     /**
      * How the OS task-switcher snapshot should be treated. Defaults to
@@ -103,8 +102,8 @@ public object ComposeShield {
      * which is what makes [AppSwitcherProtection.Always] usable on its own.
      */
     public var appSwitcherProtection: AppSwitcherProtection
-        get() = guardCore.registry.current.appSwitcherMode
-        set(value) = guardCore.registry.setAppSwitcherMode(value)
+        get() = shieldCore.registry.current.appSwitcherMode
+        set(value) = shieldCore.registry.setAppSwitcherMode(value)
 }
 
 /**
@@ -121,6 +120,6 @@ private class RegistryHandle(
     private val request: ProtectionRequest,
 ) : ProtectionHandle {
     override fun release() {
-        guardCore.registry.release(request)
+        shieldCore.registry.release(request)
     }
 }

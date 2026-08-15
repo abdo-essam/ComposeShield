@@ -5,7 +5,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
-import io.github.composeshield.internal.guardCore
+import io.github.composeshield.internal.shieldCore
 import io.github.composeshield.internal.rememberWindowKey
 
 /**
@@ -50,14 +50,14 @@ public fun SecureContent(
     val currentOnFailure by rememberUpdatedState(onProtectionFailure)
 
     DisposableEffect(window, capabilities) {
-        val request = guardCore.registry.acquire(window, capabilities)
-        guardCore.registry.bindWindow(window)
-        onDispose { guardCore.registry.release(request) }
+        val request = shieldCore.registry.acquire(window, capabilities)
+        shieldCore.registry.bindWindow(window)
+        onDispose { shieldCore.registry.release(request) }
     }
 
     if (onProtectionFailure != null) {
         LaunchedEffect(Unit) {
-            guardCore.protectionFailures.collect { failed ->
+            shieldCore.protectionFailures.collect { failed ->
                 if (failed in capabilities) currentOnFailure?.invoke(failed)
             }
         }

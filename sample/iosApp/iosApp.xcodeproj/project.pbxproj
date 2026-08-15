@@ -9,13 +9,13 @@
 /* Begin PBXBuildFile section */
 		B001001 /* SampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001001 /* SampleApp.swift */; };
 		B001002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001002 /* ContentView.swift */; };
-		B001003 /* SecureGuardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001003 /* SecureGuardView.swift */; };
+		B001003 /* SecureShieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001003 /* SecureShieldView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A001001 /* SampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleApp.swift; sourceTree = "<group>"; };
 		A001002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A001003 /* SecureGuardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureGuardView.swift; sourceTree = "<group>"; };
+		A001003 /* SecureShieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureShieldView.swift; sourceTree = "<group>"; };
 		A002000 /* iosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -33,7 +33,7 @@
 			children = (
 				A001001 /* SampleApp.swift */,
 				A001002 /* ContentView.swift */,
-				A001003 /* SecureGuardView.swift */,
+				A001003 /* SecureShieldView.swift */,
 			);
 			path = iosApp;
 			sourceTree = "<group>";
@@ -127,7 +127,7 @@
 			files = (
 				B001001 /* SampleApp.swift in Sources */,
 				B001002 /* ContentView.swift in Sources */,
-				B001003 /* SecureGuardView.swift in Sources */,
+				B001003 /* SecureShieldView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

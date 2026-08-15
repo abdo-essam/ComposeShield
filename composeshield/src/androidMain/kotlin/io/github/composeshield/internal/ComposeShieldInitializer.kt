@@ -77,10 +77,10 @@ internal fun installActivityTracker(application: Application) {
                 // Register (or refresh) the window entry and re-point any unbound requests that
                 // arrived before the first composition.
                 val key = registerWindow(activity.window, activity)
-                // guardCore lazy-init is safe here: the activity is resumed, so the UI exists and
-                // any platform call is appropriate. If guardCore is already initialized, this is a
+                // shieldCore lazy-init is safe here: the activity is resumed, so the UI exists and
+                // any platform call is appropriate. If shieldCore is already initialized, this is a
                 // fast no-op when there are no Unbound requests.
-                guardCore.registry.bindWindow(key)
+                shieldCore.registry.bindWindow(key)
             }
 
             override fun onActivityCreated(

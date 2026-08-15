@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
  * tests. A facade building its own dependencies in an `init` block would be untestable without a
  * device.
  */
-internal class GuardCore(
+internal class ShieldCore(
     platform: PlatformProtection,
 ) {
     /**
@@ -101,4 +101,4 @@ private fun mainDispatcher(): CoroutineDispatcher =
  * imposes. One physical flag exists per window, so two registries would each believe they owned it
  * and the second to reconcile would silently undo the first.
  */
-internal val guardCore: GuardCore by lazy { GuardCore(createPlatformProtection()) }
+internal val shieldCore: ShieldCore by lazy { ShieldCore(createPlatformProtection()) }
