@@ -40,6 +40,12 @@ public object ComposeShield {
      * A declarative boundary's claim is unaffected either way: releasing this handle never
      * unprotects a window a composed boundary still wants.
      *
+     * **Window targeting.** The claim is made against the current window, resolved without a
+     * composition context. On iOS that is the active key window; on Android it is the window of the
+     * first registered activity — deliberately **not** a foreground lookup, and with multiple live
+     * activities the resolved window is unspecified. One imperative call protects one window;
+     * compose [SecureContent] per window where multi-window correctness is required.
+     *
      * @param capabilities which preventions to request. Independently requestable.
      * @return a handle whose [ProtectionHandle.release] withdraws the imperative claim for exactly
      *   this capability set.

@@ -33,10 +33,15 @@ internal actual fun rememberWindowKey(): WindowKey {
 }
 
 /**
- * Resolves the foreground window key without a composition context.
+ * Resolves a window key without a composition context.
  *
  * Used by [io.github.composeshield.ComposeShield.acquire] so the imperative path targets a real
  * window rather than parking the request under [WindowKey.Unbound] indefinitely.
+ *
+ * The target is the **first registered activity's window, not the foreground one** — tracking real
+ * focus is deliberately out of scope, and the single-window app is the effective model. With
+ * multiple live activities the resolved window is unspecified; compose `SecureContent` per window
+ * for multi-window correctness.
  *
  * Falls back to [WindowKey.Unbound] at cold start before any activity window is registered — the
  * registry will re-point the pending request via [ProtectionRegistry.bindWindow] once the first

@@ -75,7 +75,13 @@ internal fun keyForActivity(activity: Activity): WindowKey? =
         windows.entries.firstOrNull { it.value.activity === activity }?.value?.key
     }
 
-/** The activity of any currently-registered window, for application-scoped platform callbacks. */
+/**
+ * The activity of any currently-registered window, for application-scoped platform callbacks.
+ *
+ * Deliberately arbitrary: the first registered entry, not the foreground activity. Focus tracking
+ * is out of scope, and the single-window app is the effective model. Callers that need a specific
+ * window must resolve it themselves (e.g. via [keyForActivity]).
+ */
 internal fun anyRegisteredActivity(): Activity? =
     synchronized(windows) {
         windows.values.firstNotNullOfOrNull { it.activity }
