@@ -5,8 +5,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
-import io.github.composeshield.internal.shieldCore
 import io.github.composeshield.internal.rememberWindowKey
+import io.github.composeshield.internal.shieldCore
 
 /**
  * Protects the window from screen capture for as long as this is composed.

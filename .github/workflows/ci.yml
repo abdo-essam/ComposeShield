@@ -31,12 +31,14 @@ jobs:
       - name: Static analysis and formatting
         run: ./gradlew detekt spotlessCheck
 
-  # Pinned deliberately. `macos-latest` migrated to macOS 26 / Xcode 26 in June 2026, silently
-  # jumping an Xcode major version for unpinned workflows. `macos-*-large`/`-intel` are Intel and
-  # cannot run iosSimulatorArm64 at all (research.md R11).
+  # Pinned deliberately. CMP 1.11.x's ui-uikit hard-references _OBJC_CLASS_$_UIViewLayoutRegion,
+  # which only exists in the iOS 26 SDK, so the Xcode 16 line (macos-15) fails at link time with
+  # "Undefined symbols ... UIViewLayoutRegion" (fixed upstream only in CMP 1.12.0-rc01, #3278).
+  # `macos-latest` is never used — it silently jumps Xcode majors. `macos-*-large`/`-intel` are
+  # Intel and cannot run iosSimulatorArm64 at all (research.md R11).
   apple:
     name: iOS tests & ABI check
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
 

@@ -1,8 +1,8 @@
 package io.github.composeshield
 
 import io.github.composeshield.internal.ProtectionRequest
-import io.github.composeshield.internal.shieldCore
 import io.github.composeshield.internal.resolveCurrentWindowKey
+import io.github.composeshield.internal.shieldCore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
