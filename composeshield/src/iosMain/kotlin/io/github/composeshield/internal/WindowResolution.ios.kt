@@ -23,7 +23,7 @@ internal actual fun rememberWindowKey(): WindowKey =
 /**
  * Resolves the foreground window key without a composition context.
  *
- * Used by [io.github.composeshield.ComposeShield.acquire] so the imperative path targets the active
+ * Used by [io.github.composeshield.ComposeShield.protect] so the imperative path targets the active
  * key window rather than parking under [WindowKey.Unbound] indefinitely.
  *
  * Falls back to [WindowKey.Unbound] when no key window exists yet (app launch before the scene is

@@ -98,25 +98,25 @@ fun SampleApp() {
                 },
             )
             Toggle(
-                label = "Imperative claim (ComposeShield.acquire)",
+                label = "Imperative claim (ComposeShield.protect)",
                 on = imperativeHandle != null,
                 onToggle = { wanted ->
                     if (wanted) {
-                        imperativeHandle = ComposeShield.acquire()
-                        log.add("imperative claim acquired")
+                        imperativeHandle = ComposeShield.protect()
+                        log.add("imperative claim protected")
                     } else {
-                        imperativeHandle?.release()
+                        imperativeHandle?.unprotect()
                         imperativeHandle = null
-                        log.add("imperative claim released")
+                        log.add("imperative claim unprotected")
                     }
                 },
             )
             Note(
                 "Both claims are reference-counted together: protection is withdrawn only when the " +
-                    "last one is gone. Turn both on, release one, and the marker stays protected.",
+                    "last one is gone. Turn both on, unprotect one, and the marker stays protected.",
             )
             Note(
-                "acquire() records a protection claim — it does not guarantee the OS has applied " +
+                "protect() records a protection claim — it does not guarantee the OS has applied " +
                     "it. Automated tests verify the library requested protection; a real device " +
                     "screenshot verifies the OS honoured it.",
             )

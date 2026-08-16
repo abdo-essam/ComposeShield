@@ -24,34 +24,40 @@ import kotlinx.coroutines.flow.StateFlow
  */
 public object ComposeShield {
     /**
-     * Requests protection until the returned handle is released.
+     * Requests protection until the returned handle is unprotected or closed.
      *
-     * Prefer [SecureContent] where the protected content is a Composable; a handle held by hand can
-     * outlive the screen that wanted it, and nothing will notice.
+     * Prefer [SecureContent] where the protected content is a Composable; a handle held manually can
+     * outlive the screen that wanted it.
      *
      * Safe to call before any window exists — the request is recorded and applied as soon as one
-     * appears, rather than being dropped or throwing.
+     * appears.
      *
      * **Idempotent, not reference-counted.** Two calls with the same [capabilities] share one claim,
-     * and releasing either releases it. This differs from [SecureContent], where each boundary is
-     * counted separately — an imperative caller has no composition lifetime to make counting exact,
-     * and a policy object acquiring on every navigation would otherwise leak protection permanently.
+     * and unprotecting either releases it. This differs from [SecureContent], where each boundary is
+     * counted separately.
      *
-     * A declarative boundary's claim is unaffected either way: releasing this handle never
-     * unprotects a window a composed boundary still wants.
-     *
-     * **Window targeting.** The claim is made against the current window, resolved without a
-     * composition context. On iOS that is the active key window; on Android it is the window of the
-     * first registered activity — deliberately **not** a foreground lookup, and with multiple live
-     * activities the resolved window is unspecified. One imperative call protects one window;
-     * compose [SecureContent] per window where multi-window correctness is required.
+     * A declarative boundary's claim is unaffected: unprotecting this handle never unprotects a
+     * window a composed boundary still wants.
      *
      * @param capabilities which preventions to request. Independently requestable.
-     * @return a handle whose [ProtectionHandle.release] withdraws the imperative claim for exactly
-     *   this capability set.
+     * @return a handle whose [ProtectionHandle.unprotect] withdraws the imperative claim for
+     *   exactly this capability set.
      */
-    public fun acquire(capabilities: Set<Capability> = DefaultPreventionCapabilities): ProtectionHandle =
+    public fun protect(capabilities: Set<Capability> = DefaultPreventionCapabilities): ProtectionHandle =
         RegistryHandle(shieldCore.registry.acquireShared(resolveCurrentWindowKey(), capabilities))
+
+    /**
+     * Relinquishes any active imperative protection claim matching [capabilities].
+     *
+     * **Idempotent** — safe to call repeatedly or when no imperative claim is active.
+     * Releasing an imperative claim never withdraws protection if a [SecureContent] composable
+     * or another claim is still active on the window.
+     *
+     * @param capabilities which preventions to unprotect. Defaults to [DefaultPreventionCapabilities].
+     */
+    public fun unprotect(capabilities: Set<Capability> = DefaultPreventionCapabilities) {
+        shieldCore.registry.releaseShared(resolveCurrentWindowKey(), capabilities)
+    }
 
     /** Whether any protection request is currently outstanding, from any source. */
     public fun isProtectionActive(): Boolean = shieldCore.registry.current.isProtectedAnywhere()
@@ -125,7 +131,7 @@ internal val DefaultPreventionCapabilities: Set<Capability> =
 private class RegistryHandle(
     private val request: ProtectionRequest,
 ) : ProtectionHandle {
-    override fun release() {
+    override fun unprotect() {
         shieldCore.registry.release(request)
     }
 }

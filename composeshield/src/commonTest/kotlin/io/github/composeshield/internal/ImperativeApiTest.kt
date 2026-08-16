@@ -49,6 +49,15 @@ class ImperativeApiTest {
     }
 
     @Test
+    fun `releaseShared withdraws active imperative claim directly`() {
+        registry.acquireShared(window, prevention)
+        assertTrue(window in platform.protectedWindows)
+
+        registry.releaseShared(window, prevention)
+        assertFalse(window in platform.protectedWindows)
+    }
+
+    @Test
     fun `imperative claims for different capability sets stay separate`() {
         val screenshots = registry.acquireShared(window, prevention)
         val recording = registry.acquireShared(window, setOf(Capability.RecordingPrevention))

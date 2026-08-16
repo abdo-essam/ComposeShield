@@ -35,7 +35,7 @@ internal actual fun rememberWindowKey(): WindowKey {
 /**
  * Resolves a window key without a composition context.
  *
- * Used by [io.github.composeshield.ComposeShield.acquire] so the imperative path targets a real
+ * Used by [io.github.composeshield.ComposeShield.protect] so the imperative path targets a real
  * window rather than parking the request under [WindowKey.Unbound] indefinitely.
  *
  * The target is the **first registered activity's window, not the foreground one** — tracking real

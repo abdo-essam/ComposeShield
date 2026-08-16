@@ -21,7 +21,7 @@ import android.os.Bundle
  * into the consuming application's manifest by the Android Gradle Plugin. No user code required.
  *
  * **Why a [ContentProvider] rather than [Application.registerActivityLifecycleCallbacks] lazily?**
- * Lazy registration (from a composable or from the first `acquire()` call) races with the activity
+ * Lazy registration (from a composable or from the first `protect()` call) races with the activity
  * lifecycle: by the time the first composable runs, [Activity.onResume] has already fired, so the
  * callback misses the current session entirely. A [ContentProvider] sidesteps the race entirely.
  */

@@ -23,18 +23,23 @@ class NoThrowContractTest {
     }
 
     @Test
-    fun `acquire and release complete without throwing`() {
-        val handle = ComposeShield.acquire()
-        handle.release()
-        // Idempotent by contract, and a double release must not throw either.
-        handle.release()
+    fun `protect and unprotect complete without throwing`() {
+        val handle = ComposeShield.protect()
+        handle.unprotect()
+        // Idempotent by contract, and a double unprotect must not throw either.
+        handle.unprotect()
+
+        // Also test direct singleton calls
+        ComposeShield.protect()
+        ComposeShield.unprotect()
+        ComposeShield.unprotect()
     }
 
     @Test
-    fun `acquiring an unsupported capability does not throw`() {
+    fun `protecting an unsupported capability does not throw`() {
         // Detection capabilities have no prevention mechanism to apply; requesting them as though
         // they did must degrade quietly rather than fail.
-        ComposeShield.acquire(setOf(Capability.CaptureDetection, Capability.ScreenshotEvents)).release()
+        ComposeShield.protect(setOf(Capability.CaptureDetection, Capability.ScreenshotEvents)).unprotect()
     }
 
     @Test

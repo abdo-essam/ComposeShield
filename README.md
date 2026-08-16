@@ -157,24 +157,74 @@ ComposeShield.appSwitcherProtection = AppSwitcherProtection.Disabled
 
 ---
 
-## Imperative API
+## Imperative API (`protect()` & `unprotect()`)
 
-For architectures that are not Composables — navigation observers, background policies, ViewModels:
+While `SecureContent { }` is the recommended path for Compose UI, `ComposeShield.protect()` and `ComposeShield.unprotect()` provide programmatic control for architectures outside composition:
 
 ```kotlin
-// Acquire protection from anywhere, on any thread.
-val handle: ProtectionHandle = ComposeShield.acquire()
+// Option 1: Direct singleton calls
+ComposeShield.protect()
+// ... later
+ComposeShield.unprotect()
 
-// Later — from any thread:
-handle.release()
+// Option 2: Handle-based claim
+val handle = ComposeShield.protect()
+// ... later
+handle.unprotect()
 ```
 
-Imperative and declarative claims compose through the same reference counter. Releasing a handle
-does not unprotect a window that a `SecureContent` boundary still claims, and vice versa.
+### Key Use Cases
 
-**`acquire()` is idempotent, not reference-counted.** Two calls with the same capability set share
-one claim; releasing either releases it. This is intentional — a policy object calling `acquire()`
-on every navigation would otherwise leak protection permanently.
+#### 1. Full-App Protection
+Protect the entire app session from startup:
+* **Android (`Application.onCreate`)**: `ComposeShield.protect()`
+* **iOS (`App.init` / `AppDelegate`)**: `ComposeShield.shared.protect()`
+* **Common KMP startup**: `ComposeShield.protect()`
+
+#### 2. Centralized Navigation Router / Destination Listener
+Protect specific routes centrally without wrapping each screen individually:
+```kotlin
+navController.addOnDestinationChangedListener { _, destination, _ ->
+    if (destination.route in listOf("payment", "profile", "otp")) {
+        ComposeShield.protect()
+    } else {
+        ComposeShield.unprotect()
+    }
+}
+```
+
+#### 3. ViewModels & Business State
+Enable protection based on dynamic domain state:
+```kotlin
+class WalletViewModel : ViewModel() {
+    fun onShowCardDetails() {
+        ComposeShield.protect()
+    }
+    fun onHideCardDetails() {
+        ComposeShield.unprotect()
+    }
+}
+```
+
+#### 4. Native iOS (SwiftUI / UIKit) & Android View Interop
+Protect native non-Compose view controllers or legacy activities:
+```swift
+// Swift
+override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    ComposeShield.shared.protect()
+}
+
+override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    ComposeShield.shared.unprotect()
+}
+```
+
+---
+
+### Reference Counting & Safety
+Imperative and declarative claims compose through the same reference counter. Calling `ComposeShield.unprotect()` releases the imperative claim, but **never unprotects a window that a `SecureContent` boundary still claims**, and vice versa. Protection is only physically removed from the window when all claims are released.
 
 ---
 

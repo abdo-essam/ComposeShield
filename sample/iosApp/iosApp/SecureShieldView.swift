@@ -105,14 +105,13 @@ private final class _SecureShieldViewController<Content: View>: UIViewController
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // Acquire protection when entering the view hierarchy. The handle is held by this
-        // controller, so it cannot outlive the presentation.
-        handle = ComposeShield.shared.acquire(capabilities: Set([.screenshotprevention, .recordingprevention]))
+        // Request protection when entering the view hierarchy.
+        handle = ComposeShield.shared.protect(capabilities: Set([.screenshotprevention, .recordingprevention]))
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        handle?.release()
+        handle?.unprotect()
         handle = nil
     }
 

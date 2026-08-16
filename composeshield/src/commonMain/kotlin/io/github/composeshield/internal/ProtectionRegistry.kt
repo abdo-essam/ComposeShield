@@ -101,6 +101,17 @@ internal class ProtectionRegistry(
             ?.firstOrNull { it.isImperative && it.capabilities == capabilities }
 
     /**
+     * Releases any active imperative claim matching [capabilities] on [window].
+     * Idempotent — no-op if no matching claim exists.
+     */
+    fun releaseShared(
+        window: WindowKey,
+        capabilities: Set<Capability>,
+    ) {
+        sharedRequest(window, capabilities)?.let(::release)
+    }
+
+    /**
      * Drops [request] and withdraws protection if it was the last claim on its window.
      *
      * **Idempotent.** Releasing an already-released request is a no-op and does not decrement

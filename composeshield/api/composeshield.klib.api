@@ -49,7 +49,7 @@ final enum class io.github.composeshield/CaptureState : kotlin/Enum<io.github.co
 }
 
 abstract interface io.github.composeshield/ProtectionHandle { // io.github.composeshield/ProtectionHandle|null[0]
-    abstract fun release() // io.github.composeshield/ProtectionHandle.release|release(){}[0]
+    abstract fun unprotect() // io.github.composeshield/ProtectionHandle.unprotect|unprotect(){}[0]
 }
 
 sealed interface io.github.composeshield/SupportLevel { // io.github.composeshield/SupportLevel|null[0]
@@ -98,9 +98,10 @@ final object io.github.composeshield/ComposeShield { // io.github.composeshield/
         final fun <get-appSwitcherProtection>(): io.github.composeshield/AppSwitcherProtection // io.github.composeshield/ComposeShield.appSwitcherProtection.<get-appSwitcherProtection>|<get-appSwitcherProtection>(){}[0]
         final fun <set-appSwitcherProtection>(io.github.composeshield/AppSwitcherProtection) // io.github.composeshield/ComposeShield.appSwitcherProtection.<set-appSwitcherProtection>|<set-appSwitcherProtection>(io.github.composeshield.AppSwitcherProtection){}[0]
 
-    final fun acquire(kotlin.collections/Set<io.github.composeshield/Capability> = ...): io.github.composeshield/ProtectionHandle // io.github.composeshield/ComposeShield.acquire|acquire(kotlin.collections.Set<io.github.composeshield.Capability>){}[0]
     final fun isProtectionActive(): kotlin/Boolean // io.github.composeshield/ComposeShield.isProtectionActive|isProtectionActive(){}[0]
+    final fun protect(kotlin.collections/Set<io.github.composeshield/Capability> = ...): io.github.composeshield/ProtectionHandle // io.github.composeshield/ComposeShield.protect|protect(kotlin.collections.Set<io.github.composeshield.Capability>){}[0]
     final fun supportLevel(io.github.composeshield/Capability): io.github.composeshield/SupportLevel // io.github.composeshield/ComposeShield.supportLevel|supportLevel(io.github.composeshield.Capability){}[0]
+    final fun unprotect(kotlin.collections/Set<io.github.composeshield/Capability> = ...) // io.github.composeshield/ComposeShield.unprotect|unprotect(kotlin.collections.Set<io.github.composeshield.Capability>){}[0]
 }
 
 final val io.github.composeshield/io_github_composeshield_ComposeShield$stableprop // io.github.composeshield/io_github_composeshield_ComposeShield$stableprop|#static{}io_github_composeshield_ComposeShield$stableprop[0]
