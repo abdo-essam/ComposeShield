@@ -32,7 +32,6 @@ internal class ProtectionRegistry(
     private val onProtectionFailure: (Capability) -> Unit = {},
 ) {
     private val state = AtomicReference(RegistryState())
-
     private val _snapshots = MutableStateFlow(RegistryState())
 
     /** The snapshot as an observable stream. */
@@ -84,16 +83,12 @@ internal class ProtectionRegistry(
         val request = ProtectionRequest(capabilities, window, isImperative = true)
         mutate { snapshot ->
             val existing = snapshot.requests[window].orEmpty()
-            val matches =
-                existing.any {
-                    it.isImperative && it.capabilities == capabilities
-                }
+            val matches = existing.any { it.isImperative && it.capabilities == capabilities }
             if (matches) return@mutate snapshot
             snapshot.copy(requests = snapshot.requests + (window to existing + request))
         }
         reconcile(window)
 
-        // Return whichever request actually landed, so two racing callers share one claim.
         return sharedRequest(window, capabilities) ?: request
     }
 
@@ -108,15 +103,14 @@ internal class ProtectionRegistry(
     /**
      * Drops [request] and withdraws protection if it was the last claim on its window.
      *
-     * **Idempotent.** Releasing an already-released request is a no-op and, critically, does not
-     * decrement anything else — a double release cannot strip protection from a screen that still
-     * wants it. Removal is by identity, so an identically-configured sibling is untouched.
+     * **Idempotent.** Releasing an already-released request is a no-op and does not decrement
+     * anything else — a double release cannot strip protection from a screen that still wants it.
+     * Removal is by identity, so an identically-configured sibling is untouched.
      */
     fun release(request: ProtectionRequest) {
         val window = request.window
         mutate { snapshot ->
             val existing = snapshot.requests[window] ?: return@mutate snapshot
-            // Identity, not equality: two requests for the same capabilities are separate claims.
             val index = existing.indexOfFirst { it === request }
             if (index < 0) return@mutate snapshot
 
@@ -124,7 +118,6 @@ internal class ProtectionRegistry(
             snapshot.copy(
                 requests =
                     if (remaining.isEmpty()) {
-                        // Drop the key entirely so "no entry" and "empty entry" cannot diverge.
                         snapshot.requests - window
                     } else {
                         snapshot.requests + (window to remaining)
@@ -159,8 +152,8 @@ internal class ProtectionRegistry(
     /**
      * Releases every request on [window]. Called when a window is destroyed.
      *
-     * Without it, a window torn down without its boundaries leaving composition cleanly would leave
-     * requests outstanding forever — a leak that surfaces as a permanently black screenshot on some
+     * Without it, a window torn down without its boundaries disposing cleanly would leave requests
+     * outstanding forever — a leak that surfaces as a permanently black screenshot on some
      * unrelated screen.
      */
     fun releaseWindow(window: WindowKey) {
@@ -173,8 +166,8 @@ internal class ProtectionRegistry(
     fun setAppSwitcherMode(mode: AppSwitcherProtection) {
         mutate { snapshot -> snapshot.copy(appSwitcherMode = mode) }
         val windows = current.requests.keys
-        // Always is the one mode that must act with no request outstanding — with an empty request
-        // map there is no window to iterate, so fall back to the unbound key.
+        // Always must act even with no requests outstanding — fall back to the unbound key so there
+        // is something to iterate over when the request map is empty.
         if (windows.isEmpty()) reconcileAppSwitcher(WindowKey.Unbound) else windows.forEach(::reconcileAppSwitcher)
     }
 
@@ -193,10 +186,7 @@ internal class ProtectionRegistry(
         } else {
             when (platform.applyProtection(window, capabilities)) {
                 ProtectionOutcome.Applied -> Unit
-
-                // No host yet. The request stands; bindWindow() will apply it.
                 ProtectionOutcome.Deferred -> Unit
-
                 ProtectionOutcome.Failed -> recordFailure(capabilities)
             }
         }
@@ -206,13 +196,6 @@ internal class ProtectionRegistry(
 
     /**
      * Forgets failures for capabilities nothing currently requests.
-     *
-     * A failure describes a live attempt, not a permanent verdict. Keeping it past the last request
-     * that provoked it would report `MechanismUnavailable` for a capability the library is no longer
-     * even trying to use.
-     *
-     * Deliberately *not* scoped to the window being reconciled: the same capability may be demanded
-     * by another window whose mechanism is still broken, and that failure must survive.
      */
     private fun pruneStaleFailures() {
         mutate { snapshot ->
@@ -224,11 +207,6 @@ internal class ProtectionRegistry(
 
     /**
      * Records a mechanism failure and reports it.
-     *
-     * A mechanism that did not install must never be reported as protection. Recording it makes
-     * `supportLevel()` tell the truth; reporting it lets the application act at the moment of failure
-     * rather than by polling. Only prevention capabilities are recorded — a detection capability has
-     * no mechanism to fail in this path.
      */
     private fun recordFailure(capabilities: Set<Capability>) {
         val prevention = capabilities.filterTo(mutableSetOf()) { it.isPrevention }
@@ -240,10 +218,6 @@ internal class ProtectionRegistry(
 
     /**
      * Applies standalone app-switcher protection, unless capture prevention already covers it.
-     *
-     * On Android the prevention primitive obscures recents as an inseparable side effect, so calling
-     * the recents-only primitive on top would be redundant work with a visible artifact to show
-     * for it.
      */
     private fun reconcileAppSwitcher(window: WindowKey) {
         val snapshot = current
@@ -253,9 +227,6 @@ internal class ProtectionRegistry(
 
     /**
      * Applies [transform] to the snapshot, retrying until it lands uncontended.
-     *
-     * A `transform` returning its input unchanged signals "nothing to do" and exits without a write,
-     * which is what makes the idempotent paths allocation-free rather than merely harmless.
      */
     private inline fun mutate(transform: (RegistryState) -> RegistryState) {
         while (true) {

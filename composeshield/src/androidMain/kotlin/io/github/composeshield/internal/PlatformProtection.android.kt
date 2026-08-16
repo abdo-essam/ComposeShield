@@ -36,12 +36,9 @@ internal class AndroidPlatformProtection : PlatformProtection {
         window: WindowKey,
         capabilities: Set<Capability>,
     ): ProtectionOutcome {
-        // No window resolved yet is not a failure — the request stands and applies once one exists.
         val target = windowFor(window) ?: return ProtectionOutcome.Deferred
-
         return onMainThread(ifDeferred = ProtectionOutcome.Deferred) {
-            // addFlags, never setFlags(flags, ALL): the latter clobbers every unrelated window flag
-            // the host app set, which is someone else's bug to debug.
+            // addFlags, not setFlags(flags, ALL): the latter clobbers unrelated window flags.
             target.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
             ProtectionOutcome.Applied
         }
@@ -69,13 +66,9 @@ internal class AndroidPlatformProtection : PlatformProtection {
 
     override fun platformSupport(capability: Capability): SupportLevel =
         when (capability) {
-            // FLAG_SECURE predates every version this library supports.
             Capability.ScreenshotPrevention, Capability.RecordingPrevention -> SupportLevel.Supported
-
             Capability.CaptureDetection -> detection.support()
-
             Capability.ScreenshotEvents -> screenshots.support()
-
             Capability.AppSwitcherProtection -> appSwitcher.support()
         }
 }

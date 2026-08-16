@@ -36,9 +36,7 @@ import platform.UIKit.UIScreenCapturedDidChangeNotification
 internal class CaptureDetection {
     fun readings(): Flow<PlatformCaptureReading> =
         callbackFlow {
-            // Seed indeterminate, never a reading. At cold launch iOS reports "not captured" while
-            // recording is already in progress, and publishing that would be a false negative in the
-            // one direction a security library must never get wrong.
+            // Seed indeterminate initially: at cold launch iOS may report not captured even if recording is active.
             trySend(PlatformCaptureReading.Indeterminate)
 
             val observer =
@@ -50,8 +48,6 @@ internal class CaptureDetection {
                     trySend(currentReading())
                 }
 
-            // A change notification may already have been missed — one fires while the app was
-            // backgrounded and nothing was listening — so read once now that the observer is attached.
             trySend(currentReading())
 
             awaitClose { NSNotificationCenter.defaultCenter.removeObserver(observer) }
@@ -87,13 +83,6 @@ internal class CaptureDetection {
     }
 
     private companion object {
-        /**
-         * `sceneCaptureState` arrived in iOS 17; below that the trait collection does not carry it.
-         *
-         * Major version only: `NSProcessInfo`'s structured comparison takes a
-         * `CValue<NSOperatingSystemVersion>` needing a memory scope to build — more machinery than a
-         * single integer comparison warrants.
-         */
         val supportsSceneCaptureState: Boolean
             get() = NSProcessInfo.processInfo.operatingSystemVersion.useContents { majorVersion >= 17 }
     }

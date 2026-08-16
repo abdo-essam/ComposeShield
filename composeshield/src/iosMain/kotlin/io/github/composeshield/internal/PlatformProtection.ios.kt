@@ -57,17 +57,10 @@ internal class IosPlatformProtection : PlatformProtection {
         capabilities: Set<Capability>,
     ): ProtectionOutcome {
         if (containers.containsKey(window)) return ProtectionOutcome.Applied
-
         val target = windowFor(window) ?: return ProtectionOutcome.Deferred
-        // The root view is what gets enclosed; without one the window is not laid out yet and the
-        // request should wait rather than be recorded as a failure.
         val content = target.rootViewController?.view ?: return ProtectionOutcome.Deferred
-
-        // Every failure below is soft. A null here means "report MechanismUnavailable and let the
-        // declared posture decide" — never an exception into consumer code.
         val container = SecureContainer.create() ?: return ProtectionOutcome.Failed
         if (!container.enclose(content)) return ProtectionOutcome.Failed
-
         containers[window] = container
         return ProtectionOutcome.Applied
     }
@@ -93,13 +86,8 @@ internal class IosPlatformProtection : PlatformProtection {
 
     override fun platformSupport(capability: Capability): SupportLevel =
         when (capability) {
-            // Prevention supported via secure container reparenting
             Capability.ScreenshotPrevention, Capability.RecordingPrevention -> SupportLevel.Supported
-
-            // Officially supported throughout, via a notification carrying no deprecation.
             Capability.CaptureDetection, Capability.ScreenshotEvents -> SupportLevel.Supported
-
-            // Ordinary view work — sanctioned.
             Capability.AppSwitcherProtection -> SupportLevel.Supported
         }
 }

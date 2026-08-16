@@ -61,13 +61,8 @@ kotlin {
                 .get()
                 .toInt()
 
-        // Both test source sets are disabled by default under the AGP KMP library plugin and
-        // need explicit opt-in. Names differ from the legacy layout: androidHostTest, not
-        // androidUnitTest (research.md R9).
         withHostTest {
-            // Robolectric needs the merged resources and the generated R classes of the library's
-            // transitive dependencies. Without this, composing anything fails at runtime with
-            // NoClassDefFoundError on androidx.customview.poolingcontainer.R$id.
+            // Robolectric needs merged resources and generated R classes of transitive dependencies.
             isIncludeAndroidResources = true
         }
         withDeviceTest {}
@@ -91,13 +86,8 @@ kotlin {
         }
     }
 
-    // Calling this block is what enables ABI validation — there is no longer an `enabled` flag.
     @OptIn(ExperimentalAbiValidation::class)
     abiValidation {
-        // Deliberate: the default `true` lets KGP *infer* Apple ABI when those targets cannot be
-        // compiled locally, which can mask a genuinely binary-incompatible change. Principle VI
-        // treats the dump as the compatibility boundary, so inference is unacceptable — the check
-        // runs on macOS where Apple targets actually compile (research.md R10).
         keepLocallyUnsupportedTargets.set(false)
 
         filters {

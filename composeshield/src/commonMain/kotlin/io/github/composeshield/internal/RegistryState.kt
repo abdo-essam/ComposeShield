@@ -42,11 +42,7 @@ internal data class RegistryState(
         val windowRequests = requests[window] ?: return emptySet()
         return when (windowRequests.size) {
             0 -> emptySet()
-
-            // The common case: one boundary on the window. Reuse its set rather than copying, so the
-            // read path stays allocation-free.
             1 -> windowRequests[0].capabilities
-
             else -> buildSet { windowRequests.forEach { addAll(it.capabilities) } }
         }
     }

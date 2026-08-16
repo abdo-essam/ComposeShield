@@ -74,12 +74,7 @@ internal fun installActivityTracker(application: Application) {
     application.registerActivityLifecycleCallbacks(
         object : Application.ActivityLifecycleCallbacks {
             override fun onActivityResumed(activity: Activity) {
-                // Register (or refresh) the window entry and re-point any unbound requests that
-                // arrived before the first composition.
                 val key = registerWindow(activity.window, activity)
-                // shieldCore lazy-init is safe here: the activity is resumed, so the UI exists and
-                // any platform call is appropriate. If shieldCore is already initialized, this is a
-                // fast no-op when there are no Unbound requests.
                 shieldCore.registry.bindWindow(key)
             }
 
@@ -100,10 +95,8 @@ internal fun installActivityTracker(application: Application) {
             ) = Unit
 
             override fun onActivityDestroyed(activity: Activity) {
-                // SC-007: a window torn down without its boundaries disposing cleanly must not leave
-                // its requests outstanding — that would surface as a permanently black screenshot on
-                // some unrelated screen. The weak table keeps the key lookup safe even once the
-                // activity is collectable, and releaseWindow is idempotent on a stale key.
+                // SC-007: release any outstanding requests so a dead window does not leave
+                // protection permanently set on an unrelated screen.
                 keyForActivity(activity)?.let(shieldCore.registry::releaseWindow)
             }
         },

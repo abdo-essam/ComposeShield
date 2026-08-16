@@ -47,8 +47,6 @@ internal class AppSwitcher {
             observeLifecycle()
         } else {
             stopObserving()
-            // Remove any overlay already showing, so disabling takes effect immediately rather than
-            // at the next foreground.
             hideOverlay()
         }
     }
@@ -81,11 +79,7 @@ internal class AppSwitcher {
     }
 
     /**
-     * Installs the blur, reusing any existing one.
-     *
-     * The reuse check is what prevents accumulation across cycles — a fresh overlay
-     * per background/foreground cycle would stack invisibly, and after enough cycles the app would
-     * be rendering through a pile of blur views.
+     * Installs the blur, reusing any existing one to prevent accumulation across cycles.
      */
     @OptIn(ExperimentalForeignApi::class)
     private fun showOverlay() {

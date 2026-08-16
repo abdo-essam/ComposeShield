@@ -44,9 +44,6 @@ public fun SecureContent(
 ) {
     val window = rememberWindowKey()
 
-    // Read through a snapshot state so a callback that changes between recompositions does not
-    // restart the DisposableEffect below — restarting it would release and re-apply protection,
-    // which on a visible window is a surface teardown the user sees as a black frame.
     val currentOnFailure by rememberUpdatedState(onProtectionFailure)
 
     DisposableEffect(window, capabilities) {

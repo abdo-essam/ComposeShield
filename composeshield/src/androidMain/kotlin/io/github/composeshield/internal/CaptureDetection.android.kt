@@ -41,9 +41,7 @@ internal class CaptureDetection {
             val displayManager = activity?.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager
 
             if (activity == null) {
-                // Nothing to observe through yet. Indeterminate, never NotCapturing: with no window we
-                // genuinely do not know, and saying "not being recorded" here would be a guess in the
-                // most dangerous direction.
+                // With no window we genuinely do not know — report Indeterminate, never NotCapturing.
                 trySend(PlatformCaptureReading.Indeterminate)
                 awaitClose { }
                 return@callbackFlow
@@ -57,8 +55,7 @@ internal class CaptureDetection {
                     when {
                         recording || mirroring -> PlatformCaptureReading.Capturing
 
-                        // Only claim "not capturing" where the OS can actually answer the recording
-                        // question. Below API 35 the absence of an external display says nothing about
+                        // Below API 35, the absence of an external display says nothing about
                         // whether a recorder is running.
                         supportsRecordingCallback -> PlatformCaptureReading.NotCapturing
 
@@ -80,8 +77,7 @@ internal class CaptureDetection {
                         publish()
                     }
                 }
-            // The Handler overload, not the single-argument one — the latter needs API 33 and this
-            // path has to work back to 24.
+            // The Handler overload (not single-arg): the latter needs API 33 and this path goes back to 24.
             displayManager?.registerDisplayListener(displayListener, Handler(Looper.getMainLooper()))
 
             var recordingCallback: java.util.function.Consumer<Int>? = null

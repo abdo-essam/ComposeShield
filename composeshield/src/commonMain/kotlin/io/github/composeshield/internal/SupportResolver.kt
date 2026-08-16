@@ -29,10 +29,6 @@ internal class SupportResolver(
         }
 
         val platformLevel = platform.platformSupport(capability)
-
-        // Preclusion only applies to something the platform would otherwise deliver. Reporting a
-        // capability as precluded when the OS is too old for it anyway would imply that releasing
-        // prevention brings it back, which is false and would send a consumer down a dead end.
         if (platformLevel == SupportLevel.Supported && isPrecludedByActivePrevention(capability, state)) {
             return SupportLevel.Unsupported(SupportLevel.Unsupported.Reason.PrecludedByActiveCapability)
         }

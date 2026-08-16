@@ -64,27 +64,17 @@ internal class CaptureStateSource(
         if (collection?.isActive == true) return
         collection = collectReadings()
 
-        // Subscribed here rather than left to a caller: a re-poll that has to be remembered is one
-        // that eventually is not, and the symptom — a stale Inactive after backgrounding — is
-        // invisible until it matters. Started once alongside the first collection.
         if (foregrounds?.isActive != true) {
-            foregrounds =
-                scope.launch {
-                    platform.observeForegroundEvents().collect { refresh() }
-                }
+            foregrounds = scope.launch { platform.observeForegroundEvents().collect { refresh() } }
         }
     }
 
     /**
      * Re-reads capture state on return to foreground.
      *
-     * Capture that began while the app was backgrounded may have produced no transition the app was
-     * alive to observe. Re-subscribing forces a fresh read — both actuals emit the current reading
-     * on collection — so the old subscription is cancelled first rather than left running alongside
-     * the new one.
-     *
-     * The published state is deliberately *not* reset to [CaptureState.Unknown] first: a live
-     * `Active` is a stronger claim than the absence of a fresh reading.
+     * Cancels the previous collection before starting a new one — both actuals emit the current
+     * reading immediately on collection, so this is a genuine re-read. The state is not reset to
+     * [CaptureState.Unknown] first: a live `Active` is a stronger claim than no fresh reading.
      */
     fun refresh() {
         collection?.cancel()
@@ -98,8 +88,6 @@ internal class CaptureStateSource(
 
     private fun onReading(reading: PlatformCaptureReading) {
         when (reading) {
-            // Never delayed, and it cancels any in-flight suppression: if the platform says capture
-            // is happening, a pending "it stopped" is now known to have been wrong.
             PlatformCaptureReading.Capturing -> {
                 cancelPendingInactive()
                 _state.value = CaptureState.Active
@@ -109,8 +97,7 @@ internal class CaptureStateSource(
                 suppressThenPublishInactive()
             }
 
-            // The platform cannot say. Publish that honestly rather than assuming the safe-looking
-            // answer — but do not let it retract a live Active reading, which is a stronger claim.
+            // Publish Unknown honestly; never retract a live Active reading.
             PlatformCaptureReading.Indeterminate -> {
                 cancelPendingInactive()
                 if (_state.value != CaptureState.Active) _state.value = CaptureState.Unknown
@@ -120,10 +107,8 @@ internal class CaptureStateSource(
 
     /**
      * Holds a transition to inactive for [SUPPRESSION_WINDOW], publishing only if nothing contradicts
-     * it.
-     *
-     * An already-pending suppression is left alone rather than restarted, so a platform emitting
-     * inactive repeatedly cannot keep pushing the deadline out and stall the transition forever.
+     * it. An already-pending suppression is never restarted — repeated "not capturing" readings
+     * cannot push the deadline out and stall the transition forever.
      */
     private fun suppressThenPublishInactive() {
         if (_state.value == CaptureState.Inactive) return
@@ -142,12 +127,7 @@ internal class CaptureStateSource(
     }
 
     private companion object {
-        /**
-         * How long a "capture stopped" reading must hold before it is believed.
-         *
-         * Long enough to absorb the iOS Live Activity flap, short enough that genuine transitions
-         * stay observable within the 1 s budget. Only ever delays the *reassuring* direction.
-         */
+        /** Long enough to absorb the iOS Live Activity flap; short enough to stay within the 1 s SC-004 budget. */
         val SUPPRESSION_WINDOW: Duration = 750.milliseconds
     }
 }

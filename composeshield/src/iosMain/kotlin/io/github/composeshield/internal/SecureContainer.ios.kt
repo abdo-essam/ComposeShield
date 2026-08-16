@@ -87,8 +87,6 @@ internal class SecureContainer private constructor(
             val field = UITextField()
             field.setSecureTextEntry(true)
 
-            // Force the field to build its private view tree — before a layout pass the canvas does
-            // not exist yet and the search below would find nothing.
             field.layoutIfNeeded()
 
             val canvas =
@@ -102,8 +100,8 @@ internal class SecureContainer private constructor(
         }
 
         /**
-         * `::class.simpleName` reads a name the compiler emitted rather than consulting a reflection
-         * runtime — no `kotlin-reflect` involved, so this stays within the zero-reflection guarantee.
+         * Matches by class-name substring — never by index, because iOS 17 reordered subviews
+         * and an index-based lookup would silently adopt a non-secure view.
          */
         private fun UIView.isCanvasLike(): Boolean = this::class.simpleName?.contains(CANVAS_CLASS_MARKER) == true
     }

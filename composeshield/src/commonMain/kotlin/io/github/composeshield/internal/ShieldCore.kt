@@ -60,12 +60,6 @@ internal class ShieldCore(
     val screenshotEvents: Flow<Unit> = platform.observeScreenshotEvents()
 
     private companion object {
-        /**
-         * Room for failures reported while nothing is collecting.
-         *
-         * Small on purpose. Failures are rare and arrive per reconcile; a large buffer would only
-         * serve to replay a long-stale backlog to a collector that arrived much later.
-         */
         const val FAILURE_BUFFER = 8
     }
 }
@@ -86,8 +80,6 @@ internal class ShieldCore(
 private fun mainDispatcher(): CoroutineDispatcher =
     try {
         val candidate = Dispatchers.Main
-        // A real dispatch, because that is where the failure surfaces. The coroutine is cancelled
-        // immediately — the probe is the dispatch attempt, not the body.
         CoroutineScope(candidate).launch { }.cancel()
         candidate
     } catch (unavailable: Throwable) {

@@ -9,15 +9,8 @@ plugins {
     alias(libs.plugins.detekt)
 }
 
-// The unsuppressable half of the zero-reflection guarantee (Principle V, research.md R12).
-// Detekt's ForbiddenImport rule can be suppressed with an annotation; a missing artifact cannot.
-//
-// Scoped to the configurations that describe what the library *ships* and what a consumer would
-// resolve, deliberately NOT `configurations.configureEach`. The broad form also strips
-// kotlin-reflect from the Kotlin compiler's own Build Tools API classpath, which needs reflection
-// to run — the build then fails with `NoClassDefFoundError: kotlin/reflect/full/KClasses` from
-// inside the compiler, far from any clue about its cause. The guarantee is about the runtime
-// dependency graph; the toolchain that compiles it is not part of that promise.
+// Zero-reflection guarantee: exclude kotlin-reflect from runtime dependency configurations.
+// Scoped to published configurations so compiler toolchain internals are not affected.
 subprojects {
     listOf(
         "api",
@@ -49,9 +42,7 @@ spotless {
 }
 
 detekt {
-    // ForbiddenImport is syntactic, so unlike ForbiddenMethodCall it analyses commonMain too.
-    // Type-resolution rules only run on JVM source sets and would silently skip shared code
-    // (detekt #7073) — the zero-reflection gate therefore has to be syntactic. See research.md R12.
+    // ForbiddenImport is syntactic, analyzing commonMain and platform source sets.
     source.setFrom(files("composeshield/src", "sample"))
     config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
