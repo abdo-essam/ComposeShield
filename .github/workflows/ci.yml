@@ -98,16 +98,21 @@ jobs:
           with open("config/device-matrix.yml") as f:
               cfg = yaml.safe_load(f)
 
-          required_keys = {"android-physical", "ios-physical-iphone"}
-          missing = required_keys - set(cfg.keys())
-          if missing:
-              print(f"❌ config/device-matrix.yml missing top-level keys: {missing}", file=sys.stderr)
+          if "devices" not in cfg:
+              print("❌ config/device-matrix.yml missing 'devices' top-level key", file=sys.stderr)
               sys.exit(1)
 
-          android = cfg["android-physical"]
+          devices = cfg["devices"]
+          required_devices = {"android-physical-ftl", "ios-physical-iphone"}
+          missing = required_devices - set(devices.keys())
+          if missing:
+              print(f"❌ config/device-matrix.yml missing devices: {missing}", file=sys.stderr)
+              sys.exit(1)
+
+          android = devices["android-physical-ftl"]
           for key in ("model", "os_version", "enabled"):
               if key not in android:
-                  print(f"❌ android-physical.{key} missing", file=sys.stderr)
+                  print(f"❌ android-physical-ftl.{key} missing", file=sys.stderr)
                   sys.exit(1)
 
           print("✅ config/device-matrix.yml is valid")
