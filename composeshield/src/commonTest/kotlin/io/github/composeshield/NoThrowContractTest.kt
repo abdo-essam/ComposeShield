@@ -44,7 +44,7 @@ class NoThrowContractTest {
 
     @Test
     fun `setting every app-switcher mode completes without throwing`() {
-        AppSwitcherProtection.entries.forEach { ComposeShield.appSwitcherProtection = it }
-        ComposeShield.appSwitcherProtection = AppSwitcherProtection.Automatic
+        TaskSwitcherProtection.entries.forEach { ComposeShield.taskSwitcherProtection = it }
+        ComposeShield.taskSwitcherProtection = TaskSwitcherProtection.Automatic
     }
 }

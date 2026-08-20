@@ -94,7 +94,7 @@ internal class FakePlatformProtection(
 
     override fun observeScreenshotEvents(): Flow<Unit> = if (screenshotEventsAvailable) screenshots else emptyFlow()
 
-    override fun applyAppSwitcherProtection(
+    override fun applyTaskSwitcherProtection(
         window: WindowKey,
         enabled: Boolean,
     ): Unit =

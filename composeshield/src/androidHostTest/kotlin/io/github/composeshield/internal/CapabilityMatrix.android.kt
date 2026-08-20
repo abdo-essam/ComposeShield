@@ -29,7 +29,7 @@ internal actual fun expectedSupport(capability: Capability): SupportLevel =
 
         Capability.ScreenshotEvents -> atLeast(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 
-        Capability.AppSwitcherProtection -> atLeast(Build.VERSION_CODES.TIRAMISU)
+        Capability.TaskSwitcherProtection -> atLeast(Build.VERSION_CODES.TIRAMISU)
     }
 
 private fun atLeast(floor: Int): SupportLevel =

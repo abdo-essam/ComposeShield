@@ -10,24 +10,12 @@ open annotation class io.github.composeshield/InternalComposeShieldApi : kotlin/
     constructor <init>() // io.github.composeshield/InternalComposeShieldApi.<init>|<init>(){}[0]
 }
 
-final enum class io.github.composeshield/AppSwitcherProtection : kotlin/Enum<io.github.composeshield/AppSwitcherProtection> { // io.github.composeshield/AppSwitcherProtection|null[0]
-    enum entry Always // io.github.composeshield/AppSwitcherProtection.Always|null[0]
-    enum entry Automatic // io.github.composeshield/AppSwitcherProtection.Automatic|null[0]
-    enum entry Disabled // io.github.composeshield/AppSwitcherProtection.Disabled|null[0]
-
-    final val entries // io.github.composeshield/AppSwitcherProtection.entries|#static{}entries[0]
-        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.composeshield/AppSwitcherProtection> // io.github.composeshield/AppSwitcherProtection.entries.<get-entries>|<get-entries>#static(){}[0]
-
-    final fun valueOf(kotlin/String): io.github.composeshield/AppSwitcherProtection // io.github.composeshield/AppSwitcherProtection.valueOf|valueOf#static(kotlin.String){}[0]
-    final fun values(): kotlin/Array<io.github.composeshield/AppSwitcherProtection> // io.github.composeshield/AppSwitcherProtection.values|values#static(){}[0]
-}
-
 final enum class io.github.composeshield/Capability : kotlin/Enum<io.github.composeshield/Capability> { // io.github.composeshield/Capability|null[0]
-    enum entry AppSwitcherProtection // io.github.composeshield/Capability.AppSwitcherProtection|null[0]
     enum entry CaptureDetection // io.github.composeshield/Capability.CaptureDetection|null[0]
     enum entry RecordingPrevention // io.github.composeshield/Capability.RecordingPrevention|null[0]
     enum entry ScreenshotEvents // io.github.composeshield/Capability.ScreenshotEvents|null[0]
     enum entry ScreenshotPrevention // io.github.composeshield/Capability.ScreenshotPrevention|null[0]
+    enum entry TaskSwitcherProtection // io.github.composeshield/Capability.TaskSwitcherProtection|null[0]
 
     final val entries // io.github.composeshield/Capability.entries|#static{}entries[0]
         final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.composeshield/Capability> // io.github.composeshield/Capability.entries.<get-entries>|<get-entries>#static(){}[0]
@@ -46,6 +34,18 @@ final enum class io.github.composeshield/CaptureState : kotlin/Enum<io.github.co
 
     final fun valueOf(kotlin/String): io.github.composeshield/CaptureState // io.github.composeshield/CaptureState.valueOf|valueOf#static(kotlin.String){}[0]
     final fun values(): kotlin/Array<io.github.composeshield/CaptureState> // io.github.composeshield/CaptureState.values|values#static(){}[0]
+}
+
+final enum class io.github.composeshield/TaskSwitcherProtection : kotlin/Enum<io.github.composeshield/TaskSwitcherProtection> { // io.github.composeshield/TaskSwitcherProtection|null[0]
+    enum entry Always // io.github.composeshield/TaskSwitcherProtection.Always|null[0]
+    enum entry Automatic // io.github.composeshield/TaskSwitcherProtection.Automatic|null[0]
+    enum entry Disabled // io.github.composeshield/TaskSwitcherProtection.Disabled|null[0]
+
+    final val entries // io.github.composeshield/TaskSwitcherProtection.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.composeshield/TaskSwitcherProtection> // io.github.composeshield/TaskSwitcherProtection.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.composeshield/TaskSwitcherProtection // io.github.composeshield/TaskSwitcherProtection.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.composeshield/TaskSwitcherProtection> // io.github.composeshield/TaskSwitcherProtection.values|values#static(){}[0]
 }
 
 abstract interface io.github.composeshield/ProtectionHandle { // io.github.composeshield/ProtectionHandle|null[0]
@@ -94,9 +94,9 @@ final object io.github.composeshield/ComposeShield { // io.github.composeshield/
     final val screenshotEvents // io.github.composeshield/ComposeShield.screenshotEvents|{}screenshotEvents[0]
         final fun <get-screenshotEvents>(): kotlinx.coroutines.flow/Flow<kotlin/Unit> // io.github.composeshield/ComposeShield.screenshotEvents.<get-screenshotEvents>|<get-screenshotEvents>(){}[0]
 
-    final var appSwitcherProtection // io.github.composeshield/ComposeShield.appSwitcherProtection|{}appSwitcherProtection[0]
-        final fun <get-appSwitcherProtection>(): io.github.composeshield/AppSwitcherProtection // io.github.composeshield/ComposeShield.appSwitcherProtection.<get-appSwitcherProtection>|<get-appSwitcherProtection>(){}[0]
-        final fun <set-appSwitcherProtection>(io.github.composeshield/AppSwitcherProtection) // io.github.composeshield/ComposeShield.appSwitcherProtection.<set-appSwitcherProtection>|<set-appSwitcherProtection>(io.github.composeshield.AppSwitcherProtection){}[0]
+    final var taskSwitcherProtection // io.github.composeshield/ComposeShield.taskSwitcherProtection|{}taskSwitcherProtection[0]
+        final fun <get-taskSwitcherProtection>(): io.github.composeshield/TaskSwitcherProtection // io.github.composeshield/ComposeShield.taskSwitcherProtection.<get-taskSwitcherProtection>|<get-taskSwitcherProtection>(){}[0]
+        final fun <set-taskSwitcherProtection>(io.github.composeshield/TaskSwitcherProtection) // io.github.composeshield/ComposeShield.taskSwitcherProtection.<set-taskSwitcherProtection>|<set-taskSwitcherProtection>(io.github.composeshield.TaskSwitcherProtection){}[0]
 
     final fun isProtectionActive(): kotlin/Boolean // io.github.composeshield/ComposeShield.isProtectionActive|isProtectionActive(){}[0]
     final fun protect(kotlin.collections/Set<io.github.composeshield/Capability> = ...): io.github.composeshield/ProtectionHandle // io.github.composeshield/ComposeShield.protect|protect(kotlin.collections.Set<io.github.composeshield.Capability>){}[0]

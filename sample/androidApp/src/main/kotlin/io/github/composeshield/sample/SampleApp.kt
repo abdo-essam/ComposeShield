@@ -31,13 +31,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.composeshield.AppSwitcherProtection
 import io.github.composeshield.Capability
 import io.github.composeshield.CaptureState
 import io.github.composeshield.ComposeShield
 import io.github.composeshield.ProtectionHandle
 import io.github.composeshield.SecureContent
 import io.github.composeshield.SupportLevel
+import io.github.composeshield.TaskSwitcherProtection
 
 /**
  * Demonstrates all five capabilities against a visible marker.
@@ -55,7 +55,7 @@ fun SampleApp() {
 
     var boundaryActive by remember { mutableStateOf(false) }
     var imperativeHandle by remember { mutableStateOf<ProtectionHandle?>(null) }
-    var switcherMode by remember { mutableStateOf(ComposeShield.appSwitcherProtection) }
+    var switcherMode by remember { mutableStateOf(ComposeShield.taskSwitcherProtection) }
 
     val captureState by ComposeShield.captureState.collectAsStateSafely()
 
@@ -132,13 +132,13 @@ fun SampleApp() {
 
         Section("App switcher") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AppSwitcherProtection.entries.forEach { mode ->
+                TaskSwitcherProtection.entries.forEach { mode ->
                     Chip(
                         label = mode.name,
                         selected = switcherMode == mode,
                         onClick = {
                             switcherMode = mode
-                            ComposeShield.appSwitcherProtection = mode
+                            ComposeShield.taskSwitcherProtection = mode
                             log.add("app-switcher mode = $mode")
                         },
                     )

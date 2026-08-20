@@ -108,14 +108,14 @@ public object ComposeShield {
 
     /**
      * How the OS task-switcher snapshot should be treated. Defaults to
-     * [AppSwitcherProtection.Automatic].
+     * [TaskSwitcherProtection.Automatic].
      *
      * Assigning takes effect immediately, including with no protection boundary composed at all —
-     * which is what makes [AppSwitcherProtection.Always] usable on its own.
+     * which is what makes [TaskSwitcherProtection.Always] usable on its own.
      */
-    public var appSwitcherProtection: AppSwitcherProtection
-        get() = shieldCore.registry.current.appSwitcherMode
-        set(value) = shieldCore.registry.setAppSwitcherMode(value)
+    public var taskSwitcherProtection: TaskSwitcherProtection
+        get() = shieldCore.registry.current.taskSwitcherMode
+        set(value) = shieldCore.registry.setTaskSwitcherMode(value)
 }
 
 /**

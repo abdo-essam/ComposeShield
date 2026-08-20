@@ -1,6 +1,6 @@
 package io.github.composeshield.internal
 
-import io.github.composeshield.AppSwitcherProtection
+import io.github.composeshield.TaskSwitcherProtection
 import io.github.composeshield.Capability
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -170,16 +170,16 @@ internal class ProtectionRegistry(
     fun releaseWindow(window: WindowKey) {
         mutate { snapshot -> snapshot.copy(requests = snapshot.requests - window) }
         platform.clearProtection(window)
-        reconcileAppSwitcher(window)
+        reconcileTaskSwitcher(window)
     }
 
     /** Sets the app-switcher mode and applies the consequence immediately. */
-    fun setAppSwitcherMode(mode: AppSwitcherProtection) {
-        mutate { snapshot -> snapshot.copy(appSwitcherMode = mode) }
+    fun setTaskSwitcherMode(mode: TaskSwitcherProtection) {
+        mutate { snapshot -> snapshot.copy(taskSwitcherMode = mode) }
         val windows = current.requests.keys
         // Always must act even with no requests outstanding — fall back to the unbound key so there
         // is something to iterate over when the request map is empty.
-        if (windows.isEmpty()) reconcileAppSwitcher(WindowKey.Unbound) else windows.forEach(::reconcileAppSwitcher)
+        if (windows.isEmpty()) reconcileTaskSwitcher(WindowKey.Unbound) else windows.forEach(::reconcileTaskSwitcher)
     }
 
     /**
@@ -202,7 +202,7 @@ internal class ProtectionRegistry(
             }
         }
         pruneStaleFailures()
-        reconcileAppSwitcher(window)
+        reconcileTaskSwitcher(window)
     }
 
     /**
@@ -230,10 +230,10 @@ internal class ProtectionRegistry(
     /**
      * Applies standalone app-switcher protection, unless capture prevention already covers it.
      */
-    private fun reconcileAppSwitcher(window: WindowKey) {
+    private fun reconcileTaskSwitcher(window: WindowKey) {
         val snapshot = current
         val coveredByPrevention = snapshot.effectiveCapabilities(window).any { it.coversAppSwitcher }
-        platform.applyAppSwitcherProtection(window, snapshot.shouldProtectAppSwitcher() && !coveredByPrevention)
+        platform.applyTaskSwitcherProtection(window, snapshot.shouldProtectTaskSwitcher() && !coveredByPrevention)
     }
 
     /**

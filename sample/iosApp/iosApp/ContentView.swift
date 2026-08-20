@@ -13,7 +13,7 @@ struct ContentView: View {
     // MARK: State
 
     @State private var boundaryActive = false
-    @State private var switcherMode: AppSwitcherProtection = .automatic
+    @State private var switcherMode: TaskSwitcherProtection = .automatic
     @State private var simulateFailure = false
     @State private var captureState: CaptureState = .unknown
     @State private var eventLog: [String] = []
@@ -24,10 +24,10 @@ struct ContentView: View {
         .recordingprevention,
         .capturedetection,
         .screenshotevents,
-        .appswitcherprotection,
+        .taskswitcherprotection,
     ]
 
-    private let allSwitcherModes: [AppSwitcherProtection] = [
+    private let allSwitcherModes: [TaskSwitcherProtection] = [
         .automatic,
         .always,
         .disabled,
@@ -113,7 +113,7 @@ struct ContentView: View {
                         selected: switcherMode == mode
                     ) {
                         switcherMode = mode
-                        ComposeShield.shared.appSwitcherProtection = mode
+                        ComposeShield.shared.taskSwitcherProtection = mode
                         appendLog("app-switcher mode = \(switcherLabel(mode))")
                     }
                 }
@@ -210,7 +210,7 @@ struct ContentView: View {
         }
     }
 
-    private func switcherLabel(_ mode: AppSwitcherProtection) -> String {
+    private func switcherLabel(_ mode: TaskSwitcherProtection) -> String {
         switch mode {
         case .automatic: return "Automatic"
         case .always: return "Always"

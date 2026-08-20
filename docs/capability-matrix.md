@@ -19,7 +19,7 @@ It is a **contract, not documentation**: `CapabilityMatrixTest` asserts that run
 | `RecordingPrevention` | Supported (24+) | Supported (15+) |
 | `CaptureDetection` | Supported (35+) | Supported (15+) |
 | `ScreenshotEvents` | Supported (34+), precluded by active prevention | Supported (15+) |
-| `AppSwitcherProtection` | Supported (24+ with prevention; 33+ standalone) | Supported (15+) |
+| `TaskSwitcherProtection` | Supported (24+ with prevention; 33+ standalone) | Supported (15+) |
 
 ---
 
@@ -32,8 +32,8 @@ It is a **contract, not documentation**: `CapabilityMatrixTest` asserts that run
 | `CaptureDetection` — recording | `WindowManager.addScreenRecordingCallback` | **35** | `DETECT_SCREEN_RECORDING` (normal) | `Supported` ≥35, else `Unsupported(OsVersionTooLow)` |
 | `CaptureDetection` — external display | `DisplayManager` + `DisplayListener` | 24 | none | `Supported` |
 | `ScreenshotEvents` | `Activity.registerScreenCaptureCallback` | **34** | `DETECT_SCREEN_CAPTURE` (normal) | see conflict below |
-| `AppSwitcherProtection` — with prevention | `FLAG_SECURE` (covers recents) | 24 | none | `Supported` |
-| `AppSwitcherProtection` — standalone | `setRecentsScreenshotEnabled(false)` | **33** | none | `Supported` ≥33, else `Unsupported(OsVersionTooLow)` |
+| `TaskSwitcherProtection` — with prevention | `FLAG_SECURE` (covers recents) | 24 | none | `Supported` |
+| `TaskSwitcherProtection` — standalone | `setRecentsScreenshotEnabled(false)` | **33** | none | `Supported` ≥33, else `Unsupported(OsVersionTooLow)` |
 
 Both permissions are `protectionLevel="normal"` — install-time, no runtime prompt, no user-facing
 dialog, no data access.
@@ -70,7 +70,7 @@ This is platform behaviour, not a library design choice — see
 | `CaptureDetection` | `UITraitSceneCaptureState` on `UIWindowScene` | 17 | `Supported` |
 | `CaptureDetection` (fallback) | `UIScreen.capturedDidChangeNotification` | 15 | `Supported` |
 | `ScreenshotEvents` | `userDidTakeScreenshotNotification` | 15 | `Supported` |
-| `AppSwitcherProtection` | Overlay on scene resign-active | 15 | `Supported` |
+| `TaskSwitcherProtection` | Overlay on scene resign-active | 15 | `Supported` |
 
 `ScreenshotPrevention` and `RecordingPrevention` share the single secure-container mechanism on iOS.
 

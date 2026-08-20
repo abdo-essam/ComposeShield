@@ -57,7 +57,7 @@ internal class AndroidPlatformProtection : PlatformProtection {
 
     override fun observeForegroundEvents(): Flow<Unit> = foreground.events()
 
-    override fun applyAppSwitcherProtection(
+    override fun applyTaskSwitcherProtection(
         window: WindowKey,
         enabled: Boolean,
     ) {
@@ -69,7 +69,7 @@ internal class AndroidPlatformProtection : PlatformProtection {
             Capability.ScreenshotPrevention, Capability.RecordingPrevention -> SupportLevel.Supported
             Capability.CaptureDetection -> detection.support()
             Capability.ScreenshotEvents -> screenshots.support()
-            Capability.AppSwitcherProtection -> appSwitcher.support()
+            Capability.TaskSwitcherProtection -> appSwitcher.support()
         }
 }
 

@@ -7,7 +7,7 @@ package io.github.composeshield
  *
  * Capabilities are of two kinds:
  *
- * - **Prevention** ([ScreenshotPrevention], [RecordingPrevention], [AppSwitcherProtection]) stops a
+ * - **Prevention** ([ScreenshotPrevention], [RecordingPrevention], [TaskSwitcherProtection]) stops a
  *   capture from succeeding.
  * - **Detection** ([CaptureDetection], [ScreenshotEvents]) reports that a capture happened.
  *
@@ -67,21 +67,21 @@ public enum class Capability {
      * Obscures application content in the OS task switcher when the app is backgrounded.
      *
      * Active by default whenever any protection request is outstanding, and separately available
-     * with no protection boundary at all — see [ComposeShield.appSwitcherProtection].
+     * with no protection boundary at all — see [ComposeShield.taskSwitcherProtection].
      *
      * **Android**: implied by `FLAG_SECURE` while prevention is active; standalone use requires
      * API 33.
      *
      * **iOS**: `Supported` throughout, via an overlay installed when the scene resigns active.
      */
-    AppSwitcherProtection,
+    TaskSwitcherProtection,
     ;
 
     /** Whether this capability prevents capture, as opposed to reporting it. */
     internal val isPrevention: Boolean
         get() =
             when (this) {
-                ScreenshotPrevention, RecordingPrevention, AppSwitcherProtection -> true
+                ScreenshotPrevention, RecordingPrevention, TaskSwitcherProtection -> true
                 CaptureDetection, ScreenshotEvents -> false
             }
 }

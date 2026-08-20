@@ -3,14 +3,14 @@ package io.github.composeshield
 /**
  * How the OS task-switcher snapshot should be treated.
  *
- * Set through [ComposeShield.appSwitcherProtection]. The switcher is the most frequently encountered
+ * Set through [ComposeShield.taskSwitcherProtection]. The switcher is the most frequently encountered
  * real-world leak vector — the system photographs the app on every backgrounding, whether or not
  * anyone deliberately captured anything — and it is officially supported on both platforms, so it
  * needs no unsanctioned-mechanism opt-in.
  *
  * **Thread-safety**: an immutable enum, safe to read from any thread.
  */
-public enum class AppSwitcherProtection {
+public enum class TaskSwitcherProtection {
     /**
      * Protect the switcher whenever any protection request is outstanding. **The default.**
      *

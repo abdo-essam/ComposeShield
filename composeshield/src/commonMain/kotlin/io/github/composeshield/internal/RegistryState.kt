@@ -1,6 +1,6 @@
 package io.github.composeshield.internal
 
-import io.github.composeshield.AppSwitcherProtection
+import io.github.composeshield.TaskSwitcherProtection
 import io.github.composeshield.Capability
 
 /**
@@ -23,7 +23,7 @@ internal data class RegistryState(
     /** Capabilities whose mechanism was requested but failed to install, or has stopped working. */
     val failedMechanisms: Set<Capability> = emptySet(),
     /** The application's app-switcher preference. */
-    val appSwitcherMode: AppSwitcherProtection = AppSwitcherProtection.Automatic,
+    val taskSwitcherMode: TaskSwitcherProtection = TaskSwitcherProtection.Automatic,
 ) {
     /** Whether any request is outstanding on [window]. */
     fun isProtected(window: WindowKey): Boolean = requests[window]?.isNotEmpty() == true
@@ -59,14 +59,14 @@ internal data class RegistryState(
     /**
      * Whether app-switcher protection should be applied, given the mode and outstanding requests.
      *
-     * [AppSwitcherProtection.Automatic] follows the requests; the other two ignore them entirely,
+     * [TaskSwitcherProtection.Automatic] follows the requests; the other two ignore them entirely,
      * which is what makes standalone switcher protection possible with no boundary composed at all.
      */
-    fun shouldProtectAppSwitcher(): Boolean =
-        when (appSwitcherMode) {
-            AppSwitcherProtection.Automatic -> isProtectedAnywhere()
-            AppSwitcherProtection.Always -> true
-            AppSwitcherProtection.Disabled -> false
+    fun shouldProtectTaskSwitcher(): Boolean =
+        when (taskSwitcherMode) {
+            TaskSwitcherProtection.Automatic -> isProtectedAnywhere()
+            TaskSwitcherProtection.Always -> true
+            TaskSwitcherProtection.Disabled -> false
         }
 }
 

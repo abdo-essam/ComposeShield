@@ -1,6 +1,6 @@
 package io.github.composeshield.internal
 
-import io.github.composeshield.AppSwitcherProtection
+import io.github.composeshield.TaskSwitcherProtection
 import io.github.composeshield.Capability
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -8,7 +8,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /** US4 — app-switcher protection, including the no-double-application rule (FR-015d). */
-class AppSwitcherTest {
+class TaskSwitcherTest {
     private val platform = FakePlatformProtection()
     private val registry = ProtectionRegistry(platform)
     private val window = WindowKey("test-window")
@@ -17,31 +17,31 @@ class AppSwitcherTest {
     fun `Automatic follows outstanding protection requests`() {
         // FR-015a: the common case needs no second opt-in, because an app protecting a screen
         // almost always wants that screen absent from the switcher too.
-        assertFalse(registry.current.shouldProtectAppSwitcher())
+        assertFalse(registry.current.shouldProtectTaskSwitcher())
 
         val request = registry.acquire(window, setOf(Capability.CaptureDetection))
-        assertTrue(registry.current.shouldProtectAppSwitcher())
+        assertTrue(registry.current.shouldProtectTaskSwitcher())
 
         registry.release(request)
-        assertFalse(registry.current.shouldProtectAppSwitcher())
+        assertFalse(registry.current.shouldProtectTaskSwitcher())
     }
 
     @Test
     fun `Always protects the switcher with no boundary composed at all`() {
         // FR-015c: usable purely against a shoulder-surfer in the task list, with no capture
         // prevention involved.
-        registry.setAppSwitcherMode(AppSwitcherProtection.Always)
+        registry.setTaskSwitcherMode(TaskSwitcherProtection.Always)
 
-        assertTrue(registry.current.shouldProtectAppSwitcher())
+        assertTrue(registry.current.shouldProtectTaskSwitcher())
         assertContains(platform.appSwitcherProtectedWindows, WindowKey.Unbound)
     }
 
     @Test
     fun `Disabled overrides the default while leaving prevention active`() {
-        registry.setAppSwitcherMode(AppSwitcherProtection.Disabled)
+        registry.setTaskSwitcherMode(TaskSwitcherProtection.Disabled)
         registry.acquire(window, setOf(Capability.ScreenshotPrevention))
 
-        assertFalse(registry.current.shouldProtectAppSwitcher())
+        assertFalse(registry.current.shouldProtectTaskSwitcher())
         assertContains(
             platform.protectedWindows,
             window,

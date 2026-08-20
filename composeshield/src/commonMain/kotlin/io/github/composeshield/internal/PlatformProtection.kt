@@ -56,7 +56,7 @@ internal interface PlatformProtection {
      * the prevention primitive already obscures the snapshot, common code suppresses this call
      * rather than double-applying.
      */
-    fun applyAppSwitcherProtection(
+    fun applyTaskSwitcherProtection(
         window: WindowKey,
         enabled: Boolean,
     )

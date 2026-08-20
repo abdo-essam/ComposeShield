@@ -12,5 +12,5 @@ internal actual fun expectedSupport(capability: Capability): SupportLevel =
     when (capability) {
         Capability.ScreenshotPrevention, Capability.RecordingPrevention -> SupportLevel.Supported
         Capability.CaptureDetection, Capability.ScreenshotEvents -> SupportLevel.Supported
-        Capability.AppSwitcherProtection -> SupportLevel.Supported
+        Capability.TaskSwitcherProtection -> SupportLevel.Supported
     }

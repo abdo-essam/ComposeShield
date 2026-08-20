@@ -77,7 +77,7 @@ internal class IosPlatformProtection : PlatformProtection {
 
     override fun observeForegroundEvents(): Flow<Unit> = foreground.events()
 
-    override fun applyAppSwitcherProtection(
+    override fun applyTaskSwitcherProtection(
         window: WindowKey,
         enabled: Boolean,
     ) {
@@ -88,7 +88,7 @@ internal class IosPlatformProtection : PlatformProtection {
         when (capability) {
             Capability.ScreenshotPrevention, Capability.RecordingPrevention -> SupportLevel.Supported
             Capability.CaptureDetection, Capability.ScreenshotEvents -> SupportLevel.Supported
-            Capability.AppSwitcherProtection -> SupportLevel.Supported
+            Capability.TaskSwitcherProtection -> SupportLevel.Supported
         }
 }
 

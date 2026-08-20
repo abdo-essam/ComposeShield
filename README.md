@@ -70,7 +70,7 @@ Read the [capability matrix](docs/capability-matrix.md) before making security c
 | `RecordingPrevention` | ✅ Supported (24+) | ✅ Supported (15+) |
 | `CaptureDetection` | ✅ Supported (35+) | ✅ Supported (15+) |
 | `ScreenshotEvents` | ✅ Supported (34+)† | ✅ Supported (15+) |
-| `AppSwitcherProtection` | ✅ Supported (33+) | ✅ Supported (15+) |
+| `TaskSwitcherProtection` | ✅ Supported (33+) | ✅ Supported (15+) |
 
 † Precluded by active screenshot prevention on Android — see
 [platform notes](docs/platform-notes.md#the-android-preventiondetection-exclusion).
@@ -146,13 +146,13 @@ On Android, this capability is precluded while screenshot prevention is active. 
 
 ```kotlin
 // Default: automatic — hidden whenever any SecureContent boundary is composed.
-ComposeShield.appSwitcherProtection = AppSwitcherProtection.Automatic
+ComposeShield.taskSwitcherProtection = TaskSwitcherProtection.Automatic
 
 // Always hide — even with no boundary composed:
-ComposeShield.appSwitcherProtection = AppSwitcherProtection.Always
+ComposeShield.taskSwitcherProtection = TaskSwitcherProtection.Always
 
 // Never hide — useful for testing:
-ComposeShield.appSwitcherProtection = AppSwitcherProtection.Disabled
+ComposeShield.taskSwitcherProtection = TaskSwitcherProtection.Disabled
 ```
 
 ---
