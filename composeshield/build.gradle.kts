@@ -182,9 +182,22 @@ val generateValidationReport by tasks.registering {
     outputs.dir(outputDir)
 
     doLast {
-        val commitSha = System.getenv("GITHUB_SHA") ?: "local"
-        val runId = System.getenv("GITHUB_RUN_ID") ?: "local"
-        val triggerType = System.getenv("TRIGGER_TYPE") ?: "on-demand"
+        val githubRepo = System.getenv("GITHUB_REPOSITORY") ?: "abdo-essam/ComposeShield"
+        val rawSha = System.getenv("GITHUB_SHA")
+        val commitSha =
+            if (!rawSha.isNullOrBlank() && rawSha.matches(Regex("^[0-9a-f]{40}$"))) {
+                rawSha
+            } else {
+                "0000000000000000000000000000000000000000"
+            }
+        val rawRunId = System.getenv("GITHUB_RUN_ID")
+        val runId =
+            if (!rawRunId.isNullOrBlank() && rawRunId.matches(Regex("^[0-9]+$"))) {
+                rawRunId
+            } else {
+                "0"
+            }
+        val triggerType = if (System.getenv("TRIGGER_TYPE") == "release") "release" else "on-demand"
         val timestamp = Instant.now().toString()
 
         // Parse test-id-map.yml (simple line-based — avoids external YAML dependency)
@@ -299,7 +312,7 @@ val generateValidationReport by tasks.registering {
               "trigger_type": "$triggerType",
               "generated_at": "$timestamp",
               "overall_status": "$overallStatus",
-              "pipeline_run_url": "https://github.com/${'$'}{System.getenv("GITHUB_REPOSITORY") ?: ""}/actions/runs/$runId",
+              "pipeline_run_url": "https://github.com/$githubRepo/actions/runs/$runId",
               "test_results": [${testResults.joinToString(",")}]
             }
             """.trimIndent(),
