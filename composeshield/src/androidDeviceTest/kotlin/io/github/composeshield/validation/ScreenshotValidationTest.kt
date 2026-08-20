@@ -1,13 +1,15 @@
+@file:Suppress("FunctionNaming", "MaxLineLength", "MagicNumber")
+
 package io.github.composeshield.validation
 
 import android.graphics.Bitmap
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.rules.ActivityScenarioRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import kotlin.test.assertTrue
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
  * Screenshot validation tests — run on a real physical Android device via Firebase Test Lab.
@@ -32,7 +34,6 @@ import kotlin.test.assertFalse
  */
 @RunWith(AndroidJUnit4::class)
 class ScreenshotValidationTest {
-
     @get:Rule
     val activityRule = ActivityScenarioRule(ShieldValidationActivity::class.java)
 
@@ -57,8 +58,9 @@ class ScreenshotValidationTest {
 
         assertFalse(
             actual = MarkerDetector.isMarkerVisible(bitmap),
-            message = "C-001 FAILED: SHIELD_TEST_SECRET_001 marker is detectable with protection ON. " +
-                "The OS did not honor the protection request. Evidence: ${bitmap.describe()}"
+            message =
+                "C-001 FAILED: SHIELD_TEST_SECRET_001 marker is detectable with protection ON. " +
+                    "The OS did not honor the protection request. Evidence: ${bitmap.describe()}",
         )
     }
 
@@ -80,8 +82,9 @@ class ScreenshotValidationTest {
 
         assertTrue(
             actual = MarkerDetector.isMarkerVisible(bitmap),
-            message = "C-002 FAILED: SHIELD_TEST_SECRET_001 marker is NOT detectable with protection OFF. " +
-                "The detection mechanism is broken (false negative). Evidence: ${bitmap.describe()}"
+            message =
+                "C-002 FAILED: SHIELD_TEST_SECRET_001 marker is NOT detectable with protection OFF. " +
+                    "The detection mechanism is broken (false negative). Evidence: ${bitmap.describe()}",
         )
     }
 
@@ -94,14 +97,17 @@ class ScreenshotValidationTest {
         activityRule.scenario.onActivity { it.enableShield(true) }
         // Shield was on — verify protection was applied
         val bitmapProtected = captureScreenshot()
-        assertFalse(MarkerDetector.isMarkerVisible(bitmapProtected), "C-003 pre-condition: marker should be absent when shield is ON")
+        assertFalse(
+            MarkerDetector.isMarkerVisible(bitmapProtected),
+            "C-003 pre-condition: marker should be absent when shield is ON",
+        )
 
         activityRule.scenario.onActivity { it.enableShield(false) }
         val bitmapUnprotected = captureScreenshot()
 
         assertTrue(
             actual = MarkerDetector.isMarkerVisible(bitmapUnprotected),
-            message = "C-003 FAILED: marker did not return after shield was disabled (residual protection)."
+            message = "C-003 FAILED: marker did not return after shield was disabled (residual protection).",
         )
     }
 
@@ -119,7 +125,7 @@ class ScreenshotValidationTest {
         val bitmap = captureScreenshot()
         assertFalse(
             actual = MarkerDetector.isMarkerVisible(bitmap),
-            message = "I-001 FAILED: double-enable produced inconsistent protection state."
+            message = "I-001 FAILED: double-enable produced inconsistent protection state.",
         )
     }
 
@@ -138,7 +144,7 @@ class ScreenshotValidationTest {
 
         assertTrue(
             actual = MarkerDetector.isMarkerVisible(bitmapReleased),
-            message = "R-001 FAILED: marker did not return after ComposeShield scope was released."
+            message = "R-001 FAILED: marker did not return after ComposeShield scope was released.",
         )
     }
 
@@ -151,14 +157,13 @@ class ScreenshotValidationTest {
      * [androidx.test.runner.screenshot.Screenshot] API — trustworthy proof
      * of OS-level enforcement (spec Assumption 3).
      */
-    private fun captureScreenshot(): Bitmap =
-        androidx.test.runner.screenshot.Screenshot.capture().bitmap
+    private fun captureScreenshot(): Bitmap = androidx.test.runner.screenshot.Screenshot.capture().bitmap
 
     /** Returns a brief description of the bitmap for failure messages. */
     private fun Bitmap.describe(): String {
         val cx = width / 4 + 25
         val cy = height / 4 + 25
-        return "bitmap=${width}x${height}, sample_center=($cx,$cy), " +
+        return "bitmap=${width}x$height, sample_center=($cx,$cy), " +
             "center_pixel=#${Integer.toHexString(getPixel(cx, cy)).uppercase()}"
     }
 }

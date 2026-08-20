@@ -9,7 +9,6 @@ import androidx.compose.runtime.mutableStateListOf
  * Backed by [mutableStateListOf] so Compose reacts to additions automatically.
  */
 internal class EventLog {
-
     val entries = mutableStateListOf<String>()
 
     /** Appends [message], evicting the oldest entry if the cap is reached. */

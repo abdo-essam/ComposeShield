@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber")
+
 package io.github.composeshield.validation
 
 import android.graphics.Color
@@ -18,8 +20,7 @@ import androidx.activity.ComponentActivity
  * The marker is intentionally bright and distinct ([MARKER_COLOR]) so it cannot
  * be confused with OS-replacement output (black frames, blur, etc.).
  */
-internal class ShieldValidationActivity : ComponentActivity() {
-
+class ShieldValidationActivity : ComponentActivity() {
     companion object {
         /** Marker fill color: bright red (#FF4444). Must match detection in test files. */
         val MARKER_COLOR: Int = Color.rgb(255, 68, 68)
@@ -56,15 +57,16 @@ internal class ShieldValidationActivity : ComponentActivity() {
         shieldController.release()
     }
 
-    private fun buildMarkerView(): TextView = TextView(this).apply {
-        text = MARKER_CONTENT_DESC
-        contentDescription = MARKER_CONTENT_DESC
-        setBackgroundColor(MARKER_COLOR)
-        setTextColor(Color.WHITE)
-        textSize = 12f
-        gravity = Gravity.CENTER
-        setPadding(8, 8, 8, 8)
-    }
+    private fun buildMarkerView(): TextView =
+        TextView(this).apply {
+            text = MARKER_CONTENT_DESC
+            contentDescription = MARKER_CONTENT_DESC
+            setBackgroundColor(MARKER_COLOR)
+            setTextColor(Color.WHITE)
+            textSize = 12f
+            gravity = Gravity.CENTER
+            setPadding(8, 8, 8, 8)
+        }
 
     private fun buildMarkerLayoutParams(): FrameLayout.LayoutParams {
         val sizePx = dpToPx(150)
@@ -76,6 +78,5 @@ internal class ShieldValidationActivity : ComponentActivity() {
         }
     }
 
-    private fun dpToPx(dp: Int): Int =
-        (dp * resources.displayMetrics.density).toInt()
+    private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
 }

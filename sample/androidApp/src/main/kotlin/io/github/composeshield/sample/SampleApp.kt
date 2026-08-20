@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber", "LongMethod", "TooManyFunctions")
+
 package io.github.composeshield.sample
 
 import androidx.compose.foundation.background

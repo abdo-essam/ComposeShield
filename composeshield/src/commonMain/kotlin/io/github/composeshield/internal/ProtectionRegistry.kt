@@ -1,7 +1,7 @@
 package io.github.composeshield.internal
 
-import io.github.composeshield.TaskSwitcherProtection
 import io.github.composeshield.Capability
+import io.github.composeshield.TaskSwitcherProtection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,9 +1,11 @@
+@file:Suppress("FunctionNaming")
+
 package io.github.composeshield.validation
 
 import android.graphics.Bitmap
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.rules.ActivityScenarioRule
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
@@ -30,7 +32,6 @@ import kotlin.test.assertFalse
  */
 @RunWith(AndroidJUnit4::class)
 class AppSwitcherValidationTest {
-
     @get:Rule
     val activityRule = ActivityScenarioRule(ShieldValidationActivity::class.java)
 
@@ -59,14 +60,14 @@ class AppSwitcherValidationTest {
 
         assertFalse(
             actual = markerVisible,
-            message = "A-001 FAILED: ${ShieldValidationActivity.MARKER_CONTENT_DESC} marker " +
-                "is detectable in the app-switcher preview. Protected content is leaking " +
-                "into the recent-apps thumbnail."
+            message =
+                "A-001 FAILED: ${ShieldValidationActivity.MARKER_CONTENT_DESC} marker " +
+                    "is detectable in the app-switcher preview. Protected content is leaking " +
+                    "into the recent-apps thumbnail.",
         )
     }
 
-    private fun captureScreenshot(): Bitmap =
-        androidx.test.runner.screenshot.Screenshot.capture().bitmap
+    private fun captureScreenshot(): Bitmap = androidx.test.runner.screenshot.Screenshot.capture().bitmap
 
     companion object {
         private const val IDLE_TIMEOUT_MS = 2_000L

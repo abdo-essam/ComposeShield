@@ -1,5 +1,6 @@
-import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
+import java.time.Instant
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -128,9 +129,11 @@ kotlin {
         // androidDeviceTest — instrumentation tests for FTL physical device validation
         getByName("androidDeviceTest").dependencies {
             implementation(kotlin("test"))
+            implementation(libs.androidx.test.core)
             implementation(libs.androidx.test.runner)
             implementation(libs.androidx.test.rules)
             implementation(libs.androidx.test.ext.junit)
+            implementation(libs.androidx.test.uiautomator)
         }
     }
 }
@@ -142,6 +145,19 @@ kotlin {
 tasks.withType<DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {
         failOnWarning.set(true)
+    }
+}
+
+// Workaround for Compose Multiplatform plugin issue with Android KMP device tests
+tasks.matching { it.name.contains("ComposeResourcesToAndroidAssets") }.configureEach {
+    try {
+        val method = this.javaClass.methods.find { it.name == "getOutputDirectory" }
+        val prop = method?.invoke(this)
+        if (prop is org.gradle.api.file.DirectoryProperty && !prop.isPresent) {
+            prop.set(layout.buildDirectory.dir("intermediates/compose-resources/$name"))
+        }
+    } catch (_: Throwable) {
+        // Ignore if reflection fails
     }
 }
 
@@ -160,16 +176,16 @@ val generateValidationReport by tasks.registering {
     val manualResultsFile = rootProject.file("build/manual-required-results.json")
     val outputDir = layout.buildDirectory.dir("reports")
 
-    inputs.dir(junitXmlDir).optional()
-    inputs.file(testIdMapFile)
-    inputs.file(manualResultsFile).optional()
+    inputs.files(testIdMapFile)
+    inputs.files(manualResultsFile)
+    inputs.files(junitXmlDir)
     outputs.dir(outputDir)
 
     doLast {
         val commitSha = System.getenv("GITHUB_SHA") ?: "local"
         val runId = System.getenv("GITHUB_RUN_ID") ?: "local"
         val triggerType = System.getenv("TRIGGER_TYPE") ?: "on-demand"
-        val timestamp = java.time.Instant.now().toString()
+        val timestamp = Instant.now().toString()
 
         // Parse test-id-map.yml (simple line-based — avoids external YAML dependency)
         val testIdMap = mutableMapOf<String, Map<String, String>>()
@@ -185,7 +201,7 @@ val generateValidationReport by tasks.registering {
                     currentId = idMatch.groupValues[1]
                 } else if (currentId != null && trimmed.contains(":")) {
                     val (k, v) = trimmed.split(":", limit = 2)
-                    entry[k.trim()] = v.trim().removeSurrounding('"')
+                    entry[k.trim()] = v.trim().removeSurrounding("\"")
                 }
             }
             currentId?.let { testIdMap[it] = entry.toMap() }
@@ -199,7 +215,8 @@ val generateValidationReport by tasks.registering {
             xmlDir.walkTopDown().filter { it.extension == "xml" }.forEach { xmlFile ->
                 val content = xmlFile.readText()
                 // Match <testcase classname="..." name="..."> blocks
-                Regex("""<testcase[^>]+classname=["']([^"']+)["'][^>]+name=["']([^"']+)["']"""
+                Regex(
+                    """<testcase[^>]+classname=["']([^"']+)["'][^>]+name=["']([^"']+)["']""",
                 ).findAll(content).forEach { m ->
                     val fullClass = m.groupValues[1]
                     val method = m.groupValues[2]
@@ -234,43 +251,48 @@ val generateValidationReport by tasks.registering {
         }
 
         // Build test results array
-        val testResults = testIdMap.map { (id, meta) ->
-            val status = when {
-                id in failedTests -> "failed"
-                id in manualRequired -> "manual_required"
-                id in passedTests -> "passed"
-                else -> "blocked" // device unavailable or test not run
+        val testResults =
+            testIdMap.map { (id, meta) ->
+                val status =
+                    when {
+                        id in failedTests -> "failed"
+                        id in manualRequired -> "manual_required"
+                        id in passedTests -> "passed"
+                        else -> "blocked" // device unavailable or test not run
+                    }
+                val failureReason = failedTests[id]
+                val evidenceUrl: String? = null // populated by workflow step that uploads artifacts
+
+                """
+                {
+                  "test_id": "$id",
+                  "test_name": "${meta["test_name"] ?: id}",
+                  "commit_sha": "$commitSha",
+                  "status": "$status",
+                  "platform": "${meta["platform"] ?: "unknown"}",
+                  "environment": "${meta["environment"] ?: "unknown"}",
+                  "device_model": ${if (meta["environment"] == "host-jvm") "null" else "null"},
+                  "os_version": ${if (meta["environment"] == "host-jvm") "null" else "null"},
+                  "evidence_url": null,
+                  "failure_reason": ${if (failureReason != null) "\"$failureReason\"" else "null"},
+                  "timestamp": "$timestamp"
+                }
+                """.trimIndent()
             }
-            val failureReason = failedTests[id]
-            val evidenceUrl: String? = null // populated by workflow step that uploads artifacts
 
-            """
-            {
-              "test_id": "$id",
-              "test_name": "${meta["test_name"] ?: id}",
-              "commit_sha": "$commitSha",
-              "status": "$status",
-              "platform": "${meta["platform"] ?: "unknown"}",
-              "environment": "${meta["environment"] ?: "unknown"}",
-              "device_model": ${if (meta["environment"] == "host-jvm") "null" else "null"},
-              "os_version": ${if (meta["environment"] == "host-jvm") "null" else "null"},
-              "evidence_url": null,
-              "failure_reason": ${if (failureReason != null) "\"$failureReason\"" else "null"},
-              "timestamp": "$timestamp"
-            }""".trimIndent()
-        }
-
-        val overallStatus = when {
-            failedTests.isNotEmpty() -> "fail"
-            testIdMap.keys.any { it !in passedTests && it !in manualRequired } -> "blocked"
-            else -> "pass"
-        }
+        val overallStatus =
+            when {
+                failedTests.isNotEmpty() -> "fail"
+                testIdMap.keys.any { it !in passedTests && it !in manualRequired } -> "blocked"
+                else -> "pass"
+            }
 
         // Write JSON report
         val reportsDir = outputDir.get().asFile
         reportsDir.mkdirs()
         val jsonReport = reportsDir.resolve("validation-report.json")
-        jsonReport.writeText("""
+        jsonReport.writeText(
+            """
             {
               "report_id": "$runId",
               "commit_sha": "$commitSha",
@@ -280,12 +302,23 @@ val generateValidationReport by tasks.registering {
               "pipeline_run_url": "https://github.com/${'$'}{System.getenv("GITHUB_REPOSITORY") ?: ""}/actions/runs/$runId",
               "test_results": [${testResults.joinToString(",")}]
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         // Write HTML report
         val htmlReport = reportsDir.resolve("validation-report.html")
-        val statusColor = if (overallStatus == "pass") "#2da44e" else if (overallStatus == "fail") "#cf222e" else "#bf8700"
-        htmlReport.writeText("""
+        val statusColor =
+            if (overallStatus ==
+                "pass"
+            ) {
+                "#2da44e"
+            } else if (overallStatus == "fail") {
+                "#cf222e"
+            } else {
+                "#bf8700"
+            }
+        htmlReport.writeText(
+            """
             <!DOCTYPE html><html><head><meta charset="utf-8">
             <title>ComposeShield Validation Report</title>
             <style>body{font-family:monospace;margin:2em}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:.5em}th{background:#f6f8fa}</style>
@@ -294,15 +327,30 @@ val generateValidationReport by tasks.registering {
             <p><b>Overall:</b> <span style="color:$statusColor">$overallStatus</span> | Commit: $commitSha | Run: $runId</p>
             <table><tr><th>Test ID</th><th>Name</th><th>Status</th><th>Platform</th><th>Failure Reason</th></tr>
             ${testIdMap.entries.joinToString("") { (id, meta) ->
-                val status = when { id in failedTests -> "failed"; id in manualRequired -> "manual_required"; id in passedTests -> "passed"; else -> "blocked" }
-                val color = when(status) { "passed" -> "#2da44e"; "failed" -> "#cf222e"; "manual_required" -> "#bf8700"; else -> "#666" }
+                val status =
+                    when {
+                        id in failedTests -> "failed"
+                        id in manualRequired -> "manual_required"
+                        id in passedTests -> "passed"
+                        else -> "blocked"
+                    }
+                val color =
+                    when (status) {
+                        "passed" -> "#2da44e"
+                        "failed" -> "#cf222e"
+                        "manual_required" -> "#bf8700"
+                        else -> "#666"
+                    }
                 "<tr><td>$id</td><td>${meta["test_name"] ?: id}</td><td style='color:$color'>$status</td><td>${meta["platform"] ?: ""}</td><td>${failedTests[id] ?: ""}</td></tr>"
             }}
             </table></body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         println("✅ Validation report written to ${jsonReport.absolutePath}")
         println("   Overall status: $overallStatus")
-        println("   Passed: ${passedTests.size} | Failed: ${failedTests.size} | Manual: ${manualRequired.size} | Blocked: ${testIdMap.size - passedTests.size - failedTests.size - manualRequired.size}")
+        println(
+            "   Passed: ${passedTests.size} | Failed: ${failedTests.size} | Manual: ${manualRequired.size} | Blocked: ${testIdMap.size - passedTests.size - failedTests.size - manualRequired.size}",
+        )
     }
 }

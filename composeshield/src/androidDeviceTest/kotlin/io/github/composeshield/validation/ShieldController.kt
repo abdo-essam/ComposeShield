@@ -10,8 +10,9 @@ import android.view.WindowManager
  * Using a dedicated controller keeps test code free of `WindowManager` details
  * and makes the activation surface easy to swap when the real library API stabilises.
  */
-internal class ShieldController(private val window: Window) {
-
+internal class ShieldController(
+    private val window: Window,
+) {
     private var released = false
 
     /** Applies FLAG_SECURE — marks the window as protected. */

@@ -1,7 +1,7 @@
 package io.github.composeshield.internal
 
-import io.github.composeshield.TaskSwitcherProtection
 import io.github.composeshield.Capability
+import io.github.composeshield.TaskSwitcherProtection
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertFalse

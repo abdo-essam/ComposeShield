@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber")
+
 package io.github.composeshield.validation
 
 import android.graphics.Bitmap
@@ -11,7 +13,6 @@ import android.graphics.Color
  * detectable. See [ScreenshotValidationTest] KDoc for the detection rationale.
  */
 internal object MarkerDetector {
-
     /**
      * Returns `true` if the [SHIELD_TEST_SECRET_001] marker is detectable
      * in [bitmap]; `false` if it is absent (protection applied or marker not rendered).

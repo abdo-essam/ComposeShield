@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber", "TooManyFunctions")
+
 package io.github.composeshield.sample
 
 import androidx.compose.foundation.background
@@ -91,18 +93,22 @@ internal fun Chip(
     ) {
         BasicText(
             text = label,
-            style = TextStyle(
-                color = if (selected) Color.White else Color(0xFF1B1B1F),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-            ),
+            style =
+                TextStyle(
+                    color = if (selected) Color.White else Color(0xFF1B1B1F),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
         )
     }
 }
 
 /** Key-value row with a monospace value. */
 @Composable
-internal fun Readout(label: String, value: String) {
+internal fun Readout(
+    label: String,
+    value: String,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -110,11 +116,12 @@ internal fun Readout(label: String, value: String) {
         BasicText(text = label, style = TextStyle(fontSize = 12.sp))
         BasicText(
             text = value,
-            style = TextStyle(
-                fontSize = 12.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-            ),
+            style =
+                TextStyle(
+                    fontSize = 12.sp,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                ),
         )
     }
 }

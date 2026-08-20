@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber")
+
 package io.github.composeshield.sample
 
 import androidx.compose.foundation.background
@@ -45,20 +47,22 @@ internal fun SecretMarker() {
     ) {
         BasicText(
             text = "TOP SECRET",
-            style = TextStyle(
-                color = Color(0xFF7CF5A0),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-            ),
+            style =
+                TextStyle(
+                    color = Color(0xFF7CF5A0),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
         )
         BasicText(
             text = "4111 1111 1111 1111",
-            style = TextStyle(
-                color = Color.White,
-                fontSize = 22.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-            ),
+            style =
+                TextStyle(
+                    color = Color.White,
+                    fontSize = 22.sp,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                ),
         )
         BasicText(
             text = "If you can read this in a screenshot, prevention is NOT active.",

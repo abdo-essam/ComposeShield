@@ -52,7 +52,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Build instrumentation APK
-        run: ./gradlew :composeshield:assembleDebugAndroidTest
+        run: ./gradlew :sample:androidApp:assembleDebug :composeshield:assembleAndroidTest
 
       # FTL Spark auto-creates the results bucket — no --results-bucket needed on Spark tier.
       # The results URL is printed to stdout and captured for the download step.
@@ -62,8 +62,8 @@ jobs:
         run: |
           RESULTS_URL=$(gcloud firebase test android run \
             --type instrumentation \
-            --app composeshield/build/outputs/apk/debug/composeshield-debug.apk \
-            --test composeshield/build/outputs/apk/androidTest/debug/composeshield-debug-androidTest.apk \
+            --app sample/androidApp/build/outputs/apk/debug/androidApp-debug.apk \
+            --test composeshield/build/outputs/apk/androidTest/composeshield-androidTest.apk \
             --device model=${{ env.FTL_DEVICE_MODEL }},version=${{ env.FTL_OS_VERSION }} \
             --results-dir=${{ inputs.results_dir_prefix }}-${{ github.run_id }} \
             --timeout 600s \
