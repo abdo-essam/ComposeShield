@@ -270,6 +270,9 @@ struct SecretMarker: View {
         .frame(maxWidth: .infinity)
         .background(Color(white: 0.11))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+        // SHIELD_TEST_SECRET_001 — stable pipeline identifier, mirrors Android contentDescription.
+        // Do NOT rename without updating the iOS XCUITest detector (when ios-physical-iphone is enabled).
+        .accessibilityIdentifier("SHIELD_TEST_SECRET_001")
     }
 }
 

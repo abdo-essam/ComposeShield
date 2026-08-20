@@ -255,9 +255,66 @@ real screenshot can prove the OS honoured the request.
 
 ---
 
+---
+
 ## Sample app
 
 `sample/androidApp/` is a runnable demonstration of all five capabilities against a visible marker.
 Screenshot the app with protection on — the marker should be absent. Screenshot with it off — the
 marker should be present. Everything else on screen (the live support readout, the event log) exists
 to explain *why* a given attempt behaved the way it did.
+
+---
+
+## CI/CD
+
+ComposeShield has three GitHub Actions pipelines. All are **entirely free** for public repositories.
+
+### Pipelines
+
+| Pipeline | Trigger | What it does |
+|---|---|---|
+| **PR** (`pr.yml`) | Every pull request | Static analysis, Robolectric tests, iOS Simulator tests, ABI check |
+| **On-Demand** (`on-demand.yml`) | Manual (`workflow_dispatch`) | Physical Android device via [Firebase Test Lab Spark](https://firebase.google.com/docs/test-lab) (free, 5 tests/day) + produces a `validation-report.json` |
+| **Release** (`release.yml`) | Push a `v*.*.*` tag | Reuses a prior on-demand report if one exists for the commit; runs device tests otherwise; gates publication on `overall_status = pass` |
+
+### Running the on-demand pipeline
+
+1. Go to **Actions → On-Demand Validation → Run workflow**
+2. All four jobs run in parallel (JVM, iOS Simulator, Android physical, report generation)
+3. Download the `on-demand-validation-report-<run-id>` artifact to see the full report
+
+### Reading the validation report
+
+`validation-report.json` maps each requirement ID (`C-001`, `A-001`, …) to a test result:
+
+```json
+{
+  "overall_status": "pass",
+  "test_results": [
+    {
+      "test_id": "C-001",
+      "test_name": "Screenshot protection ON — marker absent (OS enforcement confirmed)",
+      "status": "passed",
+      "platform": "android",
+      "environment": "physical",
+      "evidence_url": "https://..."
+    }
+  ]
+}
+```
+
+- `passed` — automated test confirmed the guarantee on a real device
+- `manual_required` — iOS physical tests not yet automated (see `config/device-matrix.yml`)
+- `blocked` — device was unavailable for this run; not a test failure
+- `failed` — the OS did **not** honour the protection request — file a bug
+
+### Adding a new device
+
+Edit `config/device-matrix.yml` only — no workflow YAML change is required (FR-022).
+
+### Further reading
+
+- [`docs/support-matrix.md`](docs/support-matrix.md) — per-platform capability and CI status
+- [`docs/security-limitations.md`](docs/security-limitations.md) — known limitations and security model boundary
+- [`specs/002-ci-cd-pipeline/quickstart.md`](specs/002-ci-cd-pipeline/quickstart.md) — end-to-end scenario walkthroughs

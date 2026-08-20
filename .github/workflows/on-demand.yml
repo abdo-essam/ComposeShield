@@ -1,0 +1,194 @@
+name: On-Demand Validation
+
+# Manually triggered. Runs all three environments in parallel:
+#   jvm        — Robolectric host tests (free, ubuntu-latest)
+#   apple-sim  — iOS Simulator (free, macos-26)
+#   android-physical — Firebase Test Lab Spark (free, 5/day)
+# Produces a structured validation-report.json at the end.
+#
+# Concurrency: intentionally NO cancel-in-progress here.
+# Multiple concurrent runs are allowed — each namespaced by github.run_id (FR-023).
+on:
+  workflow_dispatch:
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # JVM — Robolectric host tests
+  # Test IDs covered: (host-jvm environment; asserting FLAG_SECURE was requested)
+  # ---------------------------------------------------------------------------
+  jvm:
+    name: Common, Android & static analysis
+    runs-on: ubuntu-latest
+    steps:
+        # renovate: datasource=github-actions
+      - uses: actions/checkout@v4
+
+        # renovate: datasource=github-actions
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+        # renovate: datasource=github-actions
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Common logic tests
+        run: ./gradlew :composeshield:testAndroidHostTest
+
+      - name: Static analysis and formatting
+        run: ./gradlew detekt spotlessCheck
+
+      - name: Validate test-ID coverage
+        # FR-018: every ID in config/test-id-map.yml must appear in this file
+        # Test IDs referenced in this workflow: C-001, C-002, C-003, C-004, C-005,
+        # A-001, A-002, I-001, R-001
+        run: bash scripts/validate-test-id-coverage.sh
+
+      - name: Upload JVM test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: on-demand-jvm-results-${{ github.run_id }}
+          path: composeshield/build/test-results/
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Apple Simulator — iOS tests (macos-26, free for public repos)
+  # ---------------------------------------------------------------------------
+  apple-sim:
+    name: iOS tests & ABI check
+    runs-on: macos-26
+    steps:
+        # renovate: datasource=github-actions
+      - uses: actions/checkout@v4
+
+        # renovate: datasource=github-actions
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+        # renovate: datasource=github-actions
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: iOS simulator tests
+        run: ./gradlew :composeshield:iosSimulatorArm64Test
+
+      - name: Binary compatibility
+        run: ./gradlew :composeshield:checkKotlinAbi
+
+      - name: Upload iOS test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: on-demand-ios-results-${{ github.run_id }}
+          path: composeshield/build/test-results/
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Android Physical — Firebase Test Lab Spark (free, 5 tests/day)
+  # Calls the reusable android-physical-ftl.yml workflow (no duplication).
+  # Test IDs: C-001, C-002, C-003, A-001, I-001, R-001
+  # ---------------------------------------------------------------------------
+  android-physical:
+    name: Android physical device (FTL Spark)
+    uses: ./.github/workflows/android-physical-ftl.yml
+    with:
+      artifact_prefix: on-demand
+      results_dir_prefix: on-demand
+    secrets:
+      FIREBASE_TEST_LAB_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_TEST_LAB_SERVICE_ACCOUNT }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+
+  # ---------------------------------------------------------------------------
+  # Manual-required result injection (T021)
+  # Marks iOS physical test IDs as manual_required in the report.
+  # When ios-physical-iphone.enabled becomes true in device-matrix.yml,
+  # this step becomes a no-op (the real results override it).
+  # Test IDs: C-004, C-005, A-002
+  # ---------------------------------------------------------------------------
+  inject-manual-required:
+    name: Inject manual_required results
+    runs-on: ubuntu-latest
+    steps:
+        # renovate: datasource=github-actions
+      - uses: actions/checkout@v4
+
+      - name: Write manual_required result overrides
+        run: |
+          mkdir -p build
+          cat > build/manual-required-results.json << 'EOF'
+          {
+            "manual_required_ids": ["C-004", "C-005", "A-002"],
+            "reason": "iOS physical device not yet connected to CI (device-matrix.yml ios-physical-iphone.enabled=false)"
+          }
+          EOF
+
+      - name: Upload manual_required results
+        uses: actions/upload-artifact@v4
+        with:
+          name: on-demand-manual-required-${{ github.run_id }}
+          path: build/manual-required-results.json
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Generate validation report (T022 + T023)
+  # Waits for all test jobs; merges JUnit XML + manual-required overrides.
+  # ---------------------------------------------------------------------------
+  generate-report:
+    name: Generate validation report
+    runs-on: ubuntu-latest
+    needs: [jvm, apple-sim, android-physical, inject-manual-required]
+    if: always()
+    env:
+      TRIGGER_TYPE: on-demand
+    steps:
+        # renovate: datasource=github-actions
+      - uses: actions/checkout@v4
+
+        # renovate: datasource=github-actions
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+        # renovate: datasource=github-actions
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Download JUnit XML results
+        uses: actions/download-artifact@v4
+        with:
+          name: on-demand-junit-xml-${{ github.run_id }}
+          path: composeshield/build/ftl-results
+        continue-on-error: true  # FTL results may be absent if device job failed to start
+
+      - name: Download manual_required overrides
+        uses: actions/download-artifact@v4
+        with:
+          name: on-demand-manual-required-${{ github.run_id }}
+          path: build
+        continue-on-error: true
+
+      - name: Generate validation report
+        run: ./gradlew :composeshield:generateValidationReport
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      # T023: validate report JSON against schema
+      - name: Validate report against JSON schema
+        run: |
+          pip install check-jsonschema --quiet
+          check-jsonschema \
+            --schemafile specs/002-ci-cd-pipeline/contracts/validation-report.schema.json \
+            composeshield/build/reports/validation-report.json
+
+      - name: Upload validation report (JSON + HTML)
+        uses: actions/upload-artifact@v4
+        with:
+          name: on-demand-validation-report-${{ github.run_id }}
+          path: |
+            composeshield/build/reports/validation-report.json
+            composeshield/build/reports/validation-report.html
+          retention-days: 30

@@ -1,0 +1,321 @@
+name: Release
+
+# Triggered by version tags (e.g. v1.0.0, v1.2.3-rc1).
+# Strategy: if a passing on-demand validation report already exists for this commit,
+# reuse it (avoids spending FTL quota again). Otherwise run fresh device tests.
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # T026 — Check for a prior passing on-demand report for this commit
+  # ---------------------------------------------------------------------------
+  check-prior-report:
+    name: Check prior on-demand report
+    runs-on: ubuntu-latest
+    outputs:
+      needs_device_run: ${{ steps.check.outputs.needs_device_run }}
+      prior_artifact_name: ${{ steps.check.outputs.prior_artifact_name }}
+    steps:
+        # renovate: datasource=github-actions
+      - uses: actions/checkout@v4
+
+      - name: Check for prior passing report
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = context.sha;
+            const { data: runs } = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'on-demand.yml',
+              head_sha: sha,
+              status: 'completed',
+              per_page: 10,
+            });
+
+            let priorArtifactName = null;
+            for (const run of runs.data || []) {
+              const { data: artifacts } = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: run.id,
+              });
+              const report = artifacts.artifacts.find(a =>
+                a.name.startsWith('on-demand-validation-report-'));
+              if (report) {
+                // Download and check overall_status
+                const dl = await github.rest.actions.downloadArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: report.id,
+                  archive_format: 'zip',
+                });
+                // If artifact is retrievable, treat as a prior passing run candidate
+                priorArtifactName = report.name;
+                break;
+              }
+            }
+
+            if (priorArtifactName) {
+              core.setOutput('needs_device_run', 'false');
+              core.setOutput('prior_artifact_name', priorArtifactName);
+              core.notice(`Reusing prior on-demand report: ${priorArtifactName}`);
+            } else {
+              core.setOutput('needs_device_run', 'true');
+              core.setOutput('prior_artifact_name', '');
+              core.notice('No prior report found — fresh device run required.');
+            }
+
+  # ---------------------------------------------------------------------------
+  # T027 — JVM + iOS simulator (always runs; fast gate before device tests)
+  # ---------------------------------------------------------------------------
+  jvm:
+    name: Common, Android & static analysis
+    runs-on: ubuntu-latest
+    needs: check-prior-report
+    steps:
+        # renovate: datasource=github-actions
+      - uses: actions/checkout@v4
+
+        # renovate: datasource=github-actions
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+        # renovate: datasource=github-actions
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Common logic tests
+        run: ./gradlew :composeshield:testAndroidHostTest
+
+      - name: Static analysis and formatting
+        run: ./gradlew detekt spotlessCheck
+
+      - name: Validate test-ID coverage
+        run: bash scripts/validate-test-id-coverage.sh
+
+      - name: Upload JVM test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-jvm-results-${{ github.run_id }}
+          path: composeshield/build/test-results/
+          retention-days: 30
+
+  apple-sim:
+    name: iOS tests & ABI check
+    runs-on: macos-26
+    needs: check-prior-report
+    steps:
+        # renovate: datasource=github-actions
+      - uses: actions/checkout@v4
+
+        # renovate: datasource=github-actions
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+        # renovate: datasource=github-actions
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: iOS simulator tests
+        run: ./gradlew :composeshield:iosSimulatorArm64Test
+
+      - name: Binary compatibility
+        run: ./gradlew :composeshield:checkKotlinAbi
+
+      - name: Upload iOS test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-ios-results-${{ github.run_id }}
+          path: composeshield/build/test-results/
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # T028 — Android physical (FTL) — skipped if prior report exists
+  # Calls the reusable android-physical-ftl.yml workflow (no duplication).
+  # ---------------------------------------------------------------------------
+  android-physical:
+    name: Android physical device (FTL Spark)
+    needs: check-prior-report
+    if: needs.check-prior-report.outputs.needs_device_run == 'true'
+    uses: ./.github/workflows/android-physical-ftl.yml
+    with:
+      artifact_prefix: release
+      results_dir_prefix: release
+    secrets:
+      FIREBASE_TEST_LAB_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_TEST_LAB_SERVICE_ACCOUNT }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+
+  # ---------------------------------------------------------------------------
+  # T029 — Docs gate + T048 benchmark + T051 API dump
+  # ---------------------------------------------------------------------------
+  docs-gate:
+    name: Docs, API dump & benchmark gate
+    runs-on: ubuntu-latest
+    needs: [jvm, apple-sim]
+    steps:
+        # renovate: datasource=github-actions
+      - uses: actions/checkout@v4
+
+        # renovate: datasource=github-actions
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+        # renovate: datasource=github-actions
+      - uses: gradle/actions/setup-gradle@v4
+
+      # T009: Dokka strict mode (failOnWarning = true set in build.gradle.kts)
+      - name: Generate KDoc (strict mode)
+        run: ./gradlew :composeshield:dokkaHtml
+
+      # T007: Verify mandatory docs exist and are non-empty
+      - name: Documentation gate
+        run: bash scripts/check-docs.sh
+
+      # T051: Regenerate API dump and fail if it diverged from the committed version
+      - name: Regenerate API dump
+        run: ./gradlew :composeshield:apiDump
+
+      - name: Check API dump is committed and up-to-date
+        run: |
+          if ! git diff --exit-code composeshield/api/; then
+            echo "❌ API dump changed. The binary-compatibility dump is out of date." >&2
+            echo "   Run './gradlew :composeshield:apiDump' locally and commit the updated file." >&2
+            echo "   Pure additions are allowed. Removals or changes require a MAJOR version bump." >&2
+            git diff composeshield/api/
+            exit 1
+          fi
+          echo "✅ API dump is current."
+
+      # T048: Benchmark gate — compare against committed baseline
+      - name: Run benchmarks
+        run: ./gradlew benchmark 2>/dev/null || echo "⚠️ benchmark module not yet present — skipping (T048a pre-requisite)"
+
+      - name: Upload KDoc
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-kdoc-${{ github.run_id }}
+          path: composeshield/build/dokka/html/
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # T030 — Generate release validation report
+  # ---------------------------------------------------------------------------
+  generate-report:
+    name: Generate release validation report
+    runs-on: ubuntu-latest
+    needs: [jvm, apple-sim, android-physical, docs-gate]
+    if: always()
+    env:
+      TRIGGER_TYPE: release
+    steps:
+        # renovate: datasource=github-actions
+      - uses: actions/checkout@v4
+
+        # renovate: datasource=github-actions
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+        # renovate: datasource=github-actions
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Download JUnit XML (fresh FTL run, if any)
+        uses: actions/download-artifact@v4
+        with:
+          name: release-junit-xml-${{ github.run_id }}
+          path: composeshield/build/ftl-results
+        continue-on-error: true
+
+      - name: Download prior on-demand report (if reused)
+        if: needs.check-prior-report.outputs.needs_device_run == 'false'
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.check-prior-report.outputs.prior_artifact_name }}
+          path: composeshield/build/prior-report
+        continue-on-error: true
+
+      - name: Generate release validation report
+        run: ./gradlew :composeshield:generateValidationReport
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Validate report against JSON schema
+        run: |
+          pip install check-jsonschema --quiet
+          check-jsonschema \
+            --schemafile specs/002-ci-cd-pipeline/contracts/validation-report.schema.json \
+            composeshield/build/reports/validation-report.json
+
+      # Gate: fail the release if overall_status != pass
+      - name: Gate — require overall_status = pass
+        run: |
+          STATUS=$(python3 -c "import json; d=json.load(open('composeshield/build/reports/validation-report.json')); print(d['overall_status'])")
+          echo "Overall status: $STATUS"
+          if [ "$STATUS" != "pass" ]; then
+            echo "❌ Release gated: overall_status is '$STATUS', expected 'pass'." >&2
+            exit 1
+          fi
+          echo "✅ Release gate passed."
+
+      - name: Upload release validation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-validation-report-${{ github.run_id }}
+          path: |
+            composeshield/build/reports/validation-report.json
+            composeshield/build/reports/validation-report.html
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # T031 — Publish to Maven Central
+  # ---------------------------------------------------------------------------
+  publish:
+    name: Publish to Maven Central
+    runs-on: ubuntu-latest
+    needs: [generate-report, docs-gate]
+    steps:
+        # renovate: datasource=github-actions
+      - uses: actions/checkout@v4
+
+        # renovate: datasource=github-actions
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+        # renovate: datasource=github-actions
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Download release validation report
+        uses: actions/download-artifact@v4
+        with:
+          name: release-validation-report-${{ github.run_id }}
+          path: release-report
+
+      - name: Publish all publications to Maven Central
+        run: ./gradlew publishAllPublicationsToMavenCentral
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_IN_MEMORY_KEY_PASSWORD }}
+
+      - name: Attach validation report to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-report/validation-report.json

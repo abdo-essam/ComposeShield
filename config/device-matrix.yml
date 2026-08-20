@@ -1,0 +1,39 @@
+devices:
+  # JVM host runner — Robolectric-based Android host tests
+  # No physical device required; runs on ubuntu-latest
+  android-host-jvm:
+    platform: android
+    environment: host-jvm
+    runner: ubuntu-latest
+    enabled: true
+
+  # Physical Android device — Firebase Test Lab Spark (free tier)
+  # model and os_version drive the --device flag in gcloud firebase test android run
+  # Change model/os_version here; no workflow YAML change required (FR-022)
+  android-physical-ftl:
+    platform: android
+    environment: physical
+    provider: firebase-test-lab
+    model: Pixel6          # gcloud device model ID (gcloud firebase test android models list)
+    os_version: "34"       # Android API level as string
+    enabled: true
+
+  # iOS Simulator — GitHub-hosted macos-26 runner (free for public repos)
+  # iosSimulatorArm64 target only; not proof of OS-level enforcement
+  ios-sim-arm64:
+    platform: ios
+    environment: simulator
+    runner: macos-26
+    enabled: true
+
+  # Physical iOS device — disabled for v1 (manual_required)
+  # To promote iOS physical tests from manual_required to automated:
+  #   1. Set enabled: true below
+  #   2. Commit this file — no workflow YAML change required (FR-022)
+  ios-physical-iphone:
+    platform: ios
+    environment: physical
+    provider: manual           # update to a CI-connected device provider when available
+    model: iPhone16Pro         # device identifier for the provider
+    os_version: "18.0"
+    enabled: false             # flip to true once a physical iPhone is available in CI

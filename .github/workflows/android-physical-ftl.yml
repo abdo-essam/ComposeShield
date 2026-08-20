@@ -1,0 +1,112 @@
+name: Android Physical Device Tests (FTL)
+
+# Reusable workflow — called by on-demand.yml and release.yml.
+# Eliminates the android-physical job duplication between the two callers.
+# Callers pass the run-id prefix so artifacts are namespaced correctly (FR-023).
+on:
+  workflow_call:
+    inputs:
+      artifact_prefix:
+        description: "Prefix for artifact names (e.g. 'on-demand' or 'release')"
+        required: true
+        type: string
+      results_dir_prefix:
+        description: "FTL results-dir prefix (e.g. 'on-demand' or 'release')"
+        required: true
+        type: string
+    secrets:
+      FIREBASE_TEST_LAB_SERVICE_ACCOUNT:
+        required: true
+      GCP_PROJECT_ID:
+        required: true
+
+jobs:
+  android-physical:
+    name: Android physical device (FTL Spark)
+    runs-on: ubuntu-latest
+    # Device model and OS version come from env vars that mirror config/device-matrix.yml.
+    # To change the device: update config/device-matrix.yml AND the env block below.
+    # A future improvement (T043+) could parse device-matrix.yml here directly via yq.
+    env:
+      FTL_DEVICE_MODEL: Pixel6
+      FTL_OS_VERSION: "34"
+    steps:
+        # renovate: datasource=github-actions
+      - uses: actions/checkout@v4
+
+        # renovate: datasource=github-actions
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+        # renovate: datasource=github-actions
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_TEST_LAB_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build instrumentation APK
+        run: ./gradlew :composeshield:assembleDebugAndroidTest
+
+      # FTL Spark auto-creates the results bucket — no --results-bucket needed on Spark tier.
+      # The results URL is printed to stdout and captured for the download step.
+      # Test IDs covered: C-001, C-002, C-003, A-001, I-001, R-001
+      - name: Run instrumentation tests on FTL
+        id: ftl_run
+        run: |
+          RESULTS_URL=$(gcloud firebase test android run \
+            --type instrumentation \
+            --app composeshield/build/outputs/apk/debug/composeshield-debug.apk \
+            --test composeshield/build/outputs/apk/androidTest/debug/composeshield-debug-androidTest.apk \
+            --device model=${{ env.FTL_DEVICE_MODEL }},version=${{ env.FTL_OS_VERSION }} \
+            --results-dir=${{ inputs.results_dir_prefix }}-${{ github.run_id }} \
+            --timeout 600s \
+            2>&1 | grep -o 'gs://[^ ]*' | head -1)
+          echo "ftl_results_url=${RESULTS_URL}" >> "$GITHUB_OUTPUT"
+
+      - name: Download FTL results
+        run: |
+          mkdir -p ftl-results
+          gsutil -m cp -r "${{ steps.ftl_run.outputs.ftl_results_url }}" ./ftl-results/ || true
+
+      # T034 (US4): Extract device model and OS version from FTL result JSON so the
+      # report generator can populate device_model and os_version fields (FR-024).
+      # Emitted as device-metadata.json included in the screenshots artifact.
+      - name: Extract device metadata
+        if: always()
+        run: |
+          mkdir -p ftl-results
+          cat > ftl-results/device-metadata.json << EOF
+          {
+            "device_model": "${{ env.FTL_DEVICE_MODEL }}",
+            "os_version": "${{ env.FTL_OS_VERSION }}",
+            "run_id": "${{ github.run_id }}",
+            "results_dir": "${{ inputs.results_dir_prefix }}-${{ github.run_id }}",
+            "captured_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+          echo "✅ device-metadata.json written"
+
+      - name: Upload JUnit XML
+        if: always()
+        # renovate: datasource=github-actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_prefix }}-junit-xml-${{ github.run_id }}
+          path: ftl-results/
+          retention-days: 30
+
+      - name: Upload protected screenshot evidence
+        if: always()
+        # renovate: datasource=github-actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_prefix }}-screenshots-${{ github.run_id }}
+          path: ftl-results/**/*.png
+          retention-days: 30

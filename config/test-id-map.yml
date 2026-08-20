@@ -1,0 +1,75 @@
+# Test ID Mapping: Kotlin test class/method → requirement matrix ID
+#
+# Format:
+#   <test_id>:
+#     class: fully.qualified.TestClassName
+#     method: optionalMethodName          # omit to map the whole class
+#     test_name: "Human-readable label"
+#     platform: android | ios | cross
+#     environment: physical | simulator | host-jvm
+#
+# This file is read by the generateValidationReport Gradle task (T008).
+# Adding a new requirement: add an entry here + a matching test method. No YAML change needed.
+
+C-001:
+  class: io.github.composeshield.validation.ScreenshotValidationTest
+  method: screenshotWithProtectionOn_markerAbsent
+  test_name: "Screenshot protection ON — marker absent (OS enforcement confirmed)"
+  platform: android
+  environment: physical
+
+C-002:
+  class: io.github.composeshield.validation.ScreenshotValidationTest
+  method: screenshotWithProtectionOff_markerPresent
+  test_name: "Screenshot protection OFF — negative control (marker detectable)"
+  platform: android
+  environment: physical
+
+C-003:
+  class: io.github.composeshield.validation.ScreenshotValidationTest
+  method: screenshotAfterShieldDisabled_markerPresent
+  test_name: "Shield disabled after active — marker returns (no residual protection)"
+  platform: android
+  environment: physical
+
+C-004:
+  class: io.github.composeshield.validation.IosScreenshotValidationTest
+  method: screenshotWithProtectionOn_markerAbsent
+  test_name: "iOS screenshot protection ON — marker absent (manual_required for v1)"
+  platform: ios
+  environment: physical
+
+C-005:
+  class: io.github.composeshield.validation.IosScreenshotValidationTest
+  method: screenshotWithProtectionOff_markerPresent
+  test_name: "iOS screenshot protection OFF — negative control (manual_required for v1)"
+  platform: ios
+  environment: physical
+
+A-001:
+  class: io.github.composeshield.validation.AppSwitcherValidationTest
+  method: appSwitcherWithProtectionOn_markerAbsent
+  test_name: "App-switcher preview — marker absent when shield active"
+  platform: android
+  environment: physical
+
+A-002:
+  class: io.github.composeshield.validation.IosAppSwitcherValidationTest
+  method: appSwitcherWithProtectionOn_markerAbsent
+  test_name: "iOS app-switcher preview — marker absent (manual_required for v1)"
+  platform: ios
+  environment: physical
+
+I-001:
+  class: io.github.composeshield.validation.ScreenshotValidationTest
+  method: screenshotValidation_idempotent
+  test_name: "Double-enable idempotency — protection consistent across repeated activations"
+  platform: android
+  environment: physical
+
+R-001:
+  class: io.github.composeshield.validation.ScreenshotValidationTest
+  method: screenshotAfterRelease_markerPresent
+  test_name: "Release/cleanup — marker returns after ComposeShield scope ends"
+  platform: android
+  environment: physical

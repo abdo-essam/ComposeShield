@@ -1,28 +1,37 @@
-name: CI
+name: PR & Main Branch Checks
 
+# Runs on every pull request AND on every push to main.
+# This is the primary fast-feedback gate — it must stay under 10 minutes.
+# Device tests (FTL) run only via on-demand.yml or release.yml.
 on:
   push:
     branches: [main]
   pull_request:
 
+# Cancel in-progress runs for the same ref (saves Actions minutes).
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # Everything that does not need an Apple host. Robolectric asserts FLAG_SECURE was requested,
-  # which is the correct contract test for the library's own behaviour, and it runs free here.
+  # ---------------------------------------------------------------------------
+  # JVM — Robolectric host tests + static analysis
+  # Asserts FLAG_SECURE was *requested*. Device tests assert the OS *honoured* it.
+  # ---------------------------------------------------------------------------
   jvm:
     name: Common, Android & static analysis
     runs-on: ubuntu-latest
     steps:
+        # renovate: datasource=github-actions
       - uses: actions/checkout@v4
 
+        # renovate: datasource=github-actions
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
 
+        # renovate: datasource=github-actions
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Common logic tests
@@ -31,28 +40,81 @@ jobs:
       - name: Static analysis and formatting
         run: ./gradlew detekt spotlessCheck
 
-  # Pinned deliberately. CMP 1.11.x's ui-uikit hard-references _OBJC_CLASS_$_UIViewLayoutRegion,
-  # which only exists in the iOS 26 SDK, so the Xcode 16 line (macos-15) fails at link time with
-  # "Undefined symbols ... UIViewLayoutRegion" (fixed upstream only in CMP 1.12.0-rc01, #3278).
-  # `macos-latest` is never used — it silently jumps Xcode majors. `macos-*-large`/`-intel` are
-  # Intel and cannot run iosSimulatorArm64 at all (research.md R11).
+      # FR-018: every ID in config/test-id-map.yml must appear in a pipeline workflow
+      - name: Validate test-ID coverage
+        run: bash scripts/validate-test-id-coverage.sh
+
+      # FR-005: sample app must build cleanly
+      - name: Sample app build
+        run: ./gradlew :sample:androidApp:assembleDebug
+
+  # ---------------------------------------------------------------------------
+  # Apple — iOS Simulator tests + ABI check
+  #
+  # Pinned to macos-26: CMP 1.11.x's ui-uikit hard-references
+  # _OBJC_CLASS_$_UIViewLayoutRegion (iOS 26 SDK only). Using macos-latest is
+  # unsafe — it silently jumps Xcode majors. Intel runners cannot run
+  # iosSimulatorArm64 (research.md R11).
+  # ---------------------------------------------------------------------------
   apple:
     name: iOS tests & ABI check
     runs-on: macos-26
     steps:
+        # renovate: datasource=github-actions
       - uses: actions/checkout@v4
 
+        # renovate: datasource=github-actions
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
 
+        # renovate: datasource=github-actions
       - uses: gradle/actions/setup-gradle@v4
 
       - name: iOS simulator tests
         run: ./gradlew :composeshield:iosSimulatorArm64Test
 
-      # Must run here, not on Ubuntu: keepLocallyUnsupportedTargets = false means the Apple ABI
-      # is never inferred, so this check is only meaningful where Apple targets compile.
+      # Must run on Apple: keepLocallyUnsupportedTargets = false means the Apple ABI
+      # is never inferred on Ubuntu — this check is only meaningful where Apple targets compile.
       - name: Binary compatibility
         run: ./gradlew :composeshield:checkKotlinAbi
+
+  # ---------------------------------------------------------------------------
+  # Device matrix schema — fail fast if device-matrix.yml is malformed (T039)
+  # ---------------------------------------------------------------------------
+  validate-config:
+    name: Validate config files
+    runs-on: ubuntu-latest
+    steps:
+        # renovate: datasource=github-actions
+      - uses: actions/checkout@v4
+
+      - name: Validate device-matrix.yml structure
+        run: |
+          python3 - <<'EOF'
+          import yaml, sys
+
+          with open("config/device-matrix.yml") as f:
+              cfg = yaml.safe_load(f)
+
+          required_keys = {"android-physical", "ios-physical-iphone"}
+          missing = required_keys - set(cfg.keys())
+          if missing:
+              print(f"❌ config/device-matrix.yml missing top-level keys: {missing}", file=sys.stderr)
+              sys.exit(1)
+
+          android = cfg["android-physical"]
+          for key in ("model", "os_version", "enabled"):
+              if key not in android:
+                  print(f"❌ android-physical.{key} missing", file=sys.stderr)
+                  sys.exit(1)
+
+          print("✅ config/device-matrix.yml is valid")
+          EOF
+
+      - name: Validate workflow YAML syntax
+        run: |
+          bash scripts/validate-workflow.sh .github/workflows/ci.yml
+          bash scripts/validate-workflow.sh .github/workflows/on-demand.yml
+          bash scripts/validate-workflow.sh .github/workflows/release.yml
