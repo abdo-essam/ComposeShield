@@ -1,0 +1,107 @@
+# device-matrix.schema.yml
+#
+# Schema documentation for config/device-matrix.yml
+# This file is read at runtime by all three GitHub Actions workflows.
+# Changes to enabled flags and entries are configuration-only; no workflow YAML
+# changes are required (FR-022).
+
+# Top-level structure
+# -------------------
+# devices:
+#   - <DeviceMatrixEntry>
+#   - <DeviceMatrixEntry>
+
+# DeviceMatrixEntry fields
+# ------------------------
+# entry_id:         (string, required)
+#   Stable identifier. Never rename; test_id mappings reference this.
+#   Convention: <platform>-<environment>-<model-slug>
+#   Examples: android-physical-pixel6, ios-sim-arm64, android-host-jvm
+#
+# platform:         (enum: android | ios, required)
+#
+# environment:      (enum: physical | simulator | host-jvm, required)
+#
+# device_model:     (string, required)
+#   Matches the device name in the cloud service catalogue or a descriptive label.
+#   e.g. "Pixel 6", "iPhone 16 Pro Simulator", "JVM (Robolectric)"
+#
+# target_os_version: (string, required)
+#   e.g. "14", "18.0", "JVM"
+#
+# cloud_service:    (enum: firebase-test-lab | github-hosted | manual, required)
+#   - firebase-test-lab: submits test APK to FTL via gcloud CLI
+#   - github-hosted:     runs on GitHub-hosted macOS or Ubuntu runner
+#   - manual:            test is performed by a human; pipeline generates manual_required result
+#
+# enabled:          (boolean, required)
+#   false → device is excluded from all pipeline runs. No tests are blocked because
+#           of this entry; instead, referencing test IDs receive status: manual_required.
+#   true  → device participates in on-demand and release pipelines.
+#   PROMOTION: Set false → true to promote iOS physical tests from manual_required
+#              to automated execution (FR-022). No workflow YAML change required.
+#
+# test_ids:         (list of string, required)
+#   Stable test IDs from the requirement matrix that require this device/environment.
+#   The workflow generates a dynamic matrix step for each enabled entry and
+#   assigns the listed test IDs to it.
+#
+# requires_secret:  (string | null, required)
+#   Name of the GitHub Actions secret holding the service credential.
+#   null if no credential is required (e.g. github-hosted entries).
+
+# Example configuration (this is the authoritative schema; the live file is at config/device-matrix.yml)
+# ----------------------------------------
+# devices:
+#
+#   # Android: JVM / Robolectric (host tests, always enabled)
+#   - entry_id: android-host-jvm
+#     platform: android
+#     environment: host-jvm
+#     device_model: "JVM (Robolectric)"
+#     target_os_version: "JVM"
+#     cloud_service: github-hosted
+#     enabled: true
+#     test_ids: []          # All androidHostTest tests; IDs injected by the Gradle task
+#     requires_secret: null
+#
+#   # Android: physical device via Firebase Test Lab (on-demand + release)
+#   - entry_id: android-physical-ftl
+#     platform: android
+#     environment: physical
+#     device_model: "Pixel 6"
+#     target_os_version: "14"
+#     cloud_service: firebase-test-lab
+#     enabled: true
+#     test_ids:
+#       - C-001   # FLAG_SECURE honored on physical device
+#       - C-002   # Screenshot blocked on physical device
+#       - A-001   # App-switcher preview blocked on physical device
+#     requires_secret: FIREBASE_TEST_LAB_SERVICE_ACCOUNT
+#
+#   # iOS: Simulator on GitHub-hosted macos-26 runner (PR + on-demand + release)
+#   - entry_id: ios-sim-arm64
+#     platform: ios
+#     environment: simulator
+#     device_model: "iPhone 16 Pro Simulator"
+#     target_os_version: "18.0"
+#     cloud_service: github-hosted
+#     enabled: true
+#     test_ids:
+#       - C-003   # iOS Simulator: protection requested (not OS-enforced proof)
+#       - I-001   # iOS Simulator: API integration test
+#     requires_secret: null
+#
+#   # iOS: Physical device (manual_required for v1; enable when iPhone available)
+#   - entry_id: ios-physical-iphone
+#     platform: ios
+#     environment: physical
+#     device_model: "iPhone 16 Pro"
+#     target_os_version: "18.0"
+#     cloud_service: manual             # Change to firebase-test-lab or similar when available
+#     enabled: false                     # << FLIP TO true WHEN PHYSICAL IPHONE IS IN CI
+#     test_ids:
+#       - C-004   # iOS physical: protection honored by OS
+#       - C-005   # iOS physical: screenshot blocked
+#       - A-002   # iOS physical: app-switcher blocked
+#     requires_secret: null              # Update when cloud service is chosen

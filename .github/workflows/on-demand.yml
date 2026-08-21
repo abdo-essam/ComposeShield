@@ -181,7 +181,7 @@ jobs:
         run: |
           pip install check-jsonschema --quiet
           check-jsonschema \
-            --schemafile specs/002-ci-cd-pipeline/contracts/validation-report.schema.json \
+            --schemafile config/schemas/validation-report.schema.json \
             composeshield/build/reports/validation-report.json
 
       - name: Upload validation report (JSON + HTML)

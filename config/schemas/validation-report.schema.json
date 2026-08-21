@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/abdo-essam/ComposeShield/specs/002-ci-cd-pipeline/contracts/validation-report.schema.json",
+  "title": "ComposeShield Validation Report",
+  "description": "Machine-readable summary of an on-demand or release CI pipeline run. Produced as validation-report.json and retained as a CI artifact for 30 days.",
+  "type": "object",
+  "required": ["report_id", "commit_sha", "trigger_type", "generated_at", "overall_status", "test_results", "pipeline_run_url"],
+  "additionalProperties": false,
+  "properties": {
+    "report_id": {
+      "type": "string",
+      "description": "GitHub Actions run_id — globally unique within the repository.",
+      "pattern": "^[0-9]+$"
+    },
+    "commit_sha": {
+      "type": "string",
+      "description": "Full 40-character Git SHA of the commit that was tested.",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "trigger_type": {
+      "type": "string",
+      "enum": ["on-demand", "release"],
+      "description": "How this pipeline run was triggered."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when the report was generated."
+    },
+    "overall_status": {
+      "type": "string",
+      "enum": ["pass", "fail", "blocked"],
+      "description": "pass = all test_results are passed/not_automatable/manual_required. fail = at least one result is 'failed'. blocked = at least one result is 'blocked' and none are 'failed'."
+    },
+    "pipeline_run_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Deep link to the GitHub Actions workflow run page."
+    },
+    "test_results": {
+      "type": "array",
+      "description": "One entry per tracked test ID. Every test ID in the requirement matrix MUST appear here.",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/TestResult"
+      }
+    }
+  },
+  "$defs": {
+    "TestResult": {
+      "type": "object",
+      "required": ["test_id", "test_name", "status", "platform", "environment", "timestamp", "commit_sha"],
+      "additionalProperties": false,
+      "properties": {
+        "test_id": {
+          "type": "string",
+          "description": "Stable identifier from the requirement-to-test matrix (e.g. C-001, A-002).",
+          "pattern": "^[A-Z]-[0-9]{3}$"
+        },
+        "test_name": {
+          "type": "string",
+          "description": "Human-readable description of the test scenario."
+        },
+        "commit_sha": {
+          "type": "string",
+          "description": "Full 40-character Git SHA of the commit on which this test was executed. Required per FR-012. Redundant with the report-level commit_sha for traceability when results are extracted from the report.",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["passed", "failed", "blocked", "not_automatable", "manual_required"],
+          "description": "Outcome of this test. 'passed' requires actual execution on the stated device. 'blocked' = device/service unavailable. 'not_automatable' = scenario cannot be automated. 'manual_required' = physical iOS test pending hardware availability."
+        },
+        "platform": {
+          "type": "string",
+          "enum": ["android", "ios"]
+        },
+        "environment": {
+          "type": "string",
+          "enum": ["physical", "simulator", "host-jvm"]
+        },
+        "device_model": {
+          "type": ["string", "null"],
+          "description": "Device label from the cloud service catalogue. Null when environment is host-jvm."
+        },
+        "os_version": {
+          "type": ["string", "null"],
+          "description": "OS version string, e.g. 'Android 14 (API 34)'. Null when environment is host-jvm."
+        },
+        "evidence_url": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "Link to a screenshot or captured-frame artifact. MUST be non-null when status is 'passed' on a screenshot validation test."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when this individual test was executed."
+        },
+        "failure_reason": {
+          "type": ["string", "null"],
+          "description": "Non-null when status is 'failed' or 'blocked'. MUST NOT contain sensitive content or marker values."
+        }
+      }
+    }
+  }
+}
