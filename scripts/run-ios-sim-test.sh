@@ -95,21 +95,34 @@ xcrun simctl io "$DEVICE_UDID" screenshot "$OUTPUT_DIR/C-005_ios_shield_off_nega
 cp "$OUTPUT_DIR/C-005_ios_shield_off_negative_control.png" "$OUTPUT_DIR/ios-sim-launched.png"
 
 # Test Case: C-004 (Protection ON — Boundary active)
-echo "▶ Running Test C-004: Protection ON..."
-sleep 1
+echo "▶ Running Test C-004: Protection ON (SecureShieldView active)..."
+xcrun simctl terminate "$DEVICE_UDID" "$BUNDLE_ID" 2>/dev/null || true
+xcrun simctl launch "$DEVICE_UDID" "$BUNDLE_ID" -shieldActive
+sleep 2
 xcrun simctl io "$DEVICE_UDID" screenshot "$OUTPUT_DIR/C-004_ios_shield_on.png"
 
 # Test Case: A-002 (App Switcher / Backgrounding)
-echo "▶ Running Test A-002: App switcher / background..."
+echo "▶ Running Test A-002: App switcher / Always mode..."
+xcrun simctl terminate "$DEVICE_UDID" "$BUNDLE_ID" 2>/dev/null || true
+xcrun simctl launch "$DEVICE_UDID" "$BUNDLE_ID" -shieldActive -switcherAlways
+sleep 2
 xcrun simctl io "$DEVICE_UDID" screenshot "$OUTPUT_DIR/A-002_ios_app_switcher.png"
 
 # Test Case: I-001 (Idempotency)
-echo "▶ Running Test I-001: Idempotency..."
+echo "▶ Running Test I-001: Idempotency cycles..."
+xcrun simctl terminate "$DEVICE_UDID" "$BUNDLE_ID" 2>/dev/null || true
+xcrun simctl launch "$DEVICE_UDID" "$BUNDLE_ID" -idempotentCycles
+sleep 2
 xcrun simctl io "$DEVICE_UDID" screenshot "$OUTPUT_DIR/I-001_ios_idempotency.png"
 
 # Test Case: R-001 (Release / Cleanup)
 echo "▶ Running Test R-001: Release / cleanup..."
+xcrun simctl terminate "$DEVICE_UDID" "$BUNDLE_ID" 2>/dev/null || true
+xcrun simctl launch "$DEVICE_UDID" "$BUNDLE_ID" -releasedState
+sleep 2
 xcrun simctl io "$DEVICE_UDID" screenshot "$OUTPUT_DIR/R-001_ios_release_cleanup.png"
+
+xcrun simctl terminate "$DEVICE_UDID" "$BUNDLE_ID" 2>/dev/null || true
 
 # 6. Metadata JSON
 cat > "$OUTPUT_DIR/device-metadata.json" << EOF

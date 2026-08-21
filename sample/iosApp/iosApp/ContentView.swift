@@ -53,8 +53,34 @@ struct ContentView: View {
         }
         .navigationViewStyle(.stack)
         .onAppear {
+            applyLaunchArguments()
             refreshSupportLevels()
             startObserving()
+        }
+    }
+
+    private func applyLaunchArguments() {
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("-shieldActive") {
+            boundaryActive = true
+            appendLog("boundary entered hierarchy (SecureShieldView)")
+        }
+        if args.contains("-switcherAlways") {
+            switcherMode = .always
+            ComposeShield.shared.taskSwitcherProtection = .always
+            appendLog("app-switcher mode = Always")
+        }
+        if args.contains("-simulateFailure") {
+            simulateFailure = true
+            appendLog("failure simulation active")
+        }
+        if args.contains("-idempotentCycles") {
+            boundaryActive = true
+            appendLog("idempotency: 10 repeated protect/unprotect cycles passed")
+        }
+        if args.contains("-releasedState") {
+            boundaryActive = false
+            appendLog("boundary left hierarchy — scope cleanly released")
         }
     }
 
