@@ -30,15 +30,21 @@ mkdir -p "$OUTPUT_DIR/junit-xml"
 cp -r composeshield/build/test-results/iosSimulatorArm64Test/*.xml "$OUTPUT_DIR/junit-xml/" 2>/dev/null || true
 
 # 2. Find or boot an available simulator
-echo "▶ Locating simulator: $DEVICE_NAME..."
-DEVICE_UDID=$(xcrun simctl list devices available | grep "$DEVICE_NAME" | grep -v "unavailable" | head -1 | grep -o '[0-9A-F]\{8\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{12\}' || true)
+BOOTED_UDID=$(xcrun simctl list devices | grep "iPhone" | grep "(Booted)" | head -1 | grep -o '[0-9A-F]\{8\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{12\}' || true)
 
-if [ -z "$DEVICE_UDID" ]; then
-    echo "⚠️  $DEVICE_NAME not found, picking first available iPhone simulator..."
-    DEVICE_UDID=$(xcrun simctl list devices available | grep "iPhone" | grep -v "unavailable" | head -1 | grep -o '[0-9A-F]\{8\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{12\}')
+if [ -n "$BOOTED_UDID" ]; then
+    DEVICE_UDID="$BOOTED_UDID"
+    DEVICE_NAME=$(xcrun simctl list devices | grep "$DEVICE_UDID" | sed 's/ (.*//' | xargs)
+    echo "▶ Using already booted simulator: $DEVICE_NAME ($DEVICE_UDID)"
+else
+    MATCHED_LINE=$(xcrun simctl list devices available | grep "iPhone" | grep -v "unavailable" | grep "$DEVICE_NAME" | head -1 || true)
+    if [ -z "$MATCHED_LINE" ]; then
+        MATCHED_LINE=$(xcrun simctl list devices available | grep "iPhone" | grep -v "unavailable" | head -1)
+    fi
+    DEVICE_UDID=$(echo "$MATCHED_LINE" | grep -o '[0-9A-F]\{8\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{12\}')
+    DEVICE_NAME=$(echo "$MATCHED_LINE" | sed 's/ (.*//' | xargs)
+    echo "▶ Selected simulator: $DEVICE_NAME ($DEVICE_UDID)"
 fi
-
-echo "▶ Using Simulator UDID: $DEVICE_UDID"
 
 # Boot if not booted
 STATUS=$(xcrun simctl list devices | grep "$DEVICE_UDID" | grep -o "(Booted)" || true)
