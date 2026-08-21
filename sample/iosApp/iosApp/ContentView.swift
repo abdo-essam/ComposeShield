@@ -205,7 +205,7 @@ struct ContentView: View {
         case .recordingprevention: return "RecordingPrevention"
         case .capturedetection: return "CaptureDetection"
         case .screenshotevents: return "ScreenshotEvents"
-        case .appswitcherprotection: return "AppSwitcherProtection"
+        case .taskswitcherprotection: return "TaskSwitcherProtection"
         default: return cap.name
         }
     }

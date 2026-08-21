@@ -75,6 +75,18 @@ jobs:
       - name: iOS simulator tests
         run: ./gradlew :composeshield:iosSimulatorArm64Test
 
+      - name: iOS simulator UI launch & screenshot
+        run: bash scripts/run-ios-sim-test.sh build/ios-sim-results
+
+      - name: Upload iOS simulator screenshots
+        if: always()
+        # renovate: datasource=github-actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-ios-sim-screenshots-${{ github.run_id }}
+          path: build/ios-sim-results/*.png
+          retention-days: 30
+
       # Must run on Apple: keepLocallyUnsupportedTargets = false means the Apple ABI
       # is never inferred on Ubuntu — this check is only meaningful where Apple targets compile.
       - name: Binary compatibility
