@@ -18,7 +18,7 @@ on:
       FIREBASE_TEST_LAB_SERVICE_ACCOUNT:
         required: true
       GCP_PROJECT_ID:
-        required: true
+        required: false
 
 jobs:
   android-physical:
@@ -44,12 +44,22 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Authenticate to GCP
+        id: auth
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.FIREBASE_TEST_LAB_SERVICE_ACCOUNT }}
 
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure GCP Project
+        run: |
+          PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
+          if [ -z "$PROJECT_ID" ]; then
+            PROJECT_ID="${{ steps.auth.outputs.project_id }}"
+          fi
+          echo "Setting GCP project to: $PROJECT_ID"
+          gcloud config set project "$PROJECT_ID"
 
       - name: Build instrumentation APK
         run: ./gradlew :sample:androidApp:assembleDebug :composeshield:assembleAndroidTest
@@ -60,20 +70,30 @@ jobs:
       - name: Run instrumentation tests on FTL
         id: ftl_run
         run: |
-          RESULTS_URL=$(gcloud firebase test android run \
+          echo "▶ Launching Firebase Test Lab on ${{ env.FTL_DEVICE_MODEL }} (Android ${{ env.FTL_OS_VERSION }})..."
+          gcloud firebase test android run \
             --type instrumentation \
             --app sample/androidApp/build/outputs/apk/debug/androidApp-debug.apk \
             --test composeshield/build/outputs/apk/androidTest/composeshield-androidTest.apk \
             --device model=${{ env.FTL_DEVICE_MODEL }},version=${{ env.FTL_OS_VERSION }} \
             --results-dir=${{ inputs.results_dir_prefix }}-${{ github.run_id }} \
-            --timeout 600s \
-            2>&1 | grep -o 'gs://[^ ]*' | head -1)
+            --timeout 600s 2>&1 | tee ftl_run.log
+
+          RESULTS_URL=$(grep -o 'gs://[^ ]*' ftl_run.log | head -1 || true)
+          echo "Extracted Results Bucket URL: $RESULTS_URL"
           echo "ftl_results_url=${RESULTS_URL}" >> "$GITHUB_OUTPUT"
 
       - name: Download FTL results
+        if: always()
         run: |
           mkdir -p ftl-results
-          gsutil -m cp -r "${{ steps.ftl_run.outputs.ftl_results_url }}" ./ftl-results/ || true
+          RESULTS_URL="${{ steps.ftl_run.outputs.ftl_results_url }}"
+          if [ -n "$RESULTS_URL" ]; then
+            echo "Downloading results from $RESULTS_URL..."
+            gsutil -m cp -r "$RESULTS_URL/*" ./ftl-results/ 2>/dev/null || gsutil -m cp -r "$RESULTS_URL" ./ftl-results/ || true
+          fi
+          echo "Downloaded files:"
+          find ftl-results -type f || true
 
       # T034 (US4): Extract device model and OS version from FTL result JSON so the
       # report generator can populate device_model and os_version fields (FR-024).
