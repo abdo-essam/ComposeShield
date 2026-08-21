@@ -22,11 +22,11 @@ internal object MarkerDetector {
      * the marker to be considered visible — tolerates minor JPEG artefacts.
      */
     fun isMarkerVisible(bitmap: Bitmap): Boolean {
-        val regionX = bitmap.width / 4
-        val regionY = bitmap.height / 4
-        val sampleSize = minOf(50, bitmap.width - regionX, bitmap.height - regionY)
+        val sampleSize = 60
+        val regionX = (bitmap.width - sampleSize) / 2
+        val regionY = (bitmap.height - sampleSize) / 2
 
-        if (sampleSize <= 0) return false
+        if (regionX < 0 || regionY < 0) return false
 
         var matchCount = 0
         for (dx in 0 until sampleSize) {

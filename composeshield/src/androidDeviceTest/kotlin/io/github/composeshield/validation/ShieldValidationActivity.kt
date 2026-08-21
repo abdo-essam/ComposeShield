@@ -69,12 +69,9 @@ class ShieldValidationActivity : ComponentActivity() {
         }
 
     private fun buildMarkerLayoutParams(): FrameLayout.LayoutParams {
-        val sizePx = dpToPx(150)
+        val sizePx = dpToPx(200)
         return FrameLayout.LayoutParams(sizePx, sizePx).apply {
-            gravity = Gravity.NO_GRAVITY
-            // Position at (width/4, height/4) — matches ScreenshotValidationTest.isMarkerVisible
-            topMargin = dpToPx(80)
-            leftMargin = dpToPx(80)
+            gravity = Gravity.CENTER
         }
     }
 
