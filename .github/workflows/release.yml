@@ -188,20 +188,8 @@ jobs:
       - name: Documentation gate
         run: bash scripts/check-docs.sh
 
-      # T051: Regenerate API dump and fail if it diverged from the committed version
-      - name: Regenerate API dump
-        run: ./gradlew :composeshield:apiDump
-
-      - name: Check API dump is committed and up-to-date
-        run: |
-          if ! git diff --exit-code composeshield/api/; then
-            echo "❌ API dump changed. The binary-compatibility dump is out of date." >&2
-            echo "   Run './gradlew :composeshield:apiDump' locally and commit the updated file." >&2
-            echo "   Pure additions are allowed. Removals or changes require a MAJOR version bump." >&2
-            git diff composeshield/api/
-            exit 1
-          fi
-          echo "✅ API dump is current."
+      # T051: Binary-compatibility is enforced by checkKotlinAbi in apple-sim
+      # (Apple ABI cannot be inferred on Ubuntu runners — keepLocallyUnsupportedTargets = false).
 
       # T048: Benchmark gate — compare against committed baseline
       - name: Run benchmarks

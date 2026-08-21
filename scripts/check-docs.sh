@@ -2,7 +2,7 @@
 # check-docs.sh — Documentation gate (T007)
 #
 # Verifies that mandatory documentation files exist and are non-empty.
-# Called from the docs-gate job in release.yml and optionally in pr.yml.
+# Called from the docs-gate job in release.yml.
 #
 # Exit codes:
 #   0 — all required docs present and non-empty

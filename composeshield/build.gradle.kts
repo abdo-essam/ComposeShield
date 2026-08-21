@@ -19,7 +19,8 @@ mavenPublishing {
     if (project.hasProperty("signing.keyId") || System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey") != null) {
         signAllPublications()
     }
-    coordinates("io.github.abdo-essam", "composeshield", "0.1.0")
+
+    // Coordinates default to the project's group / name / version — a single source of truth.
 
     pom {
         name.set("ComposeShield")

@@ -2,6 +2,11 @@
 
 **Screen capture protection for Compose Multiplatform.**
 
+[![CI](https://github.com/abdo-essam/ComposeShield/actions/workflows/ci.yml/badge.svg)](https://github.com/abdo-essam/ComposeShield/actions/workflows/ci.yml)
+[![Release](https://github.com/abdo-essam/ComposeShield/actions/workflows/release.yml/badge.svg)](https://github.com/abdo-essam/ComposeShield/actions/workflows/release.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.abdo-essam/composeshield)](https://central.sonatype.com/artifact/io.github.abdo-essam/composeshield)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+
 ComposeShield protects sensitive content from screenshots and recordings, detects when the screen is
 being captured, and hides app content in the OS task switcher — all behind a single Compose-first
 API on Android 24+ and iOS 15+.
@@ -255,8 +260,6 @@ real screenshot can prove the OS honoured the request.
 
 ---
 
----
-
 ## Sample app
 
 `sample/androidApp/` is a runnable demonstration of all five capabilities against a visible marker.
@@ -274,7 +277,7 @@ ComposeShield has three GitHub Actions pipelines. All are **entirely free** for 
 
 | Pipeline | Trigger | What it does |
 |---|---|---|
-| **PR** (`pr.yml`) | Every pull request | Static analysis, Robolectric tests, iOS Simulator tests, ABI check |
+| **CI** (`ci.yml`) | Every pull request & push to main | Static analysis, Robolectric tests, iOS Simulator tests, ABI check |
 | **On-Demand** (`on-demand.yml`) | Manual (`workflow_dispatch`) | Physical Android device via [Firebase Test Lab Spark](https://firebase.google.com/docs/test-lab) (free, 5 tests/day) + produces a `validation-report.json` |
 | **Release** (`release.yml`) | Push a `v*.*.*` tag | Reuses a prior on-demand report if one exists for the commit; runs device tests otherwise; gates publication on `overall_status = pass` |
 
@@ -318,3 +321,13 @@ Edit `config/device-matrix.yml` only — no workflow YAML change is required (FR
 - [`docs/support-matrix.md`](docs/support-matrix.md) — per-platform capability and CI status
 - [`docs/security-limitations.md`](docs/security-limitations.md) — known limitations and security model boundary
 - [`specs/002-ci-cd-pipeline/quickstart.md`](specs/002-ci-cd-pipeline/quickstart.md) — end-to-end scenario walkthroughs
+
+---
+
+## License
+
+Copyright 2026 Abdelrahman Essam
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except
+in compliance with the License. You may obtain a copy of the License at
+[LICENSE](LICENSE).

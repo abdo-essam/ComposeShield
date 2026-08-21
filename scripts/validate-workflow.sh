@@ -2,7 +2,7 @@
 # validate-workflow.sh — GitHub Actions workflow syntax validator (T015, T032)
 #
 # Usage: bash scripts/validate-workflow.sh <workflow-file>
-#   e.g. bash scripts/validate-workflow.sh .github/workflows/pr.yml
+#   e.g. bash scripts/validate-workflow.sh .github/workflows/ci.yml
 #        bash scripts/validate-workflow.sh .github/workflows/release.yml
 #
 # Uses actionlint when available; falls back to python3 yaml.safe_load.
