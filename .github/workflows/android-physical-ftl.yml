@@ -28,7 +28,7 @@ jobs:
     # To change the device: update config/device-matrix.yml AND the env block below.
     # A future improvement (T043+) could parse device-matrix.yml here directly via yq.
     env:
-      FTL_DEVICE_MODEL: Pixel6
+      FTL_DEVICE_MODEL: oriole
       FTL_OS_VERSION: "34"
     steps:
         # renovate: datasource=github-actions

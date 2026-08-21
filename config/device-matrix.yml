@@ -14,7 +14,7 @@ devices:
     platform: android
     environment: physical
     provider: firebase-test-lab
-    model: Pixel6          # gcloud device model ID (gcloud firebase test android models list)
+    model: oriole          # gcloud device model ID for Google Pixel 6 physical hardware
     os_version: "34"       # Android API level as string
     enabled: true
 
