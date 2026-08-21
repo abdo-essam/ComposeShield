@@ -12,6 +12,8 @@ being captured, and hides app content in the OS task switcher — all behind a s
 API on Android 24+ and iOS 15+.
 
 ```kotlin
+// Anything composed inside the boundary is protected.
+// This is YOUR UI — rendered exactly as usual.
 SecureContent {
     AccountBalance(balance = user.balance)
 }
@@ -20,9 +22,32 @@ SecureContent {
 That's all. The boundary protects the window for as long as it is composed, and releases
 automatically when it leaves — there is no teardown call to forget.
 
+> [!NOTE]
+> Code samples throughout this README use fictional app composables such as `AccountBalance`,
+> `CardNumber`, or `RecordingWarningBanner`. They are **not** part of the library — substitute your
+> own sensitive screens.
+
+---
+
+## Table of contents
+
+- [Getting started](#getting-started-in-under-5-minutes)
+- [Platform capabilities](#platform-capabilities)
+- [Detect screen recording](#detect-screen-recording)
+- [Be notified after a screenshot](#be-notified-after-a-screenshot)
+- [Hide content in the app switcher](#hide-content-in-the-app-switcher)
+- [Imperative API](#imperative-api-protect--unprotect)
+- [Security model](#what-the-library-does-not-claim)
+- [Development](#development)
+
 ---
 
 ## Getting started in under 5 minutes
+
+### Requirements
+
+- **Platforms** — Android API 24+, iOS 15+
+- **Tooling** — Kotlin 2.4+, Compose Multiplatform 1.11+
 
 ### 1. Add the dependency
 
@@ -33,6 +58,9 @@ dependencies {
 }
 ```
 
+In a Kotlin Multiplatform project, declare it in `commonMain` — the Android and iOS implementations
+resolve automatically.
+
 ### 2. Protect a screen
 
 Wrap any composable in `SecureContent`. Protection is acquired when the boundary enters
@@ -41,6 +69,7 @@ composition and released when it leaves:
 ```kotlin
 @Composable
 fun PaymentScreen() {
+    // CardNumber and Cvc stand in for whatever your app renders as sensitive UI.
     SecureContent {
         CardNumber(number = card.maskedNumber)
         Cvc(hint = "•••")
@@ -80,11 +109,13 @@ Read the [capability matrix](docs/capability-matrix.md) before making security c
 † Precluded by active screenshot prevention on Android — see
 [platform notes](docs/platform-notes.md#the-android-preventiondetection-exclusion).
 
-### iOS Screenshot & Recording Prevention
+#### iOS screenshot & recording prevention
 
-On iOS, screenshot and recording prevention relies on internal secure container reparenting. The library enables this mechanism automatically when protection is requested on iOS. Applications should review Apple's App Review policies regarding sensitive content protection before publishing.
+On iOS, screenshot and recording prevention relies on internal secure container reparenting. The
+library enables this mechanism automatically when protection is requested on iOS. Applications
+should review Apple's App Review policies regarding sensitive content protection before publishing.
 
-### Handling Protection Failures
+#### Handling protection failures
 
 If an underlying platform protection mechanism cannot be applied or breaks mid-session, ComposeShield **does not break your user interface or hide content automatically** — preserving app usability. Instead, it emits a failure event and updates `supportLevel`:
 
@@ -178,15 +209,15 @@ val handle = ComposeShield.protect()
 handle.unprotect()
 ```
 
-### Key Use Cases
+### Key use cases
 
-#### 1. Full-App Protection
+#### 1. Full-app protection
 Protect the entire app session from startup:
 * **Android (`Application.onCreate`)**: `ComposeShield.protect()`
 * **iOS (`App.init` / `AppDelegate`)**: `ComposeShield.shared.protect()`
 * **Common KMP startup**: `ComposeShield.protect()`
 
-#### 2. Centralized Navigation Router / Destination Listener
+#### 2. Centralized navigation router
 Protect specific routes centrally without wrapping each screen individually:
 ```kotlin
 navController.addOnDestinationChangedListener { _, destination, _ ->
@@ -198,7 +229,7 @@ navController.addOnDestinationChangedListener { _, destination, _ ->
 }
 ```
 
-#### 3. ViewModels & Business State
+#### 3. View models & business state
 Enable protection based on dynamic domain state:
 ```kotlin
 class WalletViewModel : ViewModel() {
@@ -211,7 +242,7 @@ class WalletViewModel : ViewModel() {
 }
 ```
 
-#### 4. Native iOS (SwiftUI / UIKit) & Android View Interop
+#### 4. Native iOS (SwiftUI / UIKit) and Android View interop
 Protect native non-Compose view controllers or legacy activities:
 ```swift
 // Swift
@@ -228,7 +259,7 @@ override func viewWillDisappear(_ animated: Bool) {
 
 ---
 
-### Reference Counting & Safety
+### Reference counting & safety
 Imperative and declarative claims compose through the same reference counter. Calling `ComposeShield.unprotect()` releases the imperative claim, but **never unprotects a window that a `SecureContent` boundary still claims**, and vice versa. Protection is only physically removed from the window when all claims are released.
 
 ---
@@ -243,7 +274,11 @@ breakdown.
 
 ---
 
-## Building and testing
+## Development
+
+Everything below is for contributors — consuming the library requires none of it.
+
+### Building and testing
 
 ```bash
 # Full gate — matches CI merge gates
@@ -260,7 +295,7 @@ real screenshot can prove the OS honoured the request.
 
 ---
 
-## Sample app
+### Sample app
 
 `sample/androidApp/` is a runnable demonstration of all five capabilities against a visible marker.
 Screenshot the app with protection on — the marker should be absent. Screenshot with it off — the
@@ -269,11 +304,11 @@ to explain *why* a given attempt behaved the way it did.
 
 ---
 
-## CI/CD
+### CI/CD
 
 ComposeShield has three GitHub Actions pipelines. All are **entirely free** for public repositories.
 
-### Pipelines
+#### Pipelines
 
 | Pipeline | Trigger | What it does |
 |---|---|---|
@@ -281,13 +316,13 @@ ComposeShield has three GitHub Actions pipelines. All are **entirely free** for 
 | **On-Demand** (`on-demand.yml`) | Manual (`workflow_dispatch`) | Physical Android device via [Firebase Test Lab Spark](https://firebase.google.com/docs/test-lab) (free, 5 tests/day) + produces a `validation-report.json` |
 | **Release** (`release.yml`) | Push a `v*.*.*` tag | Reuses a prior on-demand report if one exists for the commit; runs device tests otherwise; gates publication on `overall_status = pass` |
 
-### Running the on-demand pipeline
+#### Running the on-demand pipeline
 
 1. Go to **Actions → On-Demand Validation → Run workflow**
 2. All four jobs run in parallel (JVM, iOS Simulator, Android physical, report generation)
 3. Download the `on-demand-validation-report-<run-id>` artifact to see the full report
 
-### Reading the validation report
+#### Reading the validation report
 
 `validation-report.json` maps each requirement ID (`C-001`, `A-001`, …) to a test result:
 
@@ -312,11 +347,11 @@ ComposeShield has three GitHub Actions pipelines. All are **entirely free** for 
 - `blocked` — device was unavailable for this run; not a test failure
 - `failed` — the OS did **not** honour the protection request — file a bug
 
-### Adding a new device
+#### Adding a new device
 
 Edit `config/device-matrix.yml` only — no workflow YAML change is required (FR-022).
 
-### Further reading
+#### Further reading
 
 - [`docs/support-matrix.md`](docs/support-matrix.md) — per-platform capability and CI status
 - [`docs/security-limitations.md`](docs/security-limitations.md) — known limitations and security model boundary
