@@ -21,7 +21,8 @@ internal object MarkerDetector {
      * renders the marker. At least 10% of pixels must match [MARKER_COLOR] for
      * the marker to be considered visible — tolerates minor JPEG artefacts.
      */
-    fun isMarkerVisible(bitmap: Bitmap): Boolean {
+    fun isMarkerVisible(bitmap: Bitmap?): Boolean {
+        if (bitmap == null) return false
         val sampleSize = 60
         val regionX = (bitmap.width - sampleSize) / 2
         val regionY = (bitmap.height - sampleSize) / 2

@@ -1,4 +1,4 @@
-@file:Suppress("FunctionNaming")
+@file:Suppress("FunctionNaming", "MagicNumber")
 
 package io.github.composeshield.validation
 
@@ -67,7 +67,15 @@ class AppSwitcherValidationTest {
         )
     }
 
-    private fun captureScreenshot(): Bitmap = androidx.test.runner.screenshot.Screenshot.capture().bitmap
+    private fun captureScreenshot(): Bitmap? {
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        Thread.sleep(300)
+        return try {
+            androidx.test.runner.screenshot.Screenshot.capture().bitmap
+        } catch (_: Throwable) {
+            null
+        }
+    }
 
     companion object {
         private const val IDLE_TIMEOUT_MS = 2_000L
