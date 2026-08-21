@@ -227,16 +227,21 @@ val generateValidationReport by tasks.registering {
         if (xmlDir.exists()) {
             xmlDir.walkTopDown().filter { it.extension == "xml" }.forEach { xmlFile ->
                 val content = xmlFile.readText()
-                // Match <testcase classname="..." name="..."> blocks
-                Regex(
-                    """<testcase[^>]+classname=["']([^"']+)["'][^>]+name=["']([^"']+)["']""",
-                ).findAll(content).forEach { m ->
-                    val fullClass = m.groupValues[1]
-                    val method = m.groupValues[2]
-                    val key = "$fullClass.$method"
+                // Match <testcase ...> blocks regardless of attribute order
+                Regex("""<testcase\b([^>]+)""").findAll(content).forEach { m ->
+                    val attrs = m.groupValues[1]
+                    val fullClass = Regex("""classname=["']([^"']+)["']""").find(attrs)?.groupValues?.get(1) ?: ""
+                    val method = Regex("""name=["']([^"']+)["']""").find(attrs)?.groupValues?.get(1) ?: ""
+                    if (fullClass.isBlank() || method.isBlank()) return@forEach
+
                     // Match against test-id-map
                     testIdMap.entries.find { (_, meta) ->
-                        meta["class"] == fullClass && (meta["method"] == method || meta["method"].isNullOrBlank())
+                        val targetClass = meta["class"] ?: ""
+                        val targetMethod = meta["method"] ?: ""
+                        val classMatches = fullClass == targetClass || fullClass.endsWith(".$targetClass")
+                        val methodMatches =
+                            targetMethod.isBlank() || method == targetMethod || method.startsWith("$targetMethod[")
+                        classMatches && methodMatches
                     }?.let { (id, _) ->
                         // Check if the testcase block contains a <failure> element
                         val testcaseBlock = content.substringAfter(m.value).substringBefore("</testcase>")

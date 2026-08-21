@@ -161,12 +161,19 @@ jobs:
         # renovate: datasource=github-actions
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Download JUnit XML results
+      - name: Download Android FTL JUnit XML results
         uses: actions/download-artifact@v4
         with:
           name: on-demand-junit-xml-${{ github.run_id }}
           path: composeshield/build/ftl-results
         continue-on-error: true  # FTL results may be absent if device job failed to start
+
+      - name: Download iOS Simulator test results
+        uses: actions/download-artifact@v4
+        with:
+          name: on-demand-ios-results-${{ github.run_id }}
+          path: composeshield/build/ftl-results
+        continue-on-error: true
 
       - name: Download manual_required overrides
         uses: actions/download-artifact@v4

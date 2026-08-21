@@ -127,15 +127,21 @@ jobs:
       - name: iOS simulator tests
         run: ./gradlew :composeshield:iosSimulatorArm64Test
 
+      - name: iOS simulator UI launch & screenshot
+        run: bash scripts/run-ios-sim-test.sh build/ios-sim-results
+
       - name: Binary compatibility
         run: ./gradlew :composeshield:checkKotlinAbi
 
-      - name: Upload iOS test results
+      - name: Upload iOS test results & screenshots
         if: always()
+        # renovate: datasource=github-actions
         uses: actions/upload-artifact@v4
         with:
           name: release-ios-results-${{ github.run_id }}
-          path: composeshield/build/test-results/
+          path: |
+            composeshield/build/test-results/
+            build/ios-sim-results/
           retention-days: 30
 
   # ---------------------------------------------------------------------------
@@ -236,6 +242,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-junit-xml-${{ github.run_id }}
+          path: composeshield/build/ftl-results
+        continue-on-error: true
+
+      - name: Download iOS Simulator test results
+        uses: actions/download-artifact@v4
+        with:
+          name: release-ios-results-${{ github.run_id }}
           path: composeshield/build/ftl-results
         continue-on-error: true
 

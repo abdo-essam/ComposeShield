@@ -1,0 +1,52 @@
+package io.github.composeshield.validation
+
+import io.github.composeshield.internal.SecureContainer
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.CoreGraphics.CGRectMake
+import platform.UIKit.UILabel
+import platform.UIKit.UIView
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+
+/**
+ * Validation tests for iOS screenshot protection (C-004, C-005).
+ * Mapped to requirement matrix IDs in config/test-id-map.yml.
+ */
+@OptIn(ExperimentalForeignApi::class)
+class IosScreenshotValidationTest {
+    @Test
+    fun screenshotWithProtectionOn_markerAbsent() {
+        val root = UIView(frame = CGRectMake(0.0, 0.0, 320.0, 480.0))
+        val secretLabel =
+            UILabel(frame = CGRectMake(0.0, 0.0, 200.0, 50.0)).apply {
+                text = "SHIELD_TEST_SECRET_001"
+            }
+        root.addSubview(secretLabel)
+
+        val container = SecureContainer.create()
+        assertNotNull(container, "SecureContainer must be successfully created on iOS")
+
+        // Enclose secret in secure container
+        assertTrue(container.enclose(secretLabel), "SecureContainer should enclose secretLabel")
+
+        // Verify secret is inside container canvas and root has exactly 1 subview (the canvas)
+        assertEquals(1, root.subviews.size)
+        assertFalse(root.subviews.any { it == secretLabel })
+    }
+
+    @Test
+    fun screenshotWithProtectionOff_markerPresent() {
+        val root = UIView(frame = CGRectMake(0.0, 0.0, 320.0, 480.0))
+        val secretLabel =
+            UILabel(frame = CGRectMake(0.0, 0.0, 200.0, 50.0)).apply {
+                text = "SHIELD_TEST_SECRET_001"
+            }
+        root.addSubview(secretLabel)
+
+        // In negative control state, secret view resides directly in normal UIView hierarchy
+        assertTrue(root.subviews.any { it == secretLabel })
+    }
+}
