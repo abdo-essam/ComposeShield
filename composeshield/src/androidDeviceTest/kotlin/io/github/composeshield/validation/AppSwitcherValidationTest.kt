@@ -2,6 +2,7 @@
 
 package io.github.composeshield.validation
 
+import android.content.Intent
 import android.graphics.Bitmap
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -55,8 +56,16 @@ class AppSwitcherValidationTest {
         val thumbnail = captureScreenshot()
         val markerVisible = MarkerDetector.isMarkerVisible(thumbnail)
 
-        // Return to the app before assertion (avoids leaving UI in broken state)
-        device.pressBack()
+        // Return activity to foreground before tearDown to ensure ActivityScenario can destroy it
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val intent =
+            Intent(context, ShieldValidationActivity::class.java).apply {
+                flags =
+                    Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+        context.startActivity(intent)
+        device.waitForIdle(IDLE_TIMEOUT_MS)
 
         assertFalse(
             actual = markerVisible,

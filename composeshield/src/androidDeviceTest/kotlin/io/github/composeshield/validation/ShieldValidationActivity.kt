@@ -57,6 +57,13 @@ class ShieldValidationActivity : ComponentActivity() {
         shieldController.release()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::shieldController.isInitialized) {
+            shieldController.release()
+        }
+    }
+
     private fun buildMarkerView(): TextView =
         TextView(this).apply {
             text = MARKER_CONTENT_DESC
