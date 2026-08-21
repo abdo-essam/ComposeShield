@@ -15,7 +15,7 @@ devices:
     environment: physical
     provider: firebase-test-lab
     model: oriole          # gcloud device model ID for Google Pixel 6 physical hardware
-    os_version: "34"       # Android API level as string
+    os_version: "33"       # Android API level as string (Android 13)
     enabled: true
 
   # iOS Simulator — GitHub-hosted macos-26 runner (free for public repos)
