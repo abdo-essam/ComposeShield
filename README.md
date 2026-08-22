@@ -1,20 +1,23 @@
-<div align="center">
-  <img src="assets/banner.png" alt="ComposeShield — screen capture protection for Compose Multiplatform" width="640">
-</div>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-light.png">
+    <img src="assets/logo-dark.png" alt="ComposeShield" width="360">
+  </picture>
+</p>
 
-# ComposeShield
+<p align="center">
+  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.4%2B-7F52FF.svg?logo=kotlin&logoColor=white" alt="Kotlin"></a>
+  <a href="https://github.com/abdo-essam/ComposeShield/actions/workflows/ci.yml"><img src="https://github.com/abdo-essam/ComposeShield/actions/workflows/ci.yml/badge.svg" alt="GitHub Actions"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="Apache 2.0 License"></a>
+  <a href="https://central.sonatype.com/artifact/io.github.abdo-essam/composeshield"><img src="https://img.shields.io/maven-central/v/io.github.abdo-essam/composeshield" alt="Maven Central"></a>
+</p>
 
-**Screen capture protection for Compose Multiplatform.**
+## What is ComposeShield? ✨
 
-[![CI](https://github.com/abdo-essam/ComposeShield/actions/workflows/ci.yml/badge.svg)](https://github.com/abdo-essam/ComposeShield/actions/workflows/ci.yml)
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.abdo-essam/composeshield)](https://central.sonatype.com/artifact/io.github.abdo-essam/composeshield)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-
-ComposeShield blocks screenshots and screen recordings, detects active capture, and hides app
-content in the OS task switcher — behind a single, declarative API on
+ComposeShield is a lightweight screen-capture protection library for Kotlin Multiplatform,
+built for Android and iOS. It blocks screenshots and screen recordings, detects active capture,
+and hides app content in the OS task switcher — behind a single declarative API on
 **Android 24+** and **iOS 15+** (Kotlin 2.4+, Compose Multiplatform 1.11+).
-
-## Why ComposeShield?
 
 - **Declarative** — wrap any UI in a `SecureContent` boundary; protection follows composition,
   so there is nothing to tear down and no lifecycle to get wrong.
