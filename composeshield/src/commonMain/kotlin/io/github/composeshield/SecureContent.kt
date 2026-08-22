@@ -52,9 +52,9 @@ public fun SecureContent(
     // remember compares its key by equality, not identity, so a consumer allocating a fresh-but-equal
     // set every recomposition recomputes nothing here and the effect below does not restart. Keying
     // the effect on the raw parameter instead would release/re-apply protection on each of those
-    // recompositions — the surface-tearing toggle documented above.
-    val capabilitySnapshot = capabilities.toSet()
-    val stableCapabilities = remember(capabilitySnapshot) { capabilitySnapshot }
+    // recompositions — the surface-tearing toggle documented above. The copy runs inside remember's
+    // calculation, so equal sets cost no allocation at all on the steady-state path.
+    val stableCapabilities = remember(capabilities) { capabilities.toSet() }
 
     val currentOnFailure by rememberUpdatedState(onProtectionFailure)
     // The failure filter must read the CURRENT set, not the one captured when the collector started:
@@ -70,6 +70,13 @@ public fun SecureContent(
     if (onProtectionFailure != null) {
         LaunchedEffect(Unit) {
             shieldCore.protectionFailures.collect { failed ->
+                // The flow replays its most recent failure to late collectors; that replay can
+                // outlive the failure it describes (the capability was released and has since
+                // installed cleanly — pruned from failedMechanisms). A capability not currently
+                // recorded as failed is stale news, so it is dropped here: fresh failures are
+                // always still in the set when emitted, so nothing genuine is lost.
+                if (failed !in shieldCore.registry.current.failedMechanisms) return@collect
+
                 if (failed in currentCapabilities) {
                     // A consumer callback runs inside this composition coroutine; letting it throw
                     // would kill the host app — precisely the failure mode this library exists to

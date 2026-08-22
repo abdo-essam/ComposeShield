@@ -5,6 +5,7 @@ import io.github.composeshield.SupportLevel
 import io.github.composeshield.SupportLevel.Unsupported.Reason
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -68,9 +69,11 @@ class ProtectionFailureTest {
         core.registry.acquire(WindowKey("unobserved"), setOf(Capability.ScreenshotPrevention))
 
         runTest {
+            // withTimeout so a replay regression fails here, in milliseconds, rather than as a
+            // runTest completion error after its default timeout.
             assertEquals(
                 Capability.ScreenshotPrevention,
-                core.protectionFailures.first(),
+                withTimeout(REPLAY_WAIT_MS) { core.protectionFailures.first() },
                 "a security-relevant signal must survive the window before a collector attaches",
             )
         }
@@ -88,5 +91,9 @@ class ProtectionFailureTest {
             "the durable record survives a throwing callback — only the notification channel is best-effort",
         )
         subject.release(request)
+    }
+
+    private companion object {
+        const val REPLAY_WAIT_MS = 5_000L
     }
 }

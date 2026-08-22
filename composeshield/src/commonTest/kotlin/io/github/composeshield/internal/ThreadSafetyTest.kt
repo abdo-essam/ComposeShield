@@ -1,9 +1,11 @@
 package io.github.composeshield.internal
 
 import io.github.composeshield.Capability
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kotlin.test.Test
@@ -102,8 +104,39 @@ class ThreadSafetyTest {
             )
         }
 
+    @Test
+    fun `a release racing an acquire never leaves the new request unapplied`() =
+        runTest {
+            // External-review regression guard (2026-08-22): without serialized reconciliation,
+            // the release's clear could invalidate the applied-cache entry the acquire's reconcile
+            // consults, skipping the apply — a live request left unprotected with nothing left to
+            // re-trigger it.
+            var keeper = registry.acquire(window, prevention)
+
+            repeat(RACE_ROUNDS) {
+                val next = CompletableDeferred<ProtectionRequest>()
+                withContext(Dispatchers.Default) {
+                    launch { registry.release(keeper) }
+                    launch { next.complete(registry.acquire(window, prevention)) }
+                }
+                keeper = next.await()
+
+                assertContains(
+                    platform.protectedWindows,
+                    window,
+                    "acquire() returning means its reconcile ran; a live request must be in force",
+                )
+            }
+
+            registry.release(keeper)
+            assertFalse(window in platform.protectedWindows)
+        }
+
     private companion object {
         /** Enough callers to provoke compare-and-set retries without making the test slow. */
         const val CONCURRENT_CALLERS = 64
+
+        /** Rounds of release-vs-acquire contention for the serialization regression guard. */
+        const val RACE_ROUNDS = 200
     }
 }

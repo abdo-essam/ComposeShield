@@ -79,6 +79,21 @@ internal class ShieldCore(
         // the public property, so it starts here rather than as a side effect of the getter — a
         // property read must stay a pure read. start() is idempotent.
         captureStates.start()
+
+        // Cold-start healing. Both Android observers resolve their host through the first
+        // registered activity, so collections begun before any window exists (an imperative
+        // `protect()` from Application.onCreate, say) sit subscribed-but-silent forever: the
+        // foreground flow that drives refresh() is itself one of the dead ones. The first
+        // concrete window binding is the event that changes that — force a genuine re-read
+        // exactly then, and never again. Event-driven; no polling.
+        scope.launch {
+            var hadConcreteWindow = false
+            registry.snapshots.collect { snapshot ->
+                val hasConcreteWindow = snapshot.requests.keys.any { it != WindowKey.Unbound }
+                if (hasConcreteWindow && !hadConcreteWindow) captureStates.refresh()
+                hadConcreteWindow = hadConcreteWindow or hasConcreteWindow
+            }
+        }
     }
 
     private companion object {
@@ -103,6 +118,11 @@ internal class ShieldCore(
  *
  * The fallback does not weaken protection: platform effects are marshalled to the main thread by the
  * actuals themselves, so this scope governs only where the library's own observer coroutines resume.
+ *
+ * Known limit: a dispatcher whose dispatch fails *asynchronously*, after this probe has returned it,
+ * cannot be detected here — verifying completion would mean blocking a constructor thread. The
+ * consequence is contained rather than prevented: such observers fail into the scope's
+ * [CoroutineExceptionHandler] instead of crashing anything.
  */
 @Suppress("SwallowedException", "TooGenericExceptionCaught")
 private fun mainDispatcher(): CoroutineDispatcher {

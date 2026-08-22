@@ -125,27 +125,33 @@ class SecureContentTest {
     @Test
     fun `a freshly allocated equal capability set does not restart the protection effect`() =
         runComposeUiTest {
-            // The hazard: a consumer writing `capabilities = setOf(...)` inline allocates a new,
-            // equal set on every recomposition. Keying the effect on that raw parameter would
-            // release/re-apply each time — on Android a FLAG_SECURE toggle, i.e. surface teardown.
+            // Two traps make this test easy to write vacuously. First, mutableStateOf compares
+            // structurally, so assigning an equal set produces no recomposition at all. Second,
+            // Compose effect keys compare with equals(), so an equal set would not restart the
+            // effect even if the body re-ran. A separate tick state, read inside composition,
+            // forces genuine recompositions while the capability argument stays fresh-but-equal;
+            // the composition counter proves those recompositions really happened.
             val capabilities = mutableStateOf(setOf(Capability.ScreenshotPrevention))
+            val tick = mutableStateOf(0)
+            var compositions = 0
 
             setContent {
-                // toSet() makes the instability explicit: a fresh instance every recomposition.
-                SecureContent(capabilities = capabilities.value.toSet()) { }
+                tick.value // subscribe: every bump must re-run this body
+                SecureContent(capabilities = capabilities.value.toSet()) { compositions++ }
             }
             waitForIdle()
             val settled = shieldCore.registry.snapshots.value
 
-            // Every acquire/release produces a new RegistryState instance, so reference identity of
-            // the published snapshot is an effect-restart detector: same instance ⇒ no restart.
-            capabilities.value = setOf(Capability.ScreenshotPrevention)
+            tick.value = 1
             waitForIdle()
-
+            assertTrue(
+                compositions >= 2,
+                "the tick must force a real recomposition, or the identity assertion below is vacuous",
+            )
             assertSame(
                 settled,
                 shieldCore.registry.snapshots.value,
-                "a fresh-but-equal set must not release/re-acquire protection",
+                "a fresh-but-equal capability set across recompositions must not release/re-apply protection",
             )
 
             capabilities.value = setOf(Capability.ScreenshotPrevention, Capability.RecordingPrevention)
