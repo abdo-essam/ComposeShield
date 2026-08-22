@@ -53,7 +53,8 @@ public fun SecureContent(
     // set every recomposition recomputes nothing here and the effect below does not restart. Keying
     // the effect on the raw parameter instead would release/re-apply protection on each of those
     // recompositions — the surface-tearing toggle documented above.
-    val stableCapabilities = remember(capabilities) { capabilities.toSet() }
+    val capabilitySnapshot = capabilities.toSet()
+    val stableCapabilities = remember(capabilitySnapshot) { capabilitySnapshot }
 
     val currentOnFailure by rememberUpdatedState(onProtectionFailure)
     // The failure filter must read the CURRENT set, not the one captured when the collector started:
