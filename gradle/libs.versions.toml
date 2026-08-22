@@ -9,7 +9,7 @@ coroutines = "1.11.0"
 
 # Consumer-facing Android dependency. Provides LocalActivity, which walks the ContextWrapper
 # chain correctly — LocalContext.current as Activity is wrong and lint-flagged (research.md R4).
-activityCompose = "1.12.4"
+activityCompose = "1.13.0"
 
 # Test
 turbine = "1.2.1"
