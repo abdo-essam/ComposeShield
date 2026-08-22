@@ -6,9 +6,19 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.abdo-essam/composeshield)](https://central.sonatype.com/artifact/io.github.abdo-essam/composeshield)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-ComposeShield protects sensitive UI from screenshots and recordings, detects when the screen is
-being captured, and hides app content in the OS task switcher — behind a single API on
+ComposeShield blocks screenshots and screen recordings, detects active capture, and hides app
+content in the OS task switcher — behind a single, declarative API on
 **Android 24+** and **iOS 15+** (Kotlin 2.4+, Compose Multiplatform 1.11+).
+
+## Why ComposeShield?
+
+- **Declarative** — wrap any UI in a `SecureContent` boundary; protection follows composition,
+  so there is nothing to tear down and no lifecycle to get wrong.
+- **Cross-platform** — one API on Android and iOS, backed by each platform's strongest official
+  mechanism (`FLAG_SECURE` / screen-capture detection on Android, secure-text-entry containers on iOS).
+- **Observable** — capture state, screenshot events, and protection failures are exposed as flows.
+- **Fail-safe by design** — if a mechanism fails, your UI keeps working and you get an event;
+  nothing ever throws.
 
 ```kotlin
 // Anything composed inside the boundary is protected.
@@ -24,7 +34,7 @@ SecureContent {
 
 ```kotlin
 dependencies {
-    implementation("io.github.abdo-essam:composeshield:<version>")
+    implementation("io.github.abdo-essam:composeshield:0.1.0")
 }
 ```
 
@@ -33,7 +43,29 @@ resolve automatically.
 
 ## Usage
 
-### Protect a screen
+### Protect the entire app
+
+Because protection is scoped to the *window*, wrapping your root composable secures every screen
+in the application:
+
+```kotlin
+@Composable
+fun App() {
+    SecureContent {
+        AppNavHost()
+    }
+}
+```
+
+Prefer to control it outside composition? Acquire protection once at startup instead:
+
+```kotlin
+ComposeShield.protect() // e.g. from Application.onCreate / app init
+```
+
+`AppNavHost` stands for your own navigation host — it is not part of the library.
+
+### Protect a single screen
 
 Protection is acquired when the boundary enters composition and released when it leaves — there is
 no teardown call to forget.
@@ -48,8 +80,9 @@ fun PaymentScreen() {
 }
 ```
 
-> **What gets protected?** The *entire window*, not just the wrapped content. Content in a separate
-> window (a dialog with its own window, split screen) is not protected.
+> **What gets protected?** While a `SecureContent` boundary is composed, the *entire window* is
+> protected — including siblings outside the boundary. Content in a separate window (a dialog with
+> its own window, split screen) is not protected.
 > See [platform notes](docs/platform-notes.md#window-scoping).
 
 ### Detect screen recording
@@ -78,14 +111,6 @@ LaunchedEffect(Unit) {
 On Android this stream is unavailable while screenshot prevention is active — check
 `ComposeShield.supportLevel(Capability.ScreenshotEvents)`.
 
-### Hide content in the app switcher
-
-```kotlin
-// Automatic (default): hidden whenever any SecureContent boundary is composed.
-ComposeShield.taskSwitcherProtection = TaskSwitcherProtection.Always   // always hide
-ComposeShield.taskSwitcherProtection = TaskSwitcherProtection.Disabled // never hide
-```
-
 ### Imperative API
 
 For protection outside composition (`protect()` acquires, `unprotect()` releases):
@@ -97,8 +122,8 @@ ComposeShield.unprotect()
 ```
 
 Typical places to call it: app startup, navigation routing, view models, or native Swift/Objective-C
-code via `ComposeShield.shared.protect()`. Declarative and imperative claims are reference-counted,
-so they never cancel each other out.
+code via `ComposeShield.shared.protect()`. Imperative protection coexists with any composed
+`SecureContent` boundaries — neither ever cancels the other out.
 
 ### Handle protection failures
 
