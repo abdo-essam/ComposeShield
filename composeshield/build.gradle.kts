@@ -231,8 +231,13 @@ val generateValidationReport by tasks.registering {
                 // Match <testcase ...> blocks regardless of attribute order
                 Regex("""<testcase\b([^>]+)""").findAll(content).forEach { m ->
                     val attrs = m.groupValues[1]
-                    val fullClass = Regex("""classname=["']([^"']+)["']""").find(attrs)?.groupValues?.get(1) ?: ""
-                    val method = Regex("""name=["']([^"']+)["']""").find(attrs)?.groupValues?.get(1) ?: ""
+                    // The \b anchors are load-bearing: without one, `name=` also matches inside
+                    // `classname=`, every method resolves to the class FQN, and no testcase ever
+                    // matches the id-map — every test would report "blocked".
+                    val fullClass =
+                        Regex("""\bclassname=["']([^"']+)["']""").find(attrs)?.groupValues?.get(1) ?: ""
+                    val method =
+                        Regex("""\bname=["']([^"']+)["']""").find(attrs)?.groupValues?.get(1) ?: ""
                     if (fullClass.isBlank() || method.isBlank()) return@forEach
 
                     // Match against test-id-map

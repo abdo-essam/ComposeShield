@@ -151,10 +151,14 @@ internal class ProtectionRegistry(
         mutate { snapshot ->
             val pending = snapshot.requests[WindowKey.Unbound] ?: return@mutate snapshot
             pending.forEach { it.window = window }
+            // The deferred apply parked under Unbound targeted whatever host resolved; once a real
+            // window exists, force a fresh reconcile against it rather than trusting the stale
+            // applied entry (idempotent, at worst one extra platform call).
             snapshot.copy(
                 requests =
                     snapshot.requests - WindowKey.Unbound +
                         (window to snapshot.requests[window].orEmpty() + pending),
+                applied = snapshot.applied - WindowKey.Unbound,
             )
         }
         reconcile(window)
@@ -168,7 +172,12 @@ internal class ProtectionRegistry(
      * unrelated screen.
      */
     fun releaseWindow(window: WindowKey) {
-        mutate { snapshot -> snapshot.copy(requests = snapshot.requests - window) }
+        mutate { snapshot ->
+            snapshot.copy(
+                requests = snapshot.requests - window,
+                applied = snapshot.applied - window,
+            )
+        }
         platform.clearProtection(window)
         reconcileTaskSwitcher(window)
     }
@@ -188,17 +197,32 @@ internal class ProtectionRegistry(
      * Deliberately outside the compare-and-set loop: the loop body can retry under contention, and a
      * retried platform call would toggle the window's protection flag more than once. Toggling a
      * visible window tears down and recreates its surface, which the user sees as a black frame.
+     *
+     * Skipped when the effective capability set equals what the platform was last told to apply
+     * (see [RegistryState.applied]) — a second concurrent request adding nothing new, or releasing
+     * one of two identical requests, needs no main-thread round-trip. A [ProtectionOutcome.Failed]
+     * mechanism is never recorded as applied, so the next reconcile retries the install rather than
+     * trusting a mechanism that is not in force.
      */
     private fun reconcile(window: WindowKey) {
         val capabilities = current.effectiveCapabilities(window)
 
-        if (capabilities.isEmpty()) {
-            platform.clearProtection(window)
-        } else {
-            when (platform.applyProtection(window, capabilities)) {
-                ProtectionOutcome.Applied -> Unit
-                ProtectionOutcome.Deferred -> Unit
-                ProtectionOutcome.Failed -> recordFailure(capabilities)
+        if (capabilities != current.applied[window].orEmpty()) {
+            val outcome =
+                if (capabilities.isEmpty()) {
+                    platform.clearProtection(window)
+                    ProtectionOutcome.Applied
+                } else {
+                    platform.applyProtection(window, capabilities)
+                }
+
+            if (outcome == ProtectionOutcome.Failed) {
+                recordFailure(capabilities)
+            } else {
+                mutate { snapshot ->
+                    if (snapshot.applied[window] == capabilities) return@mutate snapshot
+                    snapshot.copy(applied = snapshot.applied + (window to capabilities))
+                }
             }
         }
         pruneStaleFailures()
@@ -224,7 +248,14 @@ internal class ProtectionRegistry(
         if (prevention.isEmpty()) return
 
         mutate { it.copy(failedMechanisms = it.failedMechanisms + prevention) }
-        prevention.forEach(onProtectionFailure)
+
+        prevention.forEach { capability ->
+            // The callback runs mid-reconcile on the caller's thread: letting it throw would unwind
+            // through this reconcile path and turn a reported failure into a caller-visible crash.
+            // The swallow is deliberate — [SupportLevel] and [RegistryState.failedMechanisms] stay
+            // truthful; only this best-effort notification channel is affected.
+            runCatching { onProtectionFailure(capability) }
+        }
     }
 
     /**

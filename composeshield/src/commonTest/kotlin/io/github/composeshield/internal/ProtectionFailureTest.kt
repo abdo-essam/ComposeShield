@@ -3,6 +3,8 @@ package io.github.composeshield.internal
 import io.github.composeshield.Capability
 import io.github.composeshield.SupportLevel
 import io.github.composeshield.SupportLevel.Unsupported.Reason
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -52,5 +54,39 @@ class ProtectionFailureTest {
             SupportLevel.Supported,
             resolver.resolve(Capability.ScreenshotPrevention, registry.current),
         )
+    }
+
+    @Test
+    fun `a failure emitted before any collector attaches is replayed to a late collector`() {
+        // The concrete race: a composed boundary acquires during composition, ahead of its own
+        // failure collector, so the first failure is emitted into an empty room. With no replay
+        // that emission was discarded and onProtectionFailure never fired for it.
+        val core =
+            ShieldCore(
+                FakePlatformProtection().apply { nextOutcome = ProtectionOutcome.Failed },
+            )
+        core.registry.acquire(WindowKey("unobserved"), setOf(Capability.ScreenshotPrevention))
+
+        runTest {
+            assertEquals(
+                Capability.ScreenshotPrevention,
+                core.protectionFailures.first(),
+                "a security-relevant signal must survive the window before a collector attaches",
+            )
+        }
+    }
+
+    @Test
+    fun `a throwing consumer callback does not crash the caller`() {
+        val failing = FakePlatformProtection().apply { nextOutcome = ProtectionOutcome.Failed }
+        val subject = ProtectionRegistry(failing, onProtectionFailure = { error("consumer bug") })
+
+        val request = subject.acquire(WindowKey("callback-crash"), setOf(Capability.ScreenshotPrevention))
+
+        assertTrue(
+            Capability.ScreenshotPrevention in subject.current.failedMechanisms,
+            "the durable record survives a throwing callback — only the notification channel is best-effort",
+        )
+        subject.release(request)
     }
 }

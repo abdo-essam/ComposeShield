@@ -24,6 +24,16 @@ internal data class RegistryState(
     val failedMechanisms: Set<Capability> = emptySet(),
     /** The application's app-switcher preference. */
     val taskSwitcherMode: TaskSwitcherProtection = TaskSwitcherProtection.Automatic,
+    /**
+     * The capability set the platform was last successfully told to apply per window.
+     *
+     * [ProtectionRegistry.reconcile] compares against this to skip a platform round-trip when the
+     * effective set is unchanged — every redundant call is a main-thread dispatch, and on Android an
+     * unnecessary flag toggle tears down the window's surface. Deliberately *not* updated when a
+     * mechanism reports [ProtectionOutcome.Failed], so the next reconcile retries the install
+     * instead of believing a failed mechanism is in force.
+     */
+    val applied: Map<WindowKey, Set<Capability>> = emptyMap(),
 ) {
     /** Whether any request is outstanding on [window]. */
     fun isProtected(window: WindowKey): Boolean = requests[window]?.isNotEmpty() == true

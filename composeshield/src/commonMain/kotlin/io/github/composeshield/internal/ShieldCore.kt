@@ -2,6 +2,7 @@ package io.github.composeshield.internal
 
 import io.github.composeshield.Capability
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,19 +31,33 @@ internal class ShieldCore(
      * Scope for the library's own long-lived collections.
      *
      * A [SupervisorJob] so a failure in one platform observer cannot cancel the others — losing
-     * screenshot events should not also silence capture-state detection. Main-dispatched because
+     * screenshot events should not also silence capture-state detection — and a
+     * [CoroutineExceptionHandler] so a failing observer cannot take the host process down: these
+     * coroutines outlive the caller that triggered them, and an unhandled error there would crash
+     * the app in exactly the way FR-021 forbids for every public operation. Main-dispatched because
      * every platform observer this drives ultimately touches UI-thread-affine APIs.
      */
-    private val scope = CoroutineScope(SupervisorJob() + mainDispatcher() + CoroutineName("ComposeShield"))
+    private val scope =
+        CoroutineScope(
+            SupervisorJob() +
+                mainDispatcher() +
+                CoroutineName("ComposeShield") +
+                // Deliberately contained; see the scope's KDoc.
+                CoroutineExceptionHandler { _, _ -> },
+        )
 
-    private val _protectionFailures = MutableSharedFlow<Capability>(extraBufferCapacity = FAILURE_BUFFER)
+    private val _protectionFailures =
+        MutableSharedFlow<Capability>(replay = FAILURE_REPLAY, extraBufferCapacity = FAILURE_BUFFER)
 
     /**
      * Mechanism failures as they happen.
      *
      * Buffered and non-suspending to publish: the registry reports failures from inside a
-     * reconcile, and a security-relevant signal must never be dropped or block the caller because
-     * nothing happened to be collecting at that instant.
+     * reconcile, so emission must neither suspend nor lose the signal when no collector is attached
+     * at that instant. [extraBufferCapacity] absorbs subscriber backpressure; [replay] covers the
+     * window *before* any collector attaches — the first boundary acquires during composition,
+     * ahead of its own failure collector, so without replay that first failure would be silently
+     * discarded. A late collector always hears the most recent failure.
      */
     val protectionFailures: Flow<Capability> = _protectionFailures.asSharedFlow()
 
@@ -59,7 +74,17 @@ internal class ShieldCore(
     /** Screenshot events, straight from the platform. Empty where unsupported, never an error. */
     val screenshotEvents: Flow<Unit> = platform.observeScreenshotEvents()
 
+    init {
+        // Capture-state observation is a long-lived library concern, not a consequence of reading
+        // the public property, so it starts here rather than as a side effect of the getter — a
+        // property read must stay a pure read. start() is idempotent.
+        captureStates.start()
+    }
+
     private companion object {
+        /** The one failure emitted before any collector attached is still owed to the next collector. */
+        const val FAILURE_REPLAY = 1
+
         const val FAILURE_BUFFER = 8
     }
 }
@@ -68,23 +93,40 @@ internal class ShieldCore(
  * The main dispatcher, or an unconfined fallback where the platform has none.
  *
  * `Dispatchers.Main` is absent in a JVM host test, a background-only process, or a JVM consumer with
- * no UI toolkit, and it then throws on **first dispatch** rather than on property access — so a
- * plain `try { Dispatchers.Main }` catches nothing and the exception escapes from whichever public
- * member first starts a coroutine. No public operation may throw because a capability is
- * unavailable, so the dispatcher is probed with a real dispatch rather than inspected.
+ * no UI toolkit — and with kotlinx-coroutines-test on the classpath resolving it can even *succeed*
+ * while every dispatch fails, so availability cannot be read off a property. The dispatcher is
+ * therefore probed with a real dispatch. No public operation may throw because a capability is
+ * unavailable, and the probe itself must stay invisible: it runs under a scope that carries its own
+ * [CoroutineExceptionHandler], because cancelling a coroutine queued on a broken dispatcher makes
+ * the failure surface asynchronously from the dispatch machinery — past the caller's try/catch,
+ * and otherwise straight into whatever uncaught-exception reporting runs next.
  *
  * The fallback does not weaken protection: platform effects are marshalled to the main thread by the
  * actuals themselves, so this scope governs only where the library's own observer coroutines resume.
  */
 @Suppress("SwallowedException", "TooGenericExceptionCaught")
-private fun mainDispatcher(): CoroutineDispatcher =
-    try {
-        val candidate = Dispatchers.Main
-        CoroutineScope(candidate).launch { }.cancel()
+private fun mainDispatcher(): CoroutineDispatcher {
+    val candidate =
+        try {
+            Dispatchers.Main
+        } catch (unavailable: Throwable) {
+            return Dispatchers.Unconfined
+        }
+
+    val probe =
+        CoroutineScope(
+            SupervisorJob() +
+                candidate +
+                // The probe's failures end here, deliberately — see the KDoc above.
+                CoroutineExceptionHandler { _, _ -> },
+        )
+    return try {
+        probe.launch { }.cancel()
         candidate
     } catch (unavailable: Throwable) {
         Dispatchers.Unconfined
     }
+}
 
 /**
  * The process-wide instance.

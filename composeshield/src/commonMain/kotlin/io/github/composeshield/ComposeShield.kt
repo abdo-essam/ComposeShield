@@ -81,9 +81,12 @@ public object ComposeShield {
      * Starts at [CaptureState.Unknown] and is **never seeded to [CaptureState.Inactive]** — read
      * that type's documentation before branching on it, because `Inactive` means "no evidence of
      * capture", not "not being captured".
+     *
+     * Observation begins when the library first initializes, not on this property's first read — a
+     * property read must not start work.
      */
     public val captureState: StateFlow<CaptureState>
-        get() = shieldCore.captureStates.also { it.start() }.state
+        get() = shieldCore.captureStates.state
 
     /**
      * Emits once per screenshot, after the fact.
@@ -102,7 +105,9 @@ public object ComposeShield {
      * Emits when a prevention mechanism fails to install or stops working.
      *
      * The application-wide counterpart to `SecureContent`'s `onProtectionFailure`, for consumers
-     * using the imperative path.
+     * using the imperative path. The most recent failure is replayed to a collector that attaches
+     * after it was emitted — a security-relevant signal must not be lost because nobody was
+     * listening yet.
      */
     public val protectionFailures: Flow<Capability> get() = shieldCore.protectionFailures
 

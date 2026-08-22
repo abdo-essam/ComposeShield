@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.emptyFlow
 
+/** The API level that introduced `Activity.ScreenCaptureCallback`; the capability's single floor. */
+private const val SCREEN_CAPTURE_CALLBACKS_API = Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+
 /**
  * Emits once per screenshot, via `Activity.registerScreenCaptureCallback` (API 34+).
  *
@@ -21,10 +24,10 @@ import kotlinx.coroutines.flow.emptyFlow
  * registry state this class deliberately knows nothing about.
  */
 internal class ScreenshotEvents {
-    fun support(): SupportLevel = supportedFromApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    fun support(): SupportLevel = supportedFromApi(SCREEN_CAPTURE_CALLBACKS_API)
 
     fun events(): Flow<Unit> {
-        if (sdkInt < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return emptyFlow()
+        if (sdkInt < SCREEN_CAPTURE_CALLBACKS_API) return emptyFlow()
 
         return callbackFlow {
             val activity = anyRegisteredActivity()

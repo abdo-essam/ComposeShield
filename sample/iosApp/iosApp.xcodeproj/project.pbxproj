@@ -116,7 +116,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT/../..\"\nif [ \"$SDK_NAME\" =~ \"simulator\" ] || [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n    if [ \"$CONFIGURATION\" = \"Release\" ]; then\n        ./gradlew :composeshield:linkReleaseFrameworkIosSimulatorArm64\n    else\n        ./gradlew :composeshield:linkDebugFrameworkIosSimulatorArm64\n    fi\nelse\n    if [ \"$CONFIGURATION\" = \"Release\" ]; then\n        ./gradlew :composeshield:linkReleaseFrameworkIosArm64\n    else\n        ./gradlew :composeshield:linkDebugFrameworkIosArm64\n    fi\nfi\n";
+			shellScript = "cd \"$SRCROOT/../..\"\nif [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n    if [ \"$CONFIGURATION\" = \"Release\" ]; then\n        ./gradlew :composeshield:linkReleaseFrameworkIosSimulatorArm64\n    else\n        ./gradlew :composeshield:linkDebugFrameworkIosSimulatorArm64\n    fi\nelse\n    if [ \"$CONFIGURATION\" = \"Release\" ]; then\n        ./gradlew :composeshield:linkReleaseFrameworkIosArm64\n    else\n        ./gradlew :composeshield:linkDebugFrameworkIosArm64\n    fi\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

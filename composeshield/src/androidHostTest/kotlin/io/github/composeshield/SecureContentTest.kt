@@ -5,12 +5,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.v2.runComposeUiTest
+import io.github.composeshield.internal.shieldCore
 import org.junit.Rule
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotSame
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 /**
@@ -117,6 +120,43 @@ class SecureContentTest {
                 ComposeShield.isProtectionActive(),
                 "the DisposableEffect restarts on a capability change; protection must survive the swap",
             )
+        }
+
+    @Test
+    fun `a freshly allocated equal capability set does not restart the protection effect`() =
+        runComposeUiTest {
+            // The hazard: a consumer writing `capabilities = setOf(...)` inline allocates a new,
+            // equal set on every recomposition. Keying the effect on that raw parameter would
+            // release/re-apply each time — on Android a FLAG_SECURE toggle, i.e. surface teardown.
+            val capabilities = mutableStateOf(setOf(Capability.ScreenshotPrevention))
+
+            setContent {
+                // toSet() makes the instability explicit: a fresh instance every recomposition.
+                SecureContent(capabilities = capabilities.value.toSet()) { }
+            }
+            waitForIdle()
+            val settled = shieldCore.registry.snapshots.value
+
+            // Every acquire/release produces a new RegistryState instance, so reference identity of
+            // the published snapshot is an effect-restart detector: same instance ⇒ no restart.
+            capabilities.value = setOf(Capability.ScreenshotPrevention)
+            waitForIdle()
+
+            assertSame(
+                settled,
+                shieldCore.registry.snapshots.value,
+                "a fresh-but-equal set must not release/re-acquire protection",
+            )
+
+            capabilities.value = setOf(Capability.ScreenshotPrevention, Capability.RecordingPrevention)
+            waitForIdle()
+
+            assertNotSame(
+                settled,
+                shieldCore.registry.snapshots.value,
+                "a genuinely different set must still re-acquire",
+            )
+            assertTrue(ComposeShield.isProtectionActive())
         }
 
     @Test
