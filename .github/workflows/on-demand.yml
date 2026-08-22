@@ -197,11 +197,9 @@ jobs:
             --schemafile config/schemas/validation-report.schema.json \
             composeshield/build/reports/validation-report.json
 
-      - name: Upload validation report (JSON + HTML)
+      - name: Upload validation report (JSON + HTML + evidence media)
         uses: actions/upload-artifact@v4
         with:
           name: on-demand-validation-report-${{ github.run_id }}
-          path: |
-            composeshield/build/reports/validation-report.json
-            composeshield/build/reports/validation-report.html
+          path: composeshield/build/reports/
           retention-days: 30

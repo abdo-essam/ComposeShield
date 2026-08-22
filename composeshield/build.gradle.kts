@@ -274,7 +274,52 @@ val generateValidationReport by tasks.registering {
             }
         }
 
+        val reportsDir = outputDir.get().asFile
+        reportsDir.mkdirs()
+
+        // T034 (FR-024): device metadata written by the FTL workflow next to the JUnit XML.
+        var deviceModel: String? = null
+        var osVersion: String? = null
+        if (xmlDir.exists()) {
+            xmlDir.walkTopDown().filter { it.name == "device-metadata.json" }.firstOrNull()?.let { meta ->
+                val content = meta.readText()
+                deviceModel = Regex(""""device_model"\s*:\s*"([^"]*)"""").find(content)?.groupValues?.get(1)
+                osVersion = Regex(""""os_version"\s*:\s*"([^"]*)"""").find(content)?.groupValues?.get(1)
+            }
+        }
+
+        // Collect screenshot/video evidence (PNG/MP4) downloaded alongside the XML.
+        // Files whose name embeds a test ID (e.g. C-001_android_shield_on.png) are
+        // attached to that test's report row; the rest go into an appendix.
+        val mediaDir = reportsDir.resolve("media")
+        mediaDir.mkdirs()
+        val mediaById = mutableMapOf<String, MutableList<String>>()
+        val unattachedMedia = mutableListOf<String>()
+        if (xmlDir.exists()) {
+            xmlDir.walkTopDown().filter { it.isFile && it.extension in setOf("png", "mp4") }.forEach { f ->
+                val targetName = "${f.parentFile.name}-${f.name}"
+                val target = mediaDir.resolve(targetName)
+                f.copyTo(target, overwrite = true)
+                val idMatch = Regex("""([A-Z]-[0-9]{3})""").find(f.name)?.groupValues?.get(1)
+                val meta = idMatch?.let { testIdMap[it] }
+                val isIosNamed = f.name.lowercase().contains("ios")
+                val attached =
+                    if (meta != null && (meta["platform"] == "ios") == isIosNamed) {
+                        mediaById.getOrPut(idMatch) { mutableListOf() }.add(targetName)
+                        true
+                    } else {
+                        false
+                    }
+                if (!attached) unattachedMedia.add(targetName)
+            }
+        }
+
         // Build test results array
+        val pipelineRunUrl = "https://github.com/$githubRepo/actions/runs/$runId"
+        val artifactsAnchor = "$pipelineRunUrl#artifacts"
+
+        fun jsonOrNull(value: String?): String = value?.let { "\"$it\"" } ?: "null"
+
         val testResults =
             testIdMap.map { (id, meta) ->
                 val status =
@@ -285,7 +330,11 @@ val generateValidationReport by tasks.registering {
                         else -> "blocked" // device unavailable or test not run
                     }
                 val failureReason = failedTests[id]
-                val evidenceUrl: String? = null // populated by workflow step that uploads artifacts
+                // FR-024 / schema: evidence MUST be non-null for passed screenshot validations.
+                // Points at the run's Artifacts section, where the media zip lives.
+                val isHostJvm = meta["environment"] == "host-jvm"
+                val evidenceUrl =
+                    if (!isHostJvm && (status == "passed" || status == "failed")) artifactsAnchor else null
 
                 """
                 {
@@ -295,9 +344,9 @@ val generateValidationReport by tasks.registering {
                   "status": "$status",
                   "platform": "${meta["platform"] ?: "unknown"}",
                   "environment": "${meta["environment"] ?: "unknown"}",
-                  "device_model": ${if (meta["environment"] == "host-jvm") "null" else "null"},
-                  "os_version": ${if (meta["environment"] == "host-jvm") "null" else "null"},
-                  "evidence_url": null,
+                  "device_model": ${jsonOrNull(if (isHostJvm) null else deviceModel)},
+                  "os_version": ${jsonOrNull(if (isHostJvm) null else osVersion)},
+                  "evidence_url": ${jsonOrNull(evidenceUrl)},
                   "failure_reason": ${if (failureReason != null) "\"$failureReason\"" else "null"},
                   "timestamp": "$timestamp"
                 }
@@ -312,8 +361,6 @@ val generateValidationReport by tasks.registering {
             }
 
         // Write JSON report
-        val reportsDir = outputDir.get().asFile
-        reportsDir.mkdirs()
         val jsonReport = reportsDir.resolve("validation-report.json")
         jsonReport.writeText(
             """
@@ -323,13 +370,14 @@ val generateValidationReport by tasks.registering {
               "trigger_type": "$triggerType",
               "generated_at": "$timestamp",
               "overall_status": "$overallStatus",
-              "pipeline_run_url": "https://github.com/$githubRepo/actions/runs/$runId",
+              "pipeline_run_url": "$pipelineRunUrl",
               "test_results": [${testResults.joinToString(",")}]
             }
             """.trimIndent(),
         )
 
-        // Write HTML report
+        // Write HTML report — embeds screenshot/video evidence inline (media/ is
+        // uploaded next to this file, so relative paths resolve inside the artifact zip).
         val htmlReport = reportsDir.resolve("validation-report.html")
         val statusColor =
             if (overallStatus ==
@@ -341,15 +389,35 @@ val generateValidationReport by tasks.registering {
             } else {
                 "#bf8700"
             }
+
+        fun evidenceCell(id: String): String =
+            mediaById[id]?.joinToString("") { name ->
+                val rel = "media/$name"
+                if (name.endsWith(".png")) {
+                    """<a href="$rel"><img src="$rel" width="180" alt="$id"></a> """
+                } else {
+                    """<video src="$rel" width="180" controls muted></video> """
+                }
+            } ?: ""
+
+        fun appendixMedia(name: String): String =
+            if (name.endsWith(".png")) {
+                val rel = "media/$name"
+                """<figure style="display:inline-block;margin:.5em"><a href="$rel">""" +
+                    """<img src="$rel" width="180" alt="$name"></a><figcaption>$name</figcaption></figure>"""
+            } else {
+                """<p><a href="media/$name">$name</a></p>"""
+            }
         htmlReport.writeText(
             """
             <!DOCTYPE html><html><head><meta charset="utf-8">
             <title>ComposeShield Validation Report</title>
-            <style>body{font-family:monospace;margin:2em}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:.5em}th{background:#f6f8fa}</style>
+            <style>body{font-family:monospace;margin:2em}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:.5em;vertical-align:top}th{background:#f6f8fa}img,video{display:block}</style>
             </head><body>
             <h1>ComposeShield Validation Report</h1>
-            <p><b>Overall:</b> <span style="color:$statusColor">$overallStatus</span> | Commit: $commitSha | Run: $runId</p>
-            <table><tr><th>Test ID</th><th>Name</th><th>Status</th><th>Platform</th><th>Failure Reason</th></tr>
+            <p><b>Overall:</b> <span style="color:$statusColor">$overallStatus</span> | Commit: $commitSha | Run: $runId | Device: ${deviceModel ?: "?"} / ${osVersion ?: "?"} |
+               <a href="$artifactsAnchor">Artifacts &amp; videos</a></p>
+            <table><tr><th>Test ID</th><th>Name</th><th>Status</th><th>Platform</th><th>Evidence</th><th>Failure Reason</th></tr>
             ${testIdMap.entries.joinToString("") { (id, meta) ->
                 val status =
                     when {
@@ -365,9 +433,22 @@ val generateValidationReport by tasks.registering {
                         "manual_required" -> "#bf8700"
                         else -> "#666"
                     }
-                "<tr><td>$id</td><td>${meta["test_name"] ?: id}</td><td style='color:$color'>$status</td><td>${meta["platform"] ?: ""}</td><td>${failedTests[id] ?: ""}</td></tr>"
+                val cells =
+                    "<td>$id</td><td>${meta["test_name"] ?: id}</td>" +
+                        "<td style='color:$color'>$status</td><td>${meta["platform"] ?: ""}</td>" +
+                        "<td>${evidenceCell(id)}</td><td>${failedTests[id] ?: ""}</td>"
+                "<tr>$cells</tr>"
             }}
-            </table></body></html>
+            </table>
+            <h2>Other captured media</h2>
+            ${if (unattachedMedia.isEmpty()) {
+                "<p>(none)</p>"
+            } else {
+                unattachedMedia.joinToString("") {
+                    appendixMedia(it)
+                }
+            }}
+            </body></html>
             """.trimIndent(),
         )
 

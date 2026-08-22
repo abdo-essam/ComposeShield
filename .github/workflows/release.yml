@@ -277,9 +277,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-validation-report-${{ github.run_id }}
-          path: |
-            composeshield/build/reports/validation-report.json
-            composeshield/build/reports/validation-report.html
+          path: composeshield/build/reports/
           retention-days: 30
 
   # ---------------------------------------------------------------------------

@@ -79,7 +79,23 @@ jobs:
             --results-dir=${{ inputs.results_dir_prefix }}-${{ github.run_id }} \
             --timeout 600s 2>&1 | tee ftl_run.log
 
-          RESULTS_URL=$(grep -o 'gs://[^ ]*' ftl_run.log | head -1 || true)
+          # gcloud may print either a gs:// URL or an HTTPS console URL like
+          # https://console.developers.google.com/storage/browser/<bucket>/<dir>/
+          # depending on version — accept both and normalize to gs://.
+          RAW_URL=$(grep -oE '(gs://[^] ]*|storage/browser/[^] ]*)' ftl_run.log | head -1 || true)
+          if [ -z "$RAW_URL" ]; then
+            echo "::error::Could not find FTL results location in gcloud output"
+            exit 1
+          fi
+          case "$RAW_URL" in
+            storage/browser/*)
+              RESULTS_URL="gs://${RAW_URL#storage/browser/}"
+              ;;
+            *)
+              RESULTS_URL="$RAW_URL"
+              ;;
+          esac
+          RESULTS_URL="${RESULTS_URL%/}"
           echo "Extracted Results Bucket URL: $RESULTS_URL"
           echo "ftl_results_url=${RESULTS_URL}" >> "$GITHUB_OUTPUT"
 
@@ -94,6 +110,13 @@ jobs:
           fi
           echo "Downloaded files:"
           find ftl-results -type f || true
+          # Fail loudly: a silent download failure used to surface downstream as a
+          # fully-"blocked" validation report with no evidence artifacts.
+          XML_COUNT=$(find ftl-results -name '*.xml' | wc -l)
+          if [ "$XML_COUNT" -eq 0 ]; then
+            echo "::error::FTL results download produced no JUnit XML — screenshots/videos/report would be empty."
+            exit 1
+          fi
 
       # T034 (US4): Extract device model and OS version from FTL result JSON so the
       # report generator can populate device_model and os_version fields (FR-024).
