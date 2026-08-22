@@ -212,7 +212,7 @@ internal class ProtectionRegistry(
                 if (capabilities.isEmpty()) {
                     platform.clearProtection(window)
                     ProtectionOutcome.Applied
-                } else {
+            } else if (outcome == ProtectionOutcome.Applied) {
                     platform.applyProtection(window, capabilities)
                 }
 
