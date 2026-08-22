@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="assets/banner.jpg" alt="A banking app whose balance card is blurred and locked — Protected by ComposeShield" width="640">
+</div>
+
 # ComposeShield
 
 **Screen capture protection for Compose Multiplatform.**
