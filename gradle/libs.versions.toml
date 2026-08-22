@@ -3,7 +3,7 @@
 # AGP stays on 9.2.1: 9.3+ falls outside that matrix AND exceeds the max AGP version current
 # Android Studio releases accept (9.2.1); CI reproducibility and IDE sync both win over currency.
 kotlin = "2.4.10"
-agp = "9.2.1"
+agp = "9.3.1"
 compose = "1.11.1"
 coroutines = "1.11.0"
 
