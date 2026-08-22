@@ -2,7 +2,7 @@
 # Pinned to the Kotlin 2.4.x tested ceiling — see research.md R9.
 # Gradle 9.7 / AGP 9.3 exist but fall outside that matrix; CI reproducibility wins over currency.
 kotlin = "2.4.10"
-agp = "9.1.0"
+agp = "9.3.1"
 compose = "1.11.1"
 coroutines = "1.11.0"
 
