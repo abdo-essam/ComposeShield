@@ -62,7 +62,7 @@ ktlint-cli = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+# No kotlin-android alias: AGP 9 provides Kotlin support directly and nothing applies it.
 kotlin-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }
 

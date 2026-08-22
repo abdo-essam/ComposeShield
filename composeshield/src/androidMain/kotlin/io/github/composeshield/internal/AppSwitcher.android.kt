@@ -3,6 +3,9 @@ package io.github.composeshield.internal
 import android.os.Build
 import io.github.composeshield.SupportLevel
 
+/** The API level that introduced `setRecentsScreenshotEnabled`; the capability's single floor. */
+private const val RECENTS_SCREENSHOT_API = Build.VERSION_CODES.TIRAMISU
+
 /**
  * Standalone recents protection via `Activity.setRecentsScreenshotEnabled(false)` (API 33+).
  *
@@ -20,13 +23,13 @@ import io.github.composeshield.SupportLevel
  * reflection, which the zero-reflection guarantee forbids outright.
  */
 internal class AppSwitcher {
-    fun support(): SupportLevel = supportedFromApi(Build.VERSION_CODES.TIRAMISU)
+    fun support(): SupportLevel = supportedFromApi(RECENTS_SCREENSHOT_API)
 
     fun apply(
         window: WindowKey,
         enabled: Boolean,
     ) {
-        if (sdkInt < Build.VERSION_CODES.TIRAMISU) return
+        if (sdkInt < RECENTS_SCREENSHOT_API) return
         val activity = activityFor(window) ?: anyRegisteredActivity() ?: return
 
         onMainThread(ifDeferred = Unit) {

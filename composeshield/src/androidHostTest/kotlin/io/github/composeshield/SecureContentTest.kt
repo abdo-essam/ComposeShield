@@ -5,12 +5,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.v2.runComposeUiTest
+import io.github.composeshield.internal.shieldCore
 import org.junit.Rule
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotSame
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 /**
@@ -117,6 +120,49 @@ class SecureContentTest {
                 ComposeShield.isProtectionActive(),
                 "the DisposableEffect restarts on a capability change; protection must survive the swap",
             )
+        }
+
+    @Test
+    fun `a freshly allocated equal capability set does not restart the protection effect`() =
+        runComposeUiTest {
+            // Two traps make this test easy to write vacuously. First, mutableStateOf compares
+            // structurally, so assigning an equal set produces no recomposition at all. Second,
+            // Compose effect keys compare with equals(), so an equal set would not restart the
+            // effect even if the body re-ran. A separate tick state, read inside composition,
+            // forces genuine recompositions while the capability argument stays fresh-but-equal;
+            // the composition counter proves those recompositions really happened.
+            val capabilities = mutableStateOf(setOf(Capability.ScreenshotPrevention))
+            val tick = mutableStateOf(0)
+            var compositions = 0
+
+            setContent {
+                tick.value // subscribe: every bump must re-run this body
+                SecureContent(capabilities = capabilities.value.toSet()) { compositions++ }
+            }
+            waitForIdle()
+            val settled = shieldCore.registry.snapshots.value
+
+            tick.value = 1
+            waitForIdle()
+            assertTrue(
+                compositions >= 2,
+                "the tick must force a real recomposition, or the identity assertion below is vacuous",
+            )
+            assertSame(
+                settled,
+                shieldCore.registry.snapshots.value,
+                "a fresh-but-equal capability set across recompositions must not release/re-apply protection",
+            )
+
+            capabilities.value = setOf(Capability.ScreenshotPrevention, Capability.RecordingPrevention)
+            waitForIdle()
+
+            assertNotSame(
+                settled,
+                shieldCore.registry.snapshots.value,
+                "a genuinely different set must still re-acquire",
+            )
+            assertTrue(ComposeShield.isProtectionActive())
         }
 
     @Test

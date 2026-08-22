@@ -173,4 +173,48 @@ class ProtectionRegistryTest {
             "a failure describes a live attempt; keeping it would poison the capability for the session",
         )
     }
+
+    @Test
+    fun `an unchanged effective capability set does not re-invoke the platform`() {
+        val capabilities = setOf(Capability.ScreenshotPrevention)
+        val first = registry.acquire(window, capabilities)
+        val second = registry.acquire(window, capabilities)
+
+        registry.release(first)
+
+        assertEquals(
+            listOf("apply:${window.id}"),
+            platform.applyLog,
+            "a second identical request adds nothing to the union — every redundant apply is a " +
+                "main-thread round-trip, and on a real window a needless toggle tears down its surface",
+        )
+        assertContains(platform.protectedWindows, window)
+
+        registry.release(second)
+
+        assertEquals(
+            listOf("apply:${window.id}", "clear:${window.id}"),
+            platform.applyLog,
+            "skipping redundant reconciles must not skip the genuine final release",
+        )
+    }
+
+    @Test
+    fun `a failed application is retried by the next reconcile rather than trusted`() {
+        val failing = FakePlatformProtection().apply { nextOutcome = ProtectionOutcome.Failed }
+        val subject = ProtectionRegistry(failing)
+
+        subject.acquire(window, setOf(Capability.ScreenshotPrevention))
+        assertEquals(1, failing.applyLog.size)
+
+        // A second request changes nothing about the effective set, but the first apply reported
+        // Failed — the mechanism is NOT in force, so this must retry the install, not skip it.
+        subject.acquire(window, setOf(Capability.ScreenshotPrevention))
+
+        assertEquals(
+            2,
+            failing.applyLog.count { it.startsWith("fail") },
+            "caching must only trust outcomes that were actually applied; a failed install has to be retried",
+        )
+    }
 }
