@@ -130,3 +130,14 @@ jobs:
           name: ${{ inputs.artifact_prefix }}-screenshots-${{ github.run_id }}
           path: ftl-results/**/*.png
           retention-days: 30
+
+      # FTL records a video per test case by default (--record-video); surface the
+      # downloaded .mp4 files as their own artifact so they sit next to the screenshots.
+      - name: Upload test run videos
+        if: always()
+        # renovate: datasource=github-actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_prefix }}-videos-${{ github.run_id }}
+          path: ftl-results/**/*.mp4
+          retention-days: 30
