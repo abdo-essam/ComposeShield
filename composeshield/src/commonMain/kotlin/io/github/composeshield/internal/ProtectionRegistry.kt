@@ -221,7 +221,14 @@ internal class ProtectionRegistry(
             } else {
                 mutate { snapshot ->
                     if (snapshot.applied[window] == capabilities) return@mutate snapshot
-                    snapshot.copy(applied = snapshot.applied + (window to capabilities))
+                    snapshot.copy(
+                        applied =
+                            if (capabilities.isEmpty()) {
+                                snapshot.applied - window
+                            } else {
+                                snapshot.applied + (window to capabilities)
+                            },
+                    )
                 }
             }
         }
