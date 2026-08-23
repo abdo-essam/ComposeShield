@@ -44,9 +44,11 @@ jobs:
       - name: Validate test-ID coverage
         run: bash scripts/validate-test-id-coverage.sh
 
-      # FR-005: sample app must build cleanly
-      - name: Sample app build
-        run: ./gradlew :sample:androidApp:assembleDebug
+      # FR-005: sample apps must build cleanly
+      - name: Sample apps build
+        run: |
+          ./gradlew :sample:androidApp:assembleDebug
+          ./gradlew :sample:securebank:assembleDebug
 
   # ---------------------------------------------------------------------------
   # Apple — iOS Simulator tests + ABI check

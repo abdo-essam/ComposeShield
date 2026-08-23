@@ -44,7 +44,13 @@ spotless {
 
 detekt {
     // ForbiddenImport is syntactic, analyzing commonMain and platform source sets.
-    source.setFrom(files("composeshield/src", "sample"))
+    // Scoped to source trees (not the whole sample/ directory): build outputs under
+    // sample/*/build would otherwise overlap with assemble tasks' outputs in the same
+    // invocation and trip Gradle's implicit-dependency validation.
+    source.setFrom(
+        fileTree("composeshield/src"),
+        fileTree("sample") { include("**/src/**/*.kt") },
+    )
     config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
     parallel = true

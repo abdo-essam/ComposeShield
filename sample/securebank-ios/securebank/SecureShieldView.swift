@@ -1,0 +1,125 @@
+import SwiftUI
+import UIKit
+import ComposeShield
+
+/// A SwiftUI view that applies ComposeShield's iOS screen capture protection to its content.
+///
+/// While this view is in the view hierarchy, the scene's window is protected. Protection releases
+/// when the view disappears — there is no teardown call to forget.
+///
+/// ```swift
+/// SecureShieldView {
+///     SensitiveContent()
+/// } onFailure: { capability in
+///     print("Protection failed: \(capability)")
+/// }
+/// ```
+///
+/// **Protection is window-scoped, not view-scoped.** While this is in the hierarchy, the entire
+/// window is protected — a sibling view outside this container is also protected. See
+/// `docs/platform-notes.md`.
+///
+/// - Parameters:
+///   - simulateFailure: When true, a test hook forces the mechanism to report failure, exercising
+///     the failure-observability path. Used by the sample app to demonstrate M10.
+///   - content: The protected content. Rendered unchanged even while the mechanism is broken; the
+///     failure is reported through `onFailure`.
+///   - onFailure: Invoked when the protection mechanism fails or stops working.
+struct SecureShieldView<Content: View>: View {
+    @Binding var simulateFailure: Bool
+    let content: Content
+    let onFailure: ((Capability) -> Void)?
+
+    init(
+        simulateFailure: Binding<Bool> = .constant(false),
+        @ViewBuilder content: () -> Content,
+        onFailure: ((Capability) -> Void)? = nil
+    ) {
+        self._simulateFailure = simulateFailure
+        self.content = content()
+        self.onFailure = onFailure
+    }
+
+    var body: some View {
+        _SecureShieldViewRepresentable(
+            simulateFailure: simulateFailure,
+            onFailure: onFailure
+        ) {
+            content
+        }
+    }
+}
+
+// MARK: - UIKit bridge
+
+/// UIViewControllerRepresentable bridge that acquires and releases protection through
+/// `ComposeShield.shared`.
+private struct _SecureShieldViewRepresentable<Content: View>: UIViewControllerRepresentable {
+    let simulateFailure: Bool
+    let onFailure: ((Capability) -> Void)?
+    let content: () -> Content
+
+    func makeUIViewController(context: Context) -> _SecureShieldViewController<Content> {
+        _SecureShieldViewController(content: content, onFailure: onFailure)
+    }
+
+    func updateUIViewController(_ vc: _SecureShieldViewController<Content>, context: Context) {
+        vc.updateSimulateFailure(simulateFailure)
+    }
+}
+
+/// Hosts the SwiftUI content and manages the protection handle lifetime.
+///
+/// `viewWillAppear` / `viewWillDisappear` are the lifecycle anchors: they fire symmetrically on
+/// navigation push/pop, sheet present/dismiss, and tab switches — the cases where a hand-managed
+/// flag most often leaks or double-clears.
+private final class _SecureShieldViewController<Content: View>: UIViewController {
+    private var handle: ProtectionHandle?
+    private let onFailure: ((Capability) -> Void)?
+    private var hostingController: UIHostingController<Content>
+
+    init(content: () -> Content, onFailure: ((Capability) -> Void)?) {
+        self.onFailure = onFailure
+        self.hostingController = UIHostingController(rootView: content())
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .clear
+
+        addChild(hostingController)
+        view.addSubview(hostingController.view)
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+        hostingController.didMove(toParent: self)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // Request protection when entering the view hierarchy.
+        handle = ComposeShield.shared.protect(capabilities: Set([.screenshotprevention, .recordingprevention]))
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        handle?.unprotect()
+        handle = nil
+    }
+
+    /// Test hook — forces the mechanism to report failure without removing the view.
+    func updateSimulateFailure(_ simulate: Bool) {
+        if simulate {
+            // Signal the failure observer so the sample can demonstrate M10.
+            onFailure?(.screenshotprevention)
+        }
+    }
+}

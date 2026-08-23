@@ -1,0 +1,320 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B200001 /* SecureBankApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200001 /* SecureBankApp.swift */; };
+		B200002 /* BankViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200002 /* BankViews.swift */; };
+		B200003 /* SecureShieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200003 /* SecureShieldView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A200001 /* SecureBankApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureBankApp.swift; sourceTree = "<group>"; };
+		A200002 /* BankViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankViews.swift; sourceTree = "<group>"; };
+		A200003 /* SecureShieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureShieldView.swift; sourceTree = "<group>"; };
+		A200000 /* securebank.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = securebank.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		G200000 /* root */ = {
+			isa = PBXGroup;
+			children = (
+				G201000 /* securebank */,
+				G202000 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		G201000 /* securebank */ = {
+			isa = PBXGroup;
+			children = (
+				A200001 /* SecureBankApp.swift */,
+				A200002 /* BankViews.swift */,
+				A200003 /* SecureShieldView.swift */,
+			);
+			path = securebank;
+			sourceTree = "<group>";
+		};
+		G202000 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A200000 /* securebank.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		T200000 /* securebank */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C200000 /* Build configuration list for PBXNativeTarget "securebank" */;
+			buildPhases = (
+				P200001 /* Compile Kotlin Framework */,
+				P201000 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = securebank;
+			productName = securebank;
+			productReference = A200000 /* securebank.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		PROJECT /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					T200000 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = C201000 /* Build configuration list for PBXProject "securebank-ios" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = G200000;
+			productRefGroup = G202000 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				T200000 /* securebank */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		P200001 /* Compile Kotlin Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Compile Kotlin Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$SRCROOT/../..\"\nif [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n    if [ \"$CONFIGURATION\" = \"Release\" ]; then\n        ./gradlew :composeshield:linkReleaseFrameworkIosSimulatorArm64\n    else\n        ./gradlew :composeshield:linkDebugFrameworkIosSimulatorArm64\n    fi\nelse\n    if [ \"$CONFIGURATION\" = \"Release\" ]; then\n        ./gradlew :composeshield:linkReleaseFrameworkIosArm64\n    else\n        ./gradlew :composeshield:linkDebugFrameworkIosArm64\n    fi\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		P201000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B200001 /* SecureBankApp.swift in Sources */,
+				B200002 /* BankViews.swift in Sources */,
+				B200003 /* SecureShieldView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		BC200001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ARCHS = arm64;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BC200002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ARCHS = arm64;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BC200101 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../../composeshield/build/bin/iosSimulatorArm64/debugFramework",
+					"$(SRCROOT)/../../composeshield/build/bin/iosArm64/debugFramework",
+					"$(SRCROOT)/../../composeshield/build/bin/iosSimulatorArm64/$(CONFIGURATION:lower)Framework",
+					"$(SRCROOT)/../../composeshield/build/bin/iosArm64/$(CONFIGURATION:lower)Framework",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				ARCHS = arm64;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					"ComposeShield",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.composeshield.securebank;
+				PRODUCT_NAME = securebank;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BC200102 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../../composeshield/build/bin/iosSimulatorArm64/releaseFramework",
+					"$(SRCROOT)/../../composeshield/build/bin/iosArm64/releaseFramework",
+					"$(SRCROOT)/../../composeshield/build/bin/iosSimulatorArm64/$(CONFIGURATION:lower)Framework",
+					"$(SRCROOT)/../../composeshield/build/bin/iosArm64/$(CONFIGURATION:lower)Framework",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					"ComposeShield",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.composeshield.securebank;
+				PRODUCT_NAME = securebank;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C200000 /* Build configuration list for PBXNativeTarget "securebank" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC200101 /* Debug */,
+				BC200102 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C201000 /* Build configuration list for PBXProject "securebank-ios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC200001 /* Debug */,
+				BC200002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = PROJECT /* Project object */;
+}

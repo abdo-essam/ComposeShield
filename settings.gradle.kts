@@ -29,3 +29,4 @@ dependencyResolutionManagement {
 
 include(":composeshield")
 include(":sample:androidApp")
+include(":sample:securebank")
