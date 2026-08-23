@@ -20,7 +20,7 @@ jobs:
       prior_artifact_name: ${{ steps.check.outputs.prior_artifact_name }}
     steps:
         # renovate: datasource=github-actions
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check for prior passing report
         id: check
@@ -79,7 +79,7 @@ jobs:
     needs: check-prior-report
     steps:
         # renovate: datasource=github-actions
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
         # renovate: datasource=github-actions
       - uses: actions/setup-java@v4
@@ -113,7 +113,7 @@ jobs:
     needs: check-prior-report
     steps:
         # renovate: datasource=github-actions
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
         # renovate: datasource=github-actions
       - uses: actions/setup-java@v4
@@ -169,7 +169,7 @@ jobs:
     needs: [jvm, apple-sim]
     steps:
         # renovate: datasource=github-actions
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
         # renovate: datasource=github-actions
       - uses: actions/setup-java@v4
@@ -215,7 +215,7 @@ jobs:
       TRIGGER_TYPE: release
     steps:
         # renovate: datasource=github-actions
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
         # renovate: datasource=github-actions
       - uses: actions/setup-java@v4
@@ -289,7 +289,7 @@ jobs:
     needs: [generate-report, docs-gate]
     steps:
         # renovate: datasource=github-actions
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
         # renovate: datasource=github-actions
       - uses: actions/setup-java@v4
