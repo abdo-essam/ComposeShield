@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
         # renovate: datasource=github-actions
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
         # renovate: datasource=github-actions
       - uses: actions/setup-java@v4
@@ -61,7 +61,7 @@ jobs:
     runs-on: macos-26
     steps:
         # renovate: datasource=github-actions
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
         # renovate: datasource=github-actions
       - uses: actions/setup-java@v4
@@ -100,7 +100,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
         # renovate: datasource=github-actions
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Validate device-matrix.yml structure
         run: |
