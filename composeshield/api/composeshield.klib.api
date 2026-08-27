@@ -48,8 +48,9 @@ final enum class io.github.composeshield/TaskSwitcherProtection : kotlin/Enum<io
     final fun values(): kotlin/Array<io.github.composeshield/TaskSwitcherProtection> // io.github.composeshield/TaskSwitcherProtection.values|values#static(){}[0]
 }
 
-abstract interface io.github.composeshield/ProtectionHandle { // io.github.composeshield/ProtectionHandle|null[0]
+abstract interface io.github.composeshield/ProtectionHandle : kotlin/AutoCloseable { // io.github.composeshield/ProtectionHandle|null[0]
     abstract fun unprotect() // io.github.composeshield/ProtectionHandle.unprotect|unprotect(){}[0]
+    open fun close() // io.github.composeshield/ProtectionHandle.close|close(){}[0]
 }
 
 sealed interface io.github.composeshield/SupportLevel { // io.github.composeshield/SupportLevel|null[0]

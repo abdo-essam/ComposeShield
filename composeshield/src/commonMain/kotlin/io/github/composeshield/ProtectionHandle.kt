@@ -37,4 +37,3 @@ public interface ProtectionHandle : AutoCloseable {
      */
     override fun close(): Unit = unprotect()
 }
-

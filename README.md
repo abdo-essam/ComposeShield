@@ -10,6 +10,7 @@
   <a href="https://github.com/abdo-essam/ComposeShield/actions/workflows/ci.yml"><img src="https://github.com/abdo-essam/ComposeShield/actions/workflows/ci.yml/badge.svg" alt="GitHub Actions"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="Apache 2.0 License"></a>
   <a href="https://central.sonatype.com/artifact/io.github.abdo-essam/composeshield"><img src="https://img.shields.io/maven-central/v/io.github.abdo-essam/composeshield" alt="Maven Central"></a>
+  <a href="https://github.com/sponsors/abdo-essam"><img src="https://img.shields.io/badge/Sponsor-%E2%99%A5-ff69b4.svg" alt="Sponsor"></a>
 </p>
 
 ## What is ComposeShield? ✨
@@ -211,6 +212,10 @@ jailbroken devices. ComposeShield provides the strongest protection each OS offi
 requires a CI-connected iPhone, which is not yet in the pipeline. Android physical tests
 run automatically on Firebase Test Lab on every release. iOS physical coverage will be
 automated in a future release.
+
+## Support & Sponsoring 💖
+
+If ComposeShield helps protect your application or team, please consider [sponsoring the project on GitHub](https://github.com/sponsors/abdo-essam) or starring the repository ⭐!
 
 ## Contact
 
