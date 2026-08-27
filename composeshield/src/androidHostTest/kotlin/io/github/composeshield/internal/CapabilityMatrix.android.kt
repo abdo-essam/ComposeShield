@@ -11,9 +11,8 @@ import io.github.composeshield.SupportLevel.Unsupported.Reason
  * The version gates are the interesting part and they are not uniform — 33 for standalone recents,
  * 34 for screenshot events, 35 for recording detection — because each rests on a different platform
  * API that arrived in a different release. Below its floor each reports `OsVersionTooLow` with no
- * fallback, which research.md R6 argues for at length: every candidate fallback would produce a
- * false "you are not being captured", and for a security library that is worse than an honest
- * "unsupported".
+ * fallback: every candidate fallback would produce a false "you are not being captured", and for a
+ * security library that is worse than an honest "unsupported".
  *
  * Note this deliberately reports the *platform* verdict, before the registry layers preclusion on
  * top. `ScreenshotEvents` drops to `PrecludedByActiveCapability` while prevention is active, which is

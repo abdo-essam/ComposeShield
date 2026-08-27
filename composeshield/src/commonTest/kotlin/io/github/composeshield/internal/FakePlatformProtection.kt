@@ -11,9 +11,8 @@ import kotlinx.coroutines.flow.onSubscription
  * A scriptable stand-in for the platform layer.
  *
  * The registry's reference counting, posture resolution, and support layering are pure logic, so
- * they should be provable without a device — Principle II's common-first split exists partly so that
- * this is possible. This fake records what the platform was *asked* to do and lets a test dictate
- * what the platform says back, including the awkward answers real platforms give: a mechanism that
+ * they should be provable without a device. This fake records what the platform was *asked* to do
+ * and lets a test dictate what the platform says back, including edge cases: a mechanism that
  * refuses to install, a capability the OS is too old for, an indeterminate capture reading.
  */
 internal class FakePlatformProtection(
@@ -34,8 +33,7 @@ internal class FakePlatformProtection(
      * Every apply/clear in order.
      *
      * Kept as an ordered log rather than a count so tests can assert on *redundant toggling*, not
-     * just the end state — on a real window each toggle is a surface teardown the user sees, so
-     * "ended up correct" is not the same as "behaved correctly" (research.md R8).
+     * just the end state — on a real window each toggle is a surface teardown the user sees.
      */
     val applyLog: MutableList<String> = mutableListOf()
 

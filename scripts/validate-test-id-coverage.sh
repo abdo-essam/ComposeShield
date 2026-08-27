@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# validate-test-id-coverage.sh — Test-ID coverage validator (T047 / FR-018)
+# validate-test-id-coverage.sh — Test-ID coverage validator
 #
 # Reads every test ID from config/test-id-map.yml and checks that each ID
 # appears somewhere across the three pipeline workflow files.
@@ -21,7 +21,7 @@ WORKFLOW_FILES=(
 )
 
 check_prerequisites() {
-    [[ -f "$MAP_FILE" ]] || { echo "❌ Missing $MAP_FILE — run T003 first." >&2; exit 1; }
+    [[ -f "$MAP_FILE" ]] || { echo "❌ Missing $MAP_FILE" >&2; exit 1; }
 
     local missing=()
     for f in "${WORKFLOW_FILES[@]}"; do
@@ -49,7 +49,7 @@ id_found_in_workflows() {
 }
 
 main() {
-    echo "=== Test-ID Coverage Validator (FR-018) ==="
+    echo "=== Test-ID Coverage Validator ==="
     check_prerequisites
 
     local failed=0

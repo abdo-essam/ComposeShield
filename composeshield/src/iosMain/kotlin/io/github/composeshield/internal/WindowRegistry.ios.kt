@@ -42,7 +42,7 @@ internal fun forget(key: WindowKey) {
  *
  * A disconnecting scene takes its windows with it — the multi-window close button, or a SwiftUI
  * `WindowGroup` being dismissed. Without this, requests for those windows would sit outstanding
- * forever (SC-007), and the strong [windows] entries would retain the dead `UIWindow`s.
+ * indefinitely, and the strong [windows] entries would retain the dead `UIWindow`s.
  *
  * Releases **before** [forget] so the platform boundary can still resolve each window and
  * dismantle its secure container.

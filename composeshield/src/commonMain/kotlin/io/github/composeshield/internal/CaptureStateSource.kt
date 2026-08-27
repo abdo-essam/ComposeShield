@@ -127,7 +127,7 @@ internal class CaptureStateSource(
     }
 
     private companion object {
-        /** Long enough to absorb the iOS Live Activity flap; short enough to stay within the 1 s SC-004 budget. */
+        /** Long enough to absorb the iOS Live Activity flap; short enough to ensure responsive updates. */
         val SUPPRESSION_WINDOW: Duration = 750.milliseconds
     }
 }

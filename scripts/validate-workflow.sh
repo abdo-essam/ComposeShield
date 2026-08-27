@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# validate-workflow.sh — GitHub Actions workflow syntax validator (T015, T032)
+# validate-workflow.sh — GitHub Actions workflow syntax validator
 #
 # Usage: bash scripts/validate-workflow.sh <workflow-file>
 #   e.g. bash scripts/validate-workflow.sh .github/workflows/ci.yml

@@ -95,7 +95,7 @@ internal fun installActivityTracker(application: Application) {
             ) = Unit
 
             override fun onActivityDestroyed(activity: Activity) {
-                // SC-007: release any outstanding requests so a dead window does not leave
+                // Release any outstanding requests so a destroyed window does not leave
                 // protection permanently set on an unrelated screen.
                 keyForActivity(activity)?.let(shieldCore.registry::releaseWindow)
             }

@@ -10,21 +10,17 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * US3 — screenshot events, and the conflict that makes them conditional.
+ * Screenshot events and their delivery guarantees.
  *
- * The event itself is deliberately thin: a bare `Unit`, carrying no payload, because any payload
- * would risk conveying the very content the library exists to protect (FR-025). What is worth
- * testing is therefore not the event's shape but its *delivery guarantees* — exactly one per
- * screenshot, an empty stream rather than an error where unsupported, and the Android rule where
- * active prevention silently precludes the capability entirely.
+ * The event carries no payload to avoid conveying sensitive content.
+ * Delivery guarantees: exactly one emission per screenshot, an empty stream where unsupported,
+ * and reporting dynamic preclusion when Android FLAG_SECURE is active.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ScreenshotEventsTest {
     @Test
     fun `each screenshot is delivered exactly once`() =
         runTest {
-            // US3 scenario 1. A duplicate delivery would double-count in an audit log, which for a
-            // consumer writing compliance records is a wrong answer rather than a noisy one.
             val platform = FakePlatformProtection()
 
             platform.observeScreenshotEvents().test {
@@ -56,8 +52,7 @@ class ScreenshotEventsTest {
     @Test
     fun `an unsupporting platform yields an empty stream rather than an error`() =
         runTest {
-            // FR-014. A consumer collecting this on an OS too old for the capability must simply see
-            // nothing — throwing would crash the host app for a capability it merely asked about.
+            // A consumer collecting on an OS too old for the capability receives an empty stream.
             val platform = FakePlatformProtection().apply { screenshotEventsAvailable = false }
 
             assertEquals(0, platform.observeScreenshotEvents().count())
@@ -77,9 +72,7 @@ class ScreenshotEventsTest {
     @Test
     fun `events remain available on a platform that does not preclude them`() =
         runTest {
-            // iOS: the screenshot notification fires regardless of what the window is doing, so
-            // prevention and screenshot events coexist. Asserted here so the Android-specific
-            // preclusion below is never generalised into a rule for every platform.
+            // iOS: screenshot notification fires regardless of what the window is doing.
             val platform = FakePlatformProtection(preventionPrecludesScreenshotEvents = false)
             val registry = ProtectionRegistry(platform)
             val resolver = SupportResolver(platform)
@@ -95,9 +88,7 @@ class ScreenshotEventsTest {
     @Test
     fun `active prevention precludes events and releasing restores them`() =
         runTest {
-            // US3 scenario 4 / FR-020c. On Android the platform does not invoke the capture callback
-            // on a window with FLAG_SECURE set (AOSP Activity.java:9940), so the capability must
-            // report itself precluded rather than sit silently delivering nothing.
+            // On Android, AOSP does not invoke screen capture callbacks when FLAG_SECURE is set.
             val platform = FakePlatformProtection()
             val registry = ProtectionRegistry(platform)
             val resolver = SupportResolver(platform)
@@ -129,9 +120,6 @@ class ScreenshotEventsTest {
     @Test
     fun `the event carries no payload`() =
         runTest {
-            // FR-025, pinned as a test because it is the kind of API that attracts "helpful"
-            // additions — a timestamp, a window id, a thumbnail — each of which would widen the
-            // library's exposure to the content it protects.
             val platform = FakePlatformProtection()
 
             platform.observeScreenshotEvents().test {

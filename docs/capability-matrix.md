@@ -5,7 +5,7 @@ capability on Android — per currently-active capability. This page is the publ
 matrix.
 
 It is a **contract, not documentation**: `CapabilityMatrixTest` asserts that runtime
-`ComposeShield.supportLevel()` matches these rows on every tier (SC-005).
+`ComposeShield.supportLevel()` matches these rows on every tier.
 
 > **Support is evaluated at call time, never cached at startup.** Read [Platform Notes](platform-notes.md) for details.
 

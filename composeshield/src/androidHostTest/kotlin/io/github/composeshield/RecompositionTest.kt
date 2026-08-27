@@ -12,17 +12,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * SC-006 — `SecureContent` causes no extra recompositions beyond what its content requires.
+ * Asserts that `SecureContent` causes no extra recompositions beyond what its content requires.
  *
- * A boundary that added recompositions on top of its content's own would be a hidden performance
- * hazard and a correctness risk: each extra recomposition of the `DisposableEffect` key slot
- * releases and re-applies `FLAG_SECURE` on a live window, producing the surface teardown
- * documented in research.md R8.
+ * A boundary that added recompositions on top of its content's own would be a performance
+ * hazard and a correctness risk: each extra recomposition of the key slot
+ * releases and re-applies `FLAG_SECURE` on a live window, producing surface flicker.
  *
  * The key property: `SecureContent` reads `shieldCore.registry.snapshots` (to decide whether to
  * obscure content) but must not read `ComposeShield.captureState`. The two are independent flows.
- * A subscription to captureState inside `SecureContent` would drive gratuitous content
- * recompositions every time the capture state transitions — exactly what SC-006 forbids.
  *
  * **Runs under Robolectric** — `runComposeUiTest` needs a real composition host.
  */
@@ -51,7 +48,7 @@ class RecompositionTest {
             assertEquals(
                 1,
                 compositionCount,
-                "SC-006: SecureContent must not cause extra recompositions during setup",
+                "SecureContent must not cause extra recompositions during setup",
             )
         }
 
@@ -83,7 +80,7 @@ class RecompositionTest {
             assertEquals(
                 countAfterInitial + 1,
                 compositionCount,
-                "SC-006: SecureContent must not multiply content recompositions — " +
+                "SecureContent must not multiply content recompositions — " +
                     "content recomposed more than once suggests an internal subscription " +
                     "is re-entering the slot each time state changes",
             )

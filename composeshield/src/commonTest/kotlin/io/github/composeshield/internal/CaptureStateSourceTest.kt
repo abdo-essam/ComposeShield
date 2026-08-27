@@ -20,7 +20,7 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalCoroutinesApi::class)
 class CaptureStateSourceTest {
     @Test
-    fun `C9 - state begins Unknown and is never seeded to Inactive`() =
+    fun `state begins Unknown and is never seeded to Inactive`() =
         runTest {
             val platform = FakePlatformProtection()
             val source = CaptureStateSource(platform, TestScope(testScheduler))
@@ -29,7 +29,7 @@ class CaptureStateSourceTest {
                 CaptureState.Unknown,
                 source.state.value,
                 "both platforms under-report at cold launch; seeding Inactive would tell a banking " +
-                    "app it is unobserved while it is being recorded (FR-009)",
+                    "app it is unobserved while it is being recorded",
             )
         }
 
@@ -111,7 +111,7 @@ class CaptureStateSourceTest {
         }
 
     @Test
-    fun `FR-009 - returning to the foreground re-polls rather than trusting the last reading`() =
+    fun `returning to the foreground re-polls rather than trusting the last reading`() =
         runTest {
             val platform = FakePlatformProtection()
             val source = CaptureStateSource(platform, TestScope(testScheduler))
@@ -130,7 +130,7 @@ class CaptureStateSourceTest {
                 platform.captureSubscriptions,
                 "a foreground must force a fresh read: capture that started while backgrounded " +
                     "produces no transition, and without this the app reports 'not captured' for " +
-                    "the rest of the session (FR-009, research.md R3/R6)",
+                    "the rest of the session",
             )
         }
 
@@ -166,7 +166,7 @@ class CaptureStateSourceTest {
      * test coroutine instead, which lets the scheduler run the source's collection.
      */
     @Test
-    fun `C7 - every collector observes the same value as the current value`() =
+    fun `every collector observes the same value as the current value`() =
         runTest {
             val platform = FakePlatformProtection()
             val source = CaptureStateSource(platform, TestScope(testScheduler))
@@ -194,7 +194,7 @@ class CaptureStateSourceTest {
                 assertEquals(
                     source.state.value,
                     firstActive,
-                    "FR-008: .value and emissions must agree",
+                    ".value and emissions must agree",
                 )
 
                 first.cancel()

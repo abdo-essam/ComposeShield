@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 /**
- * Pins the iOS window-table lifecycle (SC-007 teardown path).
+ * Pins the iOS window-table lifecycle and teardown path.
  *
  * The table holds strong references — there is no weak map in Kotlin/Native's stdlib — so `forget`
  * is what stops a dismissed window from being retained. This test pins the contract that the

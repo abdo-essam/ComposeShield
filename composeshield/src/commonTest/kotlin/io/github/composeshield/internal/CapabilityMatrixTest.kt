@@ -6,9 +6,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 /**
- * SC-005 — runtime support matches the published capability matrix.
+ * Asserts runtime support matches the published capability matrix.
  *
- * `docs/capability-matrix.md` is a contract, not documentation (FR-024). A consumer decides whether
+ * `docs/capability-matrix.md` is a contract, not just documentation. A consumer decides whether
  * this library meets a security standard by reading it, so a row that disagrees with what the device
  * actually reports is worse than no matrix at all — it is a written claim of protection that does not
  * exist.
@@ -17,7 +17,7 @@ import kotlin.test.assertNotNull
  * code, deliberately. Deriving it would make the test tautological: it would assert the
  * implementation agrees with itself and pass through any change, including one that silently
  * downgrades a capability. Written out by hand, a change to platform support fails here and forces
- * the matrix to be updated in the same commit — which is what FR-024 requires.
+ * the matrix to be updated in the same commit.
  */
 class CapabilityMatrixTest {
     private val resolver = SupportResolver(createPlatformProtection())

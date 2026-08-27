@@ -15,18 +15,15 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * Contract test C13 — protection never leaks across navigation (SC-007).
+ * Verifies that protection never leaks across navigation or window teardown.
  *
- * The failure this guards against is asymmetric and quiet. A leaked `FLAG_SECURE` does not crash or
- * log; it makes some unrelated screen screenshot as solid black, hours later and far from the
- * navigation that caused it. Reference counting is what prevents it, and 100 cycles is what proves
- * the counting has no drift — an off-by-one that survives one cycle is obvious, one that accumulates
- * only under repetition is exactly the bug that reaches production.
+ * A leaked FLAG_SECURE does not crash or log; it makes an unrelated screen screenshot as solid black.
+ * Reference counting ensures clean teardown even under rapid navigation.
  */
 @RunWith(RobolectricTestRunner::class)
 class LifecycleReleaseTest {
     @Test
-    fun `C13 - the flag is clear after 100 rapid navigation cycles`() {
+    fun `the flag is clear after 100 rapid navigation cycles`() {
         val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
         val registry = ProtectionRegistry(AndroidPlatformProtection())
         val window = registerWindow(activity.window, activity)
@@ -40,7 +37,7 @@ class LifecycleReleaseTest {
 
         assertFalse(
             activity.window.isFlagSecureSet(),
-            "SC-007: no residual protection after repeated navigation",
+            "no residual protection after repeated navigation",
         )
     }
 
@@ -84,8 +81,6 @@ class LifecycleReleaseTest {
 
     @Test
     fun `the lifecycle tracker releases a destroyed activity's requests`() {
-        // The production path: the tracker the ContentProvider installs. The global shieldCore it
-        // drives is what clears the flag — exactly the wiring under test.
         installActivityTracker(RuntimeEnvironment.getApplication())
 
         val controller = Robolectric.buildActivity(Activity::class.java).setup()
@@ -100,7 +95,7 @@ class LifecycleReleaseTest {
 
         assertFalse(
             activity.window.isFlagSecureSet(),
-            "SC-007: a destroyed activity must clear the flag even when its boundary never disposed",
+            "a destroyed activity must clear the flag even when its boundary never disposed",
         )
     }
 }

@@ -212,10 +212,9 @@ internal class ProtectionRegistry(
      * Serialized behind [reconcileLock]: decide, act, and record must not interleave with another
      * thread's reconcile for any window. Without the lock, a release and an acquire racing on one
      * window can interleave so that the acquire skips on an `applied` entry the release is about to
-     * invalidate — leaving an active request unprotected with nothing left to re-trigger (found by
-     * external review, 2026-08-22). The lock is held across the platform call deliberately: that
-     * call runs exactly once per reconcile here, so the CAS loop's no-re-execution concern does
-     * not apply.
+     * invalidate — leaving an active request unprotected with nothing left to re-trigger. The lock is
+     * held across the platform call deliberately: that call runs exactly once per reconcile here, so
+     * the CAS loop's no-re-execution concern does not apply.
      *
      * Skipped when the effective capability set equals what the platform was last told to apply
      * (see [RegistryState.applied]) — a second concurrent request adding nothing new, or releasing

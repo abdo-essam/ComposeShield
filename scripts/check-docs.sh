@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# check-docs.sh — Documentation gate (T007)
+# check-docs.sh — Documentation gate
 #
 # Verifies that mandatory documentation files exist and are non-empty.
 # Called from the docs-gate job in release.yml.
@@ -7,13 +7,12 @@
 # Exit codes:
 #   0 — all required docs present and non-empty
 #   1 — one or more docs missing or empty (CI job will fail)
-#
-# Constitution Principle X: functions ≤ 40 lines, files ≤ 300 lines.
 
 set -euo pipefail
 
 REQUIRED_DOCS=(
-  "docs/support-matrix.md"
+  "docs/capability-matrix.md"
+  "docs/platform-notes.md"
   "docs/security-limitations.md"
 )
 

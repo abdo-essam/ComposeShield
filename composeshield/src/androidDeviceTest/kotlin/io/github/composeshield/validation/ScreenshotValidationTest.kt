@@ -20,10 +20,10 @@ import kotlin.test.assertTrue
  * a captured bitmap sample of that region. The test does NOT assert a specific output colour
  * (solid black, blur, placeholder); only marker absence matters. This decouples the assertion
  * from OS implementation details and focuses on the actual guarantee: protected content is
- * not exposed. See FR-010, research.md D3.
+ * not exposed.
  *
  * **Negative control** (C-002): with protection OFF, the marker IS detectable — confirming
- * the detection mechanism itself works and eliminating false positives (FR-011).
+ * the detection mechanism itself works and eliminating false positives.
  *
  * Requirement coverage:
  * - C-001: protection ON → marker absent
@@ -149,7 +149,7 @@ class ScreenshotValidationTest {
     }
 
     // -----------------------------------------------------------------------
-    // Detection helpers — marker-absent assertion (FR-010)
+    // Detection helpers — marker-absent assertion
     // -----------------------------------------------------------------------
 
     /**

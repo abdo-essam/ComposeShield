@@ -34,8 +34,7 @@ internal class ShieldCore(
      * screenshot events should not also silence capture-state detection — and a
      * [CoroutineExceptionHandler] so a failing observer cannot take the host process down: these
      * coroutines outlive the caller that triggered them, and an unhandled error there would crash
-     * the app in exactly the way FR-021 forbids for every public operation. Main-dispatched because
-     * every platform observer this drives ultimately touches UI-thread-affine APIs.
+     * the app. Main-dispatched because every platform observer this drives touches UI-thread-affine APIs.
      */
     private val scope =
         CoroutineScope(

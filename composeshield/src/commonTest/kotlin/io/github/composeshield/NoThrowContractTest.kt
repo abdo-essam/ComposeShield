@@ -3,12 +3,11 @@ package io.github.composeshield
 import kotlin.test.Test
 
 /**
- * Contract test C10 — no public operation throws, on any platform, in any support state.
+ * Asserts that no public operation throws exceptions, on any platform, in any support state.
  *
- * FR-021 is unusually strict for a reason: this library is wrapped around the most sensitive screens
- * in an application, and it runs on devices whose OS version and vendor behaviour it cannot predict.
- * A capability that threw on an unsupported device would crash the host app precisely where the
- * stakes are highest. Unsupported is reported through [SupportLevel]; it is never raised.
+ * This library is wrapped around sensitive screens in an application, and it runs on devices
+ * whose OS version and vendor behaviour vary widely. Unsupported capabilities and failures are
+ * reported through [SupportLevel] and flows, never as uncaught exceptions.
  *
  * No assertions: the contract is "does not throw", so completing the test body *is* the assertion.
  */

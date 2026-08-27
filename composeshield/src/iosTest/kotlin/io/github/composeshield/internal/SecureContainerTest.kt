@@ -62,7 +62,6 @@ class SecureContainerTest {
 
     @Test
     fun `enclosing preserves the content frame so layout is unchanged`() {
-        // FR-006: protected content renders identically to unwrapped content.
         val container = SecureContainer.create() ?: return
 
         val parent = UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))
@@ -95,8 +94,7 @@ class SecureContainerTest {
 
     @Test
     fun `repeated protect and release cycles leave no residual views`() {
-        // FR-016: an artifact left behind per cycle would accumulate one detached secure view for
-        // every navigation, which is invisible until the hierarchy is large enough to matter.
+        // Ensure detached secure views do not leak across protect/unprotect cycles.
         val parent = UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))
         val content = UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))
         parent.addSubview(content)
@@ -117,7 +115,7 @@ class SecureContainerTest {
 
         assertFalse(
             container.enclose(UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))),
-            "protection requested before layout must report false, never throw (FR-021)",
+            "protection requested before layout must report false, never throw",
         )
     }
 

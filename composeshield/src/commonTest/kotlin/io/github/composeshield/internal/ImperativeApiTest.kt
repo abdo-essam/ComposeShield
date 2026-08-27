@@ -8,13 +8,9 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * US5 — the imperative path, and how it composes with the declarative one.
+ * The imperative API path and its composition with declarative boundaries.
  *
- * The two paths deliberately count differently, and the asymmetry is the thing most likely to be
- * "fixed" by someone who has not read why. A boundary's lifetime is delimited by composition, so
- * counting each one is exact. An imperative caller has no such structure: a policy object acquiring
- * on every navigation and releasing once on teardown would leak protection permanently under
- * reference counting. These tests pin both halves so neither can drift into the other.
+ * Imperative claims are state-based (idempotent), while declarative boundaries are counted by composition.
  */
 class ImperativeApiTest {
     private val platform = FakePlatformProtection()
@@ -23,7 +19,7 @@ class ImperativeApiTest {
     private val prevention = setOf(Capability.ScreenshotPrevention)
 
     @Test
-    fun `C4 - repeated imperative acquires collapse onto one claim`() {
+    fun `repeated imperative acquires collapse onto one claim`() {
         val first = registry.acquireShared(window, prevention)
         val second = registry.acquireShared(window, prevention)
         val third = registry.acquireShared(window, prevention)
@@ -38,8 +34,7 @@ class ImperativeApiTest {
     }
 
     @Test
-    fun `C4 - a single release withdraws an imperative claim acquired repeatedly`() {
-        // US5 scenario 2: the imperative surface reads as state, not as a counter.
+    fun `a single release withdraws an imperative claim acquired repeatedly`() {
         val handle = registry.acquireShared(window, prevention)
         registry.acquireShared(window, prevention)
 
@@ -78,7 +73,6 @@ class ImperativeApiTest {
 
     @Test
     fun `releasing the imperative handle leaves declarative protection active`() {
-        // US5 scenario 3 / FR-019: both paths reach one registry, so neither can unprotect the other.
         val imperative = registry.acquireShared(window, prevention)
         val declarative = registry.acquire(window, prevention)
 

@@ -15,12 +15,10 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * FR-018 / US5 scenario 4 — the registry is correct under concurrent mutation.
+ * Asserts the registry remains correct under concurrent mutation.
  *
- * The registry is a compare-and-set loop over an immutable snapshot, and that shape has one specific
- * failure mode worth testing: a lost update, where two threads read the same snapshot and the second
- * write erases the first request. In production that surfaces as a screen that believes it is
- * protected and is not — silent, and only visible once someone captures the screen.
+ * The registry is a compare-and-set loop over an immutable snapshot. This test suite verifies
+ * that concurrent requests across threads do not suffer lost updates or race conditions.
  *
  * `Dispatchers.Default` is used deliberately rather than the test dispatcher. A single-threaded
  * dispatcher would serialise every acquire and the contention these tests exist to provoke would
@@ -107,10 +105,8 @@ class ThreadSafetyTest {
     @Test
     fun `a release racing an acquire never leaves the new request unapplied`() =
         runTest {
-            // External-review regression guard (2026-08-22): without serialized reconciliation,
-            // the release's clear could invalidate the applied-cache entry the acquire's reconcile
-            // consults, skipping the apply — a live request left unprotected with nothing left to
-            // re-trigger it.
+            // Without serialized reconciliation, the release's clear could invalidate the applied-cache
+            // entry the acquire's reconcile consults, skipping the apply.
             var keeper = registry.acquire(window, prevention)
 
             repeat(RACE_ROUNDS) {

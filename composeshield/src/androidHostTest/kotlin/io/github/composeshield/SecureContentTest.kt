@@ -61,12 +61,12 @@ class SecureContentTest {
 
             assertFalse(
                 ComposeShield.isProtectionActive(),
-                "FR-002: release is automatic on leaving composition, with no teardown call to forget",
+                "release is automatic on leaving composition, with no teardown call to forget",
             )
         }
 
     @Test
-    fun `C2 - nested boundaries release only when the last one leaves`() =
+    fun `nested boundaries release only when the last one leaves`() =
         runComposeUiTest {
             var innerVisible by mutableStateOf(true)
 
@@ -82,7 +82,7 @@ class SecureContentTest {
 
             assertTrue(
                 ComposeShield.isProtectionActive(),
-                "FR-004: the outer boundary still wants protection the inner one just gave up",
+                "the outer boundary still wants protection the inner one just gave up",
             )
         }
 
@@ -168,8 +168,7 @@ class SecureContentTest {
     @Test
     fun `content is composed exactly once`() =
         runComposeUiTest {
-            // FR-006. The boundary is a pass-through in the ordinary case — it must not skip content,
-            // double-compose it, or introduce a wrapper that changes layout.
+            // The boundary is a pass-through in the ordinary case — it must not skip content or double-compose it.
             var composed = 0
 
             setContent {
@@ -185,8 +184,6 @@ class SecureContentTest {
     @Test
     fun `a hundred rapid enter-and-exit cycles leave no protection outstanding`() =
         runComposeUiTest {
-            // SC-007, at the composition level. A single leaked request renders every later screenshot
-            // of the window black, and the leak is silent until someone tries.
             var visible by mutableStateOf(false)
 
             setContent {
@@ -202,7 +199,7 @@ class SecureContentTest {
 
             assertFalse(
                 ComposeShield.isProtectionActive(),
-                "a leaked request after rapid navigation is the failure SC-007 exists to catch",
+                "a leaked request after rapid navigation would leave unwanted residual protection",
             )
         }
 

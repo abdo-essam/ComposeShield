@@ -25,10 +25,10 @@ Every release includes a `validation-report.json` attached to the GitHub Release
 - Each test ID, its status (`passed` / `manual_required` / `blocked`), and an `evidence_url`
   pointing to the protected screenshot (marker absent) or a manual-required attestation.
 
-## SC-004 Compliance
-
+## Quality & Validation Compliance
+ 
 The requirement for zero false negatives/positives is validated by:
-1. The deterministic marker-detection algorithm (region sampling, not pixel equality — FR-010)
+1. The deterministic marker-detection algorithm (region sampling, not pixel equality)
 2. Manual pre-release validation: 5 consecutive on-demand runs, all C-001/A-001 must be `passed`
    Document results in the release notes before tagging.
 

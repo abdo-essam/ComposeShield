@@ -59,8 +59,7 @@ class SecureFlagTest {
 
         assertTrue(
             activity.window.attributes.flags and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON != 0,
-            "addFlags, never setFlags(flags, ALL) — the latter clobbers flags the host app set, " +
-                "which becomes someone else's bug to debug (research.md R4)",
+            "addFlags, never setFlags(flags, ALL) — the latter clobbers flags the host app set",
         )
     }
 

@@ -74,7 +74,7 @@ class DetectionTest {
     fun `a Live Activity flap does not retract an active state`() =
         runTest {
             // iOS 26.2: expanding a Live Activity from the Dynamic Island reports inactive while
-            // recording continues. FR-010 suppression must absorb it.
+            // recording continues. Suppression must absorb it.
             val platform = FakePlatformProtection()
             val source = CaptureStateSource(platform, TestScope(testScheduler))
             source.start()
@@ -92,7 +92,7 @@ class DetectionTest {
                 CaptureState.Active,
                 source.state.value,
                 "the spurious inactive must never surface — a banking app told it is unobserved " +
-                    "mid-recording is the exact failure FR-010 exists to prevent",
+                    "mid-recording is the exact failure this suppression exists to prevent",
             )
         }
 

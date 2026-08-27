@@ -92,7 +92,7 @@ class SupportResolverTest {
         assertEquals(
             SupportLevel.Unsupported(Reason.MechanismUnavailable),
             resolver.resolve(Capability.ScreenshotPrevention, registry.current),
-            "FR-022: a mechanism that did not install must never be reported as protection",
+            "a mechanism that did not install must never be reported as protection",
         )
     }
 }

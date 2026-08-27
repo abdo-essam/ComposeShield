@@ -15,13 +15,11 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * Contract test C16 — a hosted controller is fully contained, not merely visually nested.
+ * Asserts that a hosted controller is fully contained in the UIKit hierarchy.
  *
- * Adding a child controller's *view* without the `addChild` / `didMove(toParent:)` calls around it
- * looks correct on screen and is broken everywhere else: appearance callbacks never fire, the
- * responder chain skips the child so the keyboard misbehaves, and safe-area insets do not propagate.
- * Reparenting content into a foreign container is exactly the situation that invites the shortcut,
- * so the containment contract is pinned here (research.md R2, quickstart M4/M5).
+ * Adding a child controller's view without the `addChild` / `didMove(toParent:)` calls around it
+ * causes UIKit lifecycle issues: appearance callbacks never fire, the responder chain skips the child,
+ * and safe-area insets do not propagate.
  *
  * Identity is compared with `==` rather than `===`. Objective-C interop hands out a fresh Kotlin
  * wrapper per property read, so referential identity is not preserved across a `parentViewController`
@@ -30,7 +28,7 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalForeignApi::class)
 class ContainmentTest {
     @Test
-    fun `C16 - a contained controller reports its parent`() {
+    fun `a contained controller reports its parent`() {
         val parent = UIViewController(nibName = null, bundle = null)
         val child = UIViewController(nibName = null, bundle = null)
 

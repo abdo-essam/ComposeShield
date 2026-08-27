@@ -27,7 +27,7 @@ import kotlin.test.assertFalse
  *
  * Note: The app-switcher thumbnail is OS-managed and device-specific. On some
  * devices the thumbnail is composited before FLAG_SECURE takes effect; in those
- * cases the test will produce `blocked` status (not `failed`) per FR-019.
+ * cases the test will produce `blocked` status (not `failed`).
  *
  * Requirement: A-001
  */

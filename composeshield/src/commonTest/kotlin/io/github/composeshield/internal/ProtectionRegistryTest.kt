@@ -8,11 +8,9 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * Contract tests C1–C5 — the reference-counting model.
+ * Reference-counting and protection claim lifecycle tests.
  *
- * These are the tests that matter most in the library, because every failure mode they cover is
- * silent in production: protection released while a screen still wants it looks exactly like
- * protection working, right up until someone screenshots the screen.
+ * These tests ensure protection is never prematurely released while any screen or component still requests it.
  */
 class ProtectionRegistryTest {
     private val platform = FakePlatformProtection()
@@ -20,7 +18,7 @@ class ProtectionRegistryTest {
     private val window = WindowKey("test-window")
 
     @Test
-    fun `C1 - acquiring applies protection and releasing withdraws it`() {
+    fun `acquiring applies protection and releasing withdraws it`() {
         val request = registry.acquire(window, setOf(Capability.ScreenshotPrevention))
         assertContains(platform.protectedWindows, window)
 
@@ -29,7 +27,7 @@ class ProtectionRegistryTest {
     }
 
     @Test
-    fun `C2 - nested requests release protection only on the last exit`() {
+    fun `nested requests release protection only on the last exit`() {
         val outer = registry.acquire(window, setOf(Capability.ScreenshotPrevention))
         val inner = registry.acquire(window, setOf(Capability.ScreenshotPrevention))
 
@@ -45,7 +43,7 @@ class ProtectionRegistryTest {
     }
 
     @Test
-    fun `C3 - releasing twice does not decrement another request's claim`() {
+    fun `releasing twice does not decrement another request's claim`() {
         val first = registry.acquire(window, setOf(Capability.ScreenshotPrevention))
         val second = registry.acquire(window, setOf(Capability.ScreenshotPrevention))
 
@@ -63,7 +61,7 @@ class ProtectionRegistryTest {
     }
 
     @Test
-    fun `C4 - imperative acquire is idempotent rather than reference-counted`() {
+    fun `imperative acquire is idempotent rather than reference-counted`() {
         val capabilities = setOf(Capability.ScreenshotPrevention)
 
         val first = registry.acquireShared(window, capabilities)
@@ -71,14 +69,12 @@ class ProtectionRegistryTest {
 
         assertTrue(first === second, "two imperative acquires for the same capabilities share one claim")
 
-        // US5 scenario 2: acquiring twice then releasing once releases protection.
         registry.release(first)
         assertFalse(window in platform.protectedWindows)
     }
 
     @Test
     fun `imperative release leaves a declarative boundary's protection intact`() {
-        // US5 scenario 3 / FR-019: the two paths compose through one model.
         val imperative = registry.acquireShared(window, setOf(Capability.ScreenshotPrevention))
         registry.acquire(window, setOf(Capability.ScreenshotPrevention))
 
@@ -113,7 +109,7 @@ class ProtectionRegistryTest {
 
     @Test
     fun `a request made before a window exists is applied once one appears`() {
-        // The spec's "no host available" edge case: recorded and applied, never dropped.
+        // Recorded and applied once the window appears, never dropped.
         registry.acquire(WindowKey.Unbound, setOf(Capability.ScreenshotPrevention))
         assertFalse(window in platform.protectedWindows)
 
@@ -130,7 +126,7 @@ class ProtectionRegistryTest {
         registry.releaseWindow(window)
 
         assertFalse(window in platform.protectedWindows)
-        assertFalse(registry.current.isProtected(window), "SC-007: no request may outlive its window")
+        assertFalse(registry.current.isProtected(window), "no request may outlive its window")
     }
 
     @Test

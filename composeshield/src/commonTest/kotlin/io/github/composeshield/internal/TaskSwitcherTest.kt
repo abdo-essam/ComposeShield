@@ -7,7 +7,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/** US4 — app-switcher protection, including the no-double-application rule (FR-015d). */
+/** App-switcher protection and the no-double-application rule. */
 class TaskSwitcherTest {
     private val platform = FakePlatformProtection()
     private val registry = ProtectionRegistry(platform)
@@ -15,8 +15,7 @@ class TaskSwitcherTest {
 
     @Test
     fun `Automatic follows outstanding protection requests`() {
-        // FR-015a: the common case needs no second opt-in, because an app protecting a screen
-        // almost always wants that screen absent from the switcher too.
+        // By default, protecting a screen also protects its switcher snapshot.
         assertFalse(registry.current.shouldProtectTaskSwitcher())
 
         val request = registry.acquire(window, setOf(Capability.CaptureDetection))
@@ -28,8 +27,7 @@ class TaskSwitcherTest {
 
     @Test
     fun `Always protects the switcher with no boundary composed at all`() {
-        // FR-015c: usable purely against a shoulder-surfer in the task list, with no capture
-        // prevention involved.
+        // Usable purely against a shoulder-surfer in the task list, with no capture prevention involved.
         registry.setTaskSwitcherMode(TaskSwitcherProtection.Always)
 
         assertTrue(registry.current.shouldProtectTaskSwitcher())
@@ -45,12 +43,12 @@ class TaskSwitcherTest {
         assertContains(
             platform.protectedWindows,
             window,
-            "FR-015b disables only the switcher — capture prevention must stay fully active",
+            "Disabling switcher protection must leave capture prevention fully active",
         )
     }
 
     @Test
-    fun `FR-015d - the recents primitive is suppressed where prevention already covers it`() {
+    fun `the recents primitive is suppressed where prevention already covers it`() {
         registry.acquire(window, setOf(Capability.ScreenshotPrevention))
 
         assertFalse(

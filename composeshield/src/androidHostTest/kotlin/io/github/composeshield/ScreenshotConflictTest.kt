@@ -13,7 +13,7 @@ import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
 
 /**
- * The Android prevention/detection conflict, against the real platform actual (FR-020c, US3 sc. 4).
+ * The Android prevention/detection conflict against the platform implementation.
  *
  * [io.github.composeshield.internal.ScreenshotEventsTest] proves the resolver applies the rule when a
  * platform reports the exclusion. This proves the *Android* platform reports it, and that the
@@ -66,7 +66,7 @@ class ScreenshotConflictTest {
             SupportLevel.Supported,
             resolver.resolve(Capability.ScreenshotEvents, registry.current),
             "the preclusion is transient — it must lift with the prevention that caused it, which " +
-                "is why support is resolved per query and never cached (FR-020b)",
+                "is why support is resolved per query and never cached",
         )
     }
 

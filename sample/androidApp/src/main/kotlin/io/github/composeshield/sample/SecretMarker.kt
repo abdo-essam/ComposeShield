@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.sp
  * absence of this marker by sampling the `SHIELD_TEST_SECRET_001` region in captured bitmaps.
  * The `contentDescription` tag ties the sample app marker to the test pipeline identity.
  *
- * The test asserts *marker absent* (not a specific output colour) — per FR-010.
+ * The test asserts *marker absent* (not a specific output colour).
  */
 @Composable
 internal fun SecretMarker() {

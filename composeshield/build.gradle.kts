@@ -50,7 +50,7 @@ mavenPublishing {
 }
 
 kotlin {
-    // Principle VI: anything not deliberately public is internal. Strict mode additionally
+    // Anything not deliberately public is internal. Strict mode additionally
     // requires explicit return types, so the published surface can never widen by inference.
     explicitApi()
 
@@ -72,7 +72,7 @@ kotlin {
         withDeviceTest {}
     }
 
-    // CMP 1.11 removed iosX64 — declaring it would fail to resolve (research.md R9).
+    // CMP 1.11 removed iosX64 target.
     iosArm64 {
         binaries {
             framework {
@@ -140,8 +140,7 @@ kotlin {
 }
 
 // ---------------------------------------------------------------------------
-// T009: Dokka strict mode — fails on any public declaration missing KDoc
-// Constitution Principle III: every public API must be documented.
+// Dokka strict mode — fails on any public declaration missing KDoc
 // ---------------------------------------------------------------------------
 tasks.withType<DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {
@@ -163,7 +162,7 @@ tasks.matching { it.name.contains("ComposeResourcesToAndroidAssets") }.configure
 }
 
 // ---------------------------------------------------------------------------
-// T008: generateValidationReport
+// generateValidationReport task
 // Reads JUnit XML from FTL results + config/test-id-map.yml, emits:
 //   build/reports/validation-report.json  (conforms to contracts/validation-report.schema.json)
 //   build/reports/validation-report.html  (human-readable)
@@ -277,7 +276,7 @@ val generateValidationReport by tasks.registering {
         val reportsDir = outputDir.get().asFile
         reportsDir.mkdirs()
 
-        // T034 (FR-024): device metadata written by the FTL workflow next to the JUnit XML.
+        // Device metadata written by the FTL workflow next to the JUnit XML.
         var deviceModel: String? = null
         var osVersion: String? = null
         if (xmlDir.exists()) {
@@ -330,8 +329,7 @@ val generateValidationReport by tasks.registering {
                         else -> "blocked" // device unavailable or test not run
                     }
                 val failureReason = failedTests[id]
-                // FR-024 / schema: evidence MUST be non-null for passed screenshot validations.
-                // Points at the run's Artifacts section, where the media zip lives.
+                // Evidence URL points at the run's Artifacts section, where the media zip lives.
                 val isHostJvm = meta["environment"] == "host-jvm"
                 val evidenceUrl =
                     if (!isHostJvm && (status == "passed" || status == "failed")) artifactsAnchor else null

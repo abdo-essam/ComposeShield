@@ -5,7 +5,7 @@
       Both permissions are protectionLevel="normal": granted at install time, with no runtime
       prompt and no user-facing dialog, and neither grants access to any data. They are what the
       OS requires to *notify* the app that a capture happened — they do not permit reading a
-      capture, the screen, or storage, so they do not breach FR-026's no-data-access constraint.
+      capture, the screen, or storage, and do not access any user data.
 
       Merged into consuming apps automatically. An app that wants neither detection capability can
       remove them with tools:node="remove"; the corresponding capability then reports unsupported
