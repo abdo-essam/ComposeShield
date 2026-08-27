@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import io.github.composeshield.internal.ProtectedContent
 import io.github.composeshield.internal.rememberWindowKey
 import io.github.composeshield.internal.shieldCore
 
@@ -23,9 +24,13 @@ import io.github.composeshield.internal.shieldCore
  * ```
  *
  * **Protection is window-scoped, not subtree-scoped.** While this is composed, the *entire window*
- * is protected, not only [content] — so a sibling composable outside this boundary is protected too,
- * and content in a *different* window (a dialog with its own window, the other half of a split
- * screen) is not.
+ * is protected, not only [content] — so a sibling composable outside this boundary is protected too.
+ *
+ * **Dialog and bottom-sheet windows are protected automatically.** Any [Dialog] or [Popup]
+ * composable (including Material3 [ModalBottomSheet]) declared inside [content] creates its own
+ * window; that child window inherits the same protection without any extra code inside the dialog
+ * body. Content in an unrelated window (the other half of a split screen, for example) is not
+ * covered.
  *
  * Nesting is safe: protection releases only when the last boundary leaves. It survives configuration
  * change and background/restore without re-invocation, and renders [content] identically to an
@@ -88,5 +93,9 @@ public fun SecureContent(
         }
     }
 
-    content()
+    // Wraps content with a platform-specific interceptor so any child window created inside
+    // (Compose Dialog, Popup, ModalBottomSheet, or any android.app.Dialog subclass) automatically
+    // inherits the active protection. On iOS this is a no-op — popup surfaces share the same
+    // UIWindow and are already covered.
+    ProtectedContent(stableCapabilities) { content() }
 }
