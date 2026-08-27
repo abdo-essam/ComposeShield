@@ -219,7 +219,7 @@ If ComposeShield helps protect your application or team, please consider [sponso
 
 ## Contact
 
-Maintainer: **Abdelrahman Essam** — abdo-essam@hotmail.com
+Maintainer: **Abdo Essam** — abdo-essam@hotmail.com
 
 For security vulnerabilities, please use [GitHub's private vulnerability reporting](https://github.com/abdo-essam/ComposeShield/security/advisories/new)
 or email directly. Do not file public issues for security bugs.
