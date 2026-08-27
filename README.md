@@ -207,6 +207,11 @@ Full details: [capability matrix](docs/capability-matrix.md) ·
 No software can prevent photographing the screen with another device, or capture on rooted or
 jailbroken devices. ComposeShield provides the strongest protection each OS officially offers.
 
+**v1 iOS physical device tests** are `manual_required` — automated physical validation
+requires a CI-connected iPhone, which is not yet in the pipeline. Android physical tests
+run automatically on Firebase Test Lab on every release. iOS physical coverage will be
+automated in a future release.
+
 ## Contact
 
 Maintainer: **Abdelrahman Essam** — abdo-essam@hotmail.com
