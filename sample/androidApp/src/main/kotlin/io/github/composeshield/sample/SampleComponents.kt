@@ -143,3 +143,29 @@ internal fun Mono(text: String) {
         style = TextStyle(fontSize = 11.sp, fontFamily = FontFamily.Monospace, color = Color(0xFF33333B)),
     )
 }
+
+/** Clickable action button. */
+@Composable
+internal fun ActionButton(
+    label: String,
+    onClick: () -> Unit,
+) {
+    Column(
+        modifier =
+            Modifier
+                .background(Color(0xFF2463EB))
+                .clickable(onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 8.dp),
+    ) {
+        BasicText(
+            text = label,
+            style =
+                TextStyle(
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+        )
+    }
+}
+
