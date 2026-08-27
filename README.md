@@ -120,17 +120,61 @@ On Android this stream is unavailable while screenshot prevention is active — 
 
 ### Imperative API
 
-For protection outside composition (`protect()` acquires, `unprotect()` releases):
+`SecureContent {}` is the right choice whenever you're inside a `@Composable` — protection
+follows composition automatically and there is nothing to release manually. The imperative API
+exists for the cases where there is **no composable context**:
+
+**App-wide policy from `Application.onCreate`**
 
 ```kotlin
-ComposeShield.protect()
-// ... later
-ComposeShield.unprotect()
+class MyApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        ComposeShield.protect() // composables don't exist yet
+    }
+}
 ```
 
-Typical places to call it: app startup, navigation routing, view models, or native Swift/Objective-C
-code via `ComposeShield.shared.protect()`. Imperative protection coexists with any composed
-`SecureContent` boundaries — neither ever cancels the other out.
+**ViewModel or navigation observer**
+
+```kotlin
+class PaymentViewModel : ViewModel() {
+    private val handle = ComposeShield.protect()
+
+    override fun onCleared() {
+        handle.unprotect()
+    }
+}
+```
+
+**Scoped protection with `use {}`** — automatically released when the block exits, even on
+exception:
+
+```kotlin
+suspend fun fetchSensitiveData(): Data {
+    return ComposeShield.protect().use {
+        api.fetchSensitiveData()
+    }
+}
+```
+
+**Native Swift / Objective-C**
+
+```swift
+ComposeShield.shared.protect()
+// ... later
+ComposeShield.shared.unprotect()
+```
+
+Both paths share **one reference counter**. If a `SecureContent` boundary is composed *and*
+`protect()` was called from a ViewModel, protection lifts only once both are released — neither
+can accidentally unprotect the other.
+
+| | `SecureContent {}` | `protect()` / imperative |
+|---|---|---|
+| **Where** | Inside `@Composable` | Anywhere (ViewModel, Application, Swift, coroutines) |
+| **Lifetime** | Tied to composition | Manual or `use {}` scope |
+| **Teardown** | Automatic | `unprotect()` or `use {}` |
 
 ### Handle protection failures
 
@@ -162,6 +206,13 @@ Full details: [capability matrix](docs/capability-matrix.md) ·
 
 No software can prevent photographing the screen with another device, or capture on rooted or
 jailbroken devices. ComposeShield provides the strongest protection each OS officially offers.
+
+## Contact
+
+Maintainer: **Abdelrahman Essam** — abdo-essam@hotmail.com
+
+For security vulnerabilities, please use [GitHub's private vulnerability reporting](https://github.com/abdo-essam/ComposeShield/security/advisories/new)
+or email directly. Do not file public issues for security bugs.
 
 ## License
 

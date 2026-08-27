@@ -34,5 +34,6 @@ The requirement for zero false negatives/positives is validated by:
 
 ## Reporting Security Issues
 
-Please do **not** file public issues for security vulnerabilities. Email the maintainer
-directly (see `README.md`) or use GitHub's private vulnerability reporting.
+Please do **not** file public issues for security vulnerabilities. Email **abdo-essam@hotmail.com**
+or use [GitHub's private vulnerability reporting](https://github.com/abdo-essam/ComposeShield/security/advisories/new).
+See the [Contact section in README](../README.md#contact) for details.

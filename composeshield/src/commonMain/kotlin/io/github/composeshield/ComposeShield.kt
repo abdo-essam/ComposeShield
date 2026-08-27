@@ -40,6 +40,7 @@ public object ComposeShield {
      * window a composed boundary still wants.
      *
      * @param capabilities which preventions to request. Independently requestable.
+     *   Defaults to `{ScreenshotPrevention, RecordingPrevention}`.
      * @return a handle whose [ProtectionHandle.unprotect] withdraws the imperative claim for
      *   exactly this capability set.
      */
@@ -53,7 +54,8 @@ public object ComposeShield {
      * Releasing an imperative claim never withdraws protection if a [SecureContent] composable
      * or another claim is still active on the window.
      *
-     * @param capabilities which preventions to unprotect. Defaults to [DefaultPreventionCapabilities].
+     * @param capabilities which preventions to unprotect.
+     *   Defaults to `{ScreenshotPrevention, RecordingPrevention}`.
      */
     public fun unprotect(capabilities: Set<Capability> = DefaultPreventionCapabilities) {
         shieldCore.registry.releaseShared(resolveCurrentWindowKey(), capabilities)

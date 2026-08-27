@@ -39,8 +39,8 @@ import io.github.composeshield.internal.shieldCore
  * @param capabilities which preventions to request. Changes are honoured — a genuinely different set
  *   re-acquires — but a freshly-allocated yet *equal* set per recomposition neither releases nor
  *   re-applies: the boundary stabilizes the set internally, because re-applying on Android toggles
- *   `FLAG_SECURE` and tears down the window's surface, which the user sees as a black frame. The
- *   default is a compile-time constant, not a fresh set per recomposition.
+ *   `FLAG_SECURE` and tears down the window's surface, which the user sees as a black frame.
+ *   Defaults to `{ScreenshotPrevention, RecordingPrevention}`.
  * @param onProtectionFailure invoked when a requested mechanism fails to install or stops working
  *   mid-session. Invoked from a composition coroutine and guarded: a throwing callback cannot crash
  *   the host application, though it will not be re-invoked for that failure either.

@@ -1,0 +1,12 @@
+# ComposeShield — code owners
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repository.
+* @abdo-essam
+
+# Library source and public API
+/composeshield/ @abdo-essam
+
+# Release pipeline — extra scrutiny
+/.github/workflows/release.yml @abdo-essam
+/composeshield/api/ @abdo-essam

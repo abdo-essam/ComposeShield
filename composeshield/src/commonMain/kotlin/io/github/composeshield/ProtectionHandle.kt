@@ -6,9 +6,18 @@ package io.github.composeshield
  * Returned by [ComposeShield.protect]. Protection stays active on the window while **any** handle
  * remains unreleased, so calling [unprotect] never unprotects content another claim still needs.
  *
- * **Thread-safety**: [unprotect] is safe to call from any thread.
+ * Implements [AutoCloseable] so the handle can be used with Kotlin's `use {}` block for
+ * automatically scoped protection:
+ * ```kotlin
+ * ComposeShield.protect().use {
+ *     // protection is active here
+ * }  // released automatically
+ * ```
+ * [close] delegates to [unprotect] — they are identical in effect.
+ *
+ * **Thread-safety**: [unprotect] and [close] are safe to call from any thread.
  */
-public interface ProtectionHandle {
+public interface ProtectionHandle : AutoCloseable {
     /**
      * Relinquishes this claim on protection.
      *
@@ -20,4 +29,12 @@ public interface ProtectionHandle {
      * unsupported.
      */
     public fun unprotect()
+
+    /**
+     * Alias for [unprotect], satisfying [AutoCloseable].
+     *
+     * Provided as a default so existing implementations of this interface do not need to change.
+     */
+    override fun close(): Unit = unprotect()
 }
+
