@@ -1,6 +1,7 @@
 package io.github.composeshield.internal
 
 import io.github.composeshield.CaptureState
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -12,25 +13,16 @@ import kotlin.test.assertNotNull
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Contract test C15 — an iOS capture reading reaches the published state without being softened.
+ * Asserts that an iOS capture reading reaches the published state without being softened.
  *
- * ### What this can and cannot cover
- *
- * The test binary is headless. There is no `UIApplication`, so anything reaching
- * `UIApplication.sharedApplication.connectedScenes` **segfaults the process** rather than returning
- * nil — which rules out driving [CaptureDetection.readings] directly, since its post-attach read
- * resolves the active scene. That is a property of the host, not a defect: on a device the
- * application object always exists.
- *
- * So the scene-attached read is verified on a device (quickstart M7), which is also the only place a
- * recording can actually be started. What is checked here is the part that carries the security
- * meaning and runs identically on both platforms: that an iOS reading published into
- * [CaptureStateSource] produces the right [CaptureState], and specifically that the cold-launch and
- * Live Activity readings never resolve to a false negative.
+ * Verifies that an iOS reading published into [CaptureStateSource] produces the right
+ * [CaptureState], and specifically that cold-launch and Live Activity readings never
+ * resolve to a false negative.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class DetectionTest {
     @Test
-    fun `C15 - a capturing reading reaches the published state immediately`() =
+    fun `a capturing reading reaches the published state immediately`() =
         runTest {
             val platform = FakePlatformProtection()
             val source = CaptureStateSource(platform, TestScope(testScheduler))
@@ -66,7 +58,7 @@ class DetectionTest {
             assertEquals(
                 CaptureState.Unknown,
                 source.state.value,
-                "C9: Unknown must never be coerced to Inactive",
+                "Unknown must never be coerced to Inactive",
             )
         }
 
