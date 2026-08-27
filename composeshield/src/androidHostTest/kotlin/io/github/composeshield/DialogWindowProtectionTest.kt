@@ -35,7 +35,6 @@ import kotlin.test.assertTrue
 @Config(sdk = [34])
 @OptIn(ExperimentalTestApi::class)
 class DialogWindowProtectionTest {
-
     @get:Rule
     internal val host = RobolectricComposeHost()
 
@@ -62,7 +61,6 @@ class DialogWindowProtectionTest {
                 assertIsNot<SecureWindowManager>(service)
             }
         }
-
 
     // ── FLAG_SECURE on the dialog window ─────────────────────────────────────────────────────────
 
@@ -147,17 +145,6 @@ class DialogWindowProtectionTest {
                 )
             }
         }
-
-    // ── Helpers ──────────────────────────────────────────────────────────────────────────────────
-
-    private inline fun <reified T : android.content.ContextWrapper> Context.isWrappedBy(): Boolean {
-        var ctx: Context? = this
-        while (ctx != null) {
-            if (ctx is T) return true
-            ctx = (ctx as? android.content.ContextWrapper)?.baseContext
-        }
-        return false
-    }
 }
 
 private fun android.view.Window.isFlagSecureSet(): Boolean =

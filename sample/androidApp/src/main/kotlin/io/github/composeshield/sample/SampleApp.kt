@@ -55,9 +55,7 @@ fun SampleApp() {
     var boundaryActive by remember { mutableStateOf(false) }
     var imperativeHandle by remember { mutableStateOf<ProtectionHandle?>(null) }
     var switcherMode by remember { mutableStateOf(ComposeShield.taskSwitcherProtection) }
-    var showDialog by remember { mutableStateOf(false) }
-    var showPopup by remember { mutableStateOf(false) }
-    var showBottomSheet by remember { mutableStateOf(false) }
+    var activeOverlay by remember { mutableStateOf(ActiveOverlay.NONE) }
 
     val captureState by ComposeShield.captureState.collectAsStateSafely()
 
@@ -87,28 +85,16 @@ fun SampleApp() {
             SecureContent(
                 onProtectionFailure = { log.add("boundary reported failure: $it") },
             ) {
-                SecretMarker()
-                if (showDialog) {
-                    SampleDialog(onDismiss = { showDialog = false })
-                }
-                if (showPopup) {
-                    SamplePopup(onDismiss = { showPopup = false })
-                }
-                if (showBottomSheet) {
-                    SampleBottomSheet(onDismiss = { showBottomSheet = false })
-                }
+                SampleHostContent(
+                    activeOverlay = activeOverlay,
+                    onDismiss = { activeOverlay = ActiveOverlay.NONE },
+                )
             }
         } else {
-            SecretMarker()
-            if (showDialog) {
-                SampleDialog(onDismiss = { showDialog = false })
-            }
-            if (showPopup) {
-                SamplePopup(onDismiss = { showPopup = false })
-            }
-            if (showBottomSheet) {
-                SampleBottomSheet(onDismiss = { showBottomSheet = false })
-            }
+            SampleHostContent(
+                activeOverlay = activeOverlay,
+                onDismiss = { activeOverlay = ActiveOverlay.NONE },
+            )
         }
 
         Section("Prevention") {
@@ -148,31 +134,50 @@ fun SampleApp() {
         Section("Dialog, popup & bottom sheet window protection") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ActionButton(
-                    label = if (showDialog) "Hide Dialog" else "Dialog",
+                    label = if (activeOverlay == ActiveOverlay.DIALOG) "Hide Dialog" else "Dialog",
                     onClick = {
-                        showDialog = !showDialog
-                        log.add(if (showDialog) "opened dialog" else "closed dialog")
+                        activeOverlay =
+                            if (activeOverlay == ActiveOverlay.DIALOG) {
+                                ActiveOverlay.NONE
+                            } else {
+                                ActiveOverlay.DIALOG
+                            }
+                        log.add("overlay = $activeOverlay")
                     },
                 )
                 ActionButton(
-                    label = if (showBottomSheet) "Hide Sheet" else "BottomSheet",
+                    label =
+                        if (activeOverlay == ActiveOverlay.BOTTOM_SHEET) {
+                            "Hide Sheet"
+                        } else {
+                            "BottomSheet"
+                        },
                     onClick = {
-                        showBottomSheet = !showBottomSheet
-                        log.add(if (showBottomSheet) "opened bottom sheet" else "closed bottom sheet")
+                        activeOverlay =
+                            if (activeOverlay == ActiveOverlay.BOTTOM_SHEET) {
+                                ActiveOverlay.NONE
+                            } else {
+                                ActiveOverlay.BOTTOM_SHEET
+                            }
+                        log.add("overlay = $activeOverlay")
                     },
                 )
                 ActionButton(
-                    label = if (showPopup) "Hide Popup" else "Popup",
+                    label = if (activeOverlay == ActiveOverlay.POPUP) "Hide Popup" else "Popup",
                     onClick = {
-                        showPopup = !showPopup
-                        log.add(if (showPopup) "opened popup" else "closed popup")
+                        activeOverlay =
+                            if (activeOverlay == ActiveOverlay.POPUP) {
+                                ActiveOverlay.NONE
+                            } else {
+                                ActiveOverlay.POPUP
+                            }
+                        log.add("overlay = $activeOverlay")
                     },
                 )
             }
             Note(
-                "When Declarative boundary (SecureContent) is ON, Dialogs, Popups, and Material3 " +
-                    "ModalBottomSheets declared inside it automatically inherit FLAG_SECURE on their " +
-                    "separate windows — without needing SecureContent inside them.",
+                "When Declarative boundary (SecureContent) is ON, Dialogs, Popups, and BottomSheets " +
+                    "declared inside automatically inherit FLAG_SECURE on their separate windows.",
             )
         }
 
@@ -220,6 +225,27 @@ fun SampleApp() {
     }
 }
 
+private enum class ActiveOverlay {
+    NONE,
+    DIALOG,
+    BOTTOM_SHEET,
+    POPUP,
+}
+
+@Composable
+private fun SampleHostContent(
+    activeOverlay: ActiveOverlay,
+    onDismiss: () -> Unit,
+) {
+    SecretMarker()
+    when (activeOverlay) {
+        ActiveOverlay.NONE -> Unit
+        ActiveOverlay.DIALOG -> SampleDialog(onDismiss = onDismiss)
+        ActiveOverlay.BOTTOM_SHEET -> SampleBottomSheet(onDismiss = onDismiss)
+        ActiveOverlay.POPUP -> SamplePopup(onDismiss = onDismiss)
+    }
+}
+
 /**
  * A dialog window with secret content.
  *
@@ -228,7 +254,7 @@ fun SampleApp() {
  */
 @Composable
 private fun SampleDialog(onDismiss: () -> Unit) {
-    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
+    Dialog(onDismissRequest = onDismiss) {
         Column(
             modifier =
                 Modifier
@@ -236,35 +262,31 @@ private fun SampleDialog(onDismiss: () -> Unit) {
                     .background(Color(0xFF1B1B1F))
                     .border(2.dp, Color(0xFF7CF5A0))
                     .padding(20.dp),
-            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            androidx.compose.foundation.text.BasicText(
+            BasicText(
                 text = "DIALOG SECRET WINDOW",
                 style =
-                    androidx.compose.ui.text.TextStyle(
+                    TextStyle(
                         color = Color(0xFF7CF5A0),
                         fontSize = 13.sp,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        fontWeight = FontWeight.Bold,
                     ),
             )
-            androidx.compose.foundation.text.BasicText(
+            BasicText(
                 text = "PIN: 9876-5432",
                 style =
-                    androidx.compose.ui.text.TextStyle(
+                    TextStyle(
                         color = Color.White,
                         fontSize = 20.sp,
-                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
                     ),
             )
-            androidx.compose.foundation.text.BasicText(
-                text = "If you can read this in a screenshot while SecureContent is ON, dialog protection failed.",
-                style =
-                    androidx.compose.ui.text.TextStyle(
-                        color = Color(0xFFBBBBC4),
-                        fontSize = 11.sp,
-                    ),
+            BasicText(
+                text = "If readable in a screenshot with SecureContent ON, protection failed.",
+                style = TextStyle(color = Color(0xFFBBBBC4), fontSize = 11.sp),
             )
             ActionButton(label = "Dismiss Dialog", onClick = onDismiss)
         }
@@ -276,8 +298,8 @@ private fun SampleDialog(onDismiss: () -> Unit) {
  */
 @Composable
 private fun SamplePopup(onDismiss: () -> Unit) {
-    androidx.compose.ui.window.Popup(
-        alignment = androidx.compose.ui.Alignment.Center,
+    Popup(
+        alignment = Alignment.Center,
         onDismissRequest = onDismiss,
     ) {
         Column(
@@ -286,26 +308,26 @@ private fun SamplePopup(onDismiss: () -> Unit) {
                     .background(Color(0xFF2A2A32))
                     .border(1.dp, Color(0xFF7CF5A0))
                     .padding(16.dp),
-            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            androidx.compose.foundation.text.BasicText(
+            BasicText(
                 text = "POPUP SECRET WINDOW",
                 style =
-                    androidx.compose.ui.text.TextStyle(
+                    TextStyle(
                         color = Color(0xFF7CF5A0),
                         fontSize = 12.sp,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        fontWeight = FontWeight.Bold,
                     ),
             )
-            androidx.compose.foundation.text.BasicText(
+            BasicText(
                 text = "TOKEN: #CS-8831",
                 style =
-                    androidx.compose.ui.text.TextStyle(
+                    TextStyle(
                         color = Color.White,
                         fontSize = 16.sp,
-                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
                     ),
             )
             ActionButton(label = "Dismiss Popup", onClick = onDismiss)
@@ -344,7 +366,6 @@ private fun SampleBottomSheet(onDismiss: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                // Drag handle
                 Column(
                     modifier =
                         Modifier
@@ -372,18 +393,11 @@ private fun SampleBottomSheet(onDismiss: () -> Unit) {
                         ),
                 )
                 BasicText(
-                    text = "This BottomSheet creates its own window. Inside SecureContent, it is protected automatically!",
-                    style =
-                        TextStyle(
-                            color = Color(0xFFBBBBC4),
-                            fontSize = 11.sp,
-                        ),
+                    text = "BottomSheet has its own window. Inside SecureContent, it is protected!",
+                    style = TextStyle(color = Color(0xFFBBBBC4), fontSize = 11.sp),
                 )
                 ActionButton(label = "Dismiss BottomSheet", onClick = onDismiss)
             }
         }
     }
 }
-
-
-

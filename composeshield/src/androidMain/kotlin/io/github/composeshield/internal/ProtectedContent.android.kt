@@ -32,9 +32,10 @@ internal actual fun ProtectedContent(
 ) {
     val base = LocalContext.current
     val isActive = capabilities.isNotEmpty()
-    val effectiveContext = remember(base, isActive) {
-        if (isActive) SecureContextWrapper(base) else base
-    }
+    val effectiveContext =
+        remember(base, isActive) {
+            if (isActive) SecureContextWrapper(base) else base
+        }
     CompositionLocalProvider(LocalContext provides effectiveContext) {
         content()
     }
@@ -51,7 +52,9 @@ internal actual fun ProtectedContent(
  * and popup types that respect [LocalContext], with no per-dialog boilerplate and no dependency on
  * any specific dialog implementation.
  */
-internal class SecureContextWrapper(base: Context) : android.content.ContextWrapper(base) {
+internal class SecureContextWrapper(
+    base: Context,
+) : android.content.ContextWrapper(base) {
     override fun getSystemService(name: String): Any? {
         val service = super.getSystemService(name)
         return if (name == WINDOW_SERVICE && service is WindowManager) {
@@ -73,14 +76,21 @@ internal class SecureContextWrapper(base: Context) : android.content.ContextWrap
  * showing (e.g. to resize), which would otherwise create a window-attributes object without the
  * flag set.
  */
-internal class SecureWindowManager(private val delegate: WindowManager) : WindowManager by delegate {
-
-    override fun addView(view: View, params: ViewGroup.LayoutParams) {
+internal class SecureWindowManager(
+    private val delegate: WindowManager,
+) : WindowManager by delegate {
+    override fun addView(
+        view: View,
+        params: ViewGroup.LayoutParams,
+    ) {
         params.stampSecureFlag()
         delegate.addView(view, params)
     }
 
-    override fun updateViewLayout(view: View, params: ViewGroup.LayoutParams) {
+    override fun updateViewLayout(
+        view: View,
+        params: ViewGroup.LayoutParams,
+    ) {
         params.stampSecureFlag()
         delegate.updateViewLayout(view, params)
     }
