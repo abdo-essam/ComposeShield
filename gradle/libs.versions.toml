@@ -17,7 +17,7 @@ robolectric = "4.16.1"
 
 # Quality gates. Detekt 2.0 is alpha and moved group IDs — do not adopt (research.md R12).
 detekt = "1.23.8"
-spotless = "8.10.0"
+spotless = "8.10.1"
 ktlint = "1.8.0"
 dokka = "2.0.0"
 
