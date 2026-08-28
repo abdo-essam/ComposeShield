@@ -10,6 +10,7 @@
 		B001001 /* SampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001001 /* SampleApp.swift */; };
 		B001002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001002 /* ContentView.swift */; };
 		B001003 /* SecureShieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001003 /* SecureShieldView.swift */; };
+		B002001 /* KotlinTestRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A003001 /* KotlinTestRunner.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -17,6 +18,8 @@
 		A001002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A001003 /* SecureShieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureShieldView.swift; sourceTree = "<group>"; };
 		A002000 /* iosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A003000 /* KotlinTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KotlinTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A003001 /* KotlinTestRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KotlinTestRunner.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -24,6 +27,7 @@
 			isa = PBXGroup;
 			children = (
 				G001000 /* iosApp */,
+				G003000 /* KotlinTests */,
 				G002000 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -42,8 +46,17 @@
 			isa = PBXGroup;
 			children = (
 				A002000 /* iosApp.app */,
+				A003000 /* KotlinTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		G003000 /* KotlinTests */ = {
+			isa = PBXGroup;
+			children = (
+				A003001 /* KotlinTestRunner.swift */,
+			);
+			path = KotlinTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -65,6 +78,23 @@
 			productReference = A002000 /* iosApp.app */;
 			productType = "com.apple.product-type.application";
 		};
+		T002000 /* KotlinTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C003000 /* Build configuration list for PBXNativeTarget "KotlinTests" */;
+			buildPhases = (
+				P002001 /* Compile Kotlin Test Binary */,
+				P002002 /* Sources */,
+				P002003 /* Copy Kotlin Test Binary */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = KotlinTests;
+			productName = KotlinTests;
+			productReference = A003000 /* KotlinTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -77,6 +107,10 @@
 				TargetAttributes = {
 					T001000 = {
 						CreatedOnToolsVersion = 16.0;
+					};
+					T002000 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = T001000;
 					};
 				};
 			};
@@ -94,6 +128,7 @@
 			projectRoot = "";
 			targets = (
 				T001000 /* iosApp */,
+				T002000 /* KotlinTests */,
 			);
 		};
 /* End PBXProject section */
@@ -118,6 +153,25 @@
 			shellPath = /bin/sh;
 			shellScript = "cd \"$SRCROOT/../..\"\nif [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n    if [ \"$CONFIGURATION\" = \"Release\" ]; then\n        ./gradlew :composeshield:linkReleaseFrameworkIosSimulatorArm64\n    else\n        ./gradlew :composeshield:linkDebugFrameworkIosSimulatorArm64\n    fi\nelse\n    if [ \"$CONFIGURATION\" = \"Release\" ]; then\n        ./gradlew :composeshield:linkReleaseFrameworkIosArm64\n    else\n        ./gradlew :composeshield:linkDebugFrameworkIosArm64\n    fi\nfi\n";
 		};
+		P002001 /* Compile Kotlin Test Binary */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Compile Kotlin Test Binary";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$SRCROOT/../..\"\nif [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n    ./gradlew :composeshield:linkDebugTestIosSimulatorArm64\n    KEXE_SRC=\"composeshield/build/bin/iosSimulatorArm64/debugTest/test.kexe\"\nelse\n    ./gradlew :composeshield:linkDebugTestIosArm64\n    KEXE_SRC=\"composeshield/build/bin/iosArm64/debugTest/test.kexe\"\nfi\n# Copy into the source group so Xcode can embed and sign it\nDEST=\"$SRCROOT/KotlinTests/test.kexe\"\ncp -f \"$KEXE_SRC\" \"$DEST\"\nchmod +x \"$DEST\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -131,7 +185,28 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		P002002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B002001 /* KotlinTestRunner.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		P002003 /* Copy Kotlin Test Binary */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+			);
+			name = "Copy Kotlin Test Binary";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
 		BC001001 /* Debug */ = {
@@ -298,6 +373,44 @@
 			};
 			name = Release;
 		};
+		BC003001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PF8ZDTB84B;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.composeshield.sample.KotlinTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iosApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/iosApp";
+			};
+			name = Debug;
+		};
+		BC003002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PF8ZDTB84B;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.composeshield.sample.KotlinTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iosApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/iosApp";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -315,6 +428,15 @@
 			buildConfigurations = (
 				BC001001 /* Debug */,
 				BC001002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C003000 /* Build configuration list for PBXNativeTarget "KotlinTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC003001 /* Debug */,
+				BC003002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
