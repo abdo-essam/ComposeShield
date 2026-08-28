@@ -101,7 +101,7 @@ jobs:
 
       - name: Upload JVM test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-jvm-results-${{ github.run_id }}
           path: composeshield/build/test-results/
@@ -136,7 +136,7 @@ jobs:
       - name: Upload iOS test results & screenshots
         if: always()
         # renovate: datasource=github-actions
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-ios-results-${{ github.run_id }}
           path: |
@@ -197,7 +197,7 @@ jobs:
 
       - name: Upload KDoc
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-kdoc-${{ github.run_id }}
           path: composeshield/build/dokka/html/
@@ -227,14 +227,14 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Download JUnit XML (fresh FTL run, if any)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-junit-xml-${{ github.run_id }}
           path: composeshield/build/ftl-results
         continue-on-error: true
 
       - name: Download iOS Simulator test results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-ios-results-${{ github.run_id }}
           path: composeshield/build/ftl-results
@@ -242,7 +242,7 @@ jobs:
 
       - name: Download prior on-demand report (if reused)
         if: needs.check-prior-report.outputs.needs_device_run == 'false'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ needs.check-prior-report.outputs.prior_artifact_name }}
           path: composeshield/build/prior-report
@@ -274,7 +274,7 @@ jobs:
           echo "✅ Release gate passed."
 
       - name: Upload release validation report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-validation-report-${{ github.run_id }}
           path: composeshield/build/reports/
@@ -303,7 +303,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Download release validation report
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-validation-report-${{ github.run_id }}
           path: release-report

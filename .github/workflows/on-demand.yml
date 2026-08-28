@@ -46,7 +46,7 @@ jobs:
 
       - name: Upload JVM test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: on-demand-jvm-results-${{ github.run_id }}
           path: composeshield/build/test-results/
@@ -83,7 +83,7 @@ jobs:
       - name: Upload iOS test results & screenshots
         if: always()
         # renovate: datasource=github-actions
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: on-demand-ios-results-${{ github.run_id }}
           path: |
@@ -131,7 +131,7 @@ jobs:
           EOF
 
       - name: Upload manual_required results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: on-demand-manual-required-${{ github.run_id }}
           path: build/manual-required-results.json
@@ -162,21 +162,21 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Download Android FTL JUnit XML results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: on-demand-junit-xml-${{ github.run_id }}
           path: composeshield/build/ftl-results
         continue-on-error: true  # FTL results may be absent if device job failed to start
 
       - name: Download iOS Simulator test results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: on-demand-ios-results-${{ github.run_id }}
           path: composeshield/build/ftl-results
         continue-on-error: true
 
       - name: Download manual_required overrides
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: on-demand-manual-required-${{ github.run_id }}
           path: build
@@ -198,7 +198,7 @@ jobs:
             composeshield/build/reports/validation-report.json
 
       - name: Upload validation report (JSON + HTML + evidence media)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: on-demand-validation-report-${{ github.run_id }}
           path: composeshield/build/reports/
