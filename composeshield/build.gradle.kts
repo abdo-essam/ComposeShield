@@ -54,6 +54,8 @@ kotlin {
     // requires explicit return types, so the published surface can never widen by inference.
     explicitApi()
 
+    jvmToolchain(21)
+
     android {
         namespace = "io.github.composeshield"
         compileSdk =

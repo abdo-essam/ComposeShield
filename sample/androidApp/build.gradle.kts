@@ -4,6 +4,12 @@ plugins {
     alias(libs.plugins.kotlin.compose.compiler)
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
 android {
     namespace = "io.github.composeshield.sample"
     compileSdk =
