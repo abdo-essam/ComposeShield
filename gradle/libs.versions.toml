@@ -34,7 +34,7 @@ mavenPublish = "0.37.0"
 
 # Android SDK levels
 minSdk = "24"
-compileSdk = "36"
+compileSdk = "37"
 
 [libraries]
 # Declared as explicit coordinates rather than via the `compose.runtime` shorthand — the Compose
