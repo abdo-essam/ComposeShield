@@ -277,6 +277,7 @@ internal class ProtectionRegistry(
         mutate { it.copy(failedMechanisms = it.failedMechanisms + prevention) }
 
         prevention.forEach { capability ->
+            println("[ComposeShield] WARNING: Protection mechanism failed for capability: $capability")
             // The callback runs mid-reconcile on the caller's thread: letting it throw would unwind
             // through this reconcile path and turn a reported failure into a caller-visible crash.
             // The swallow is deliberate — [SupportLevel] and [RegistryState.failedMechanisms] stay

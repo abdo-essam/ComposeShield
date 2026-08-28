@@ -13,8 +13,11 @@ import platform.darwin.NSObjectProtocol
 /**
  * iOS's implementation of the platform boundary.
  *
- * Prevention uses internal secure container reparenting. Detection uses official UIKit
- * screen capture notifications.
+ * Prevention uses internal secure container reparenting ([SecureContainer]).
+ * Note: [SecureContainer] relies on undocumented UIKit internal view structures
+ * that exclude secure text field canvases from screen capture. If unavailable on a given iOS
+ * runtime, prevention gracefully reports failure/unsupported rather than crashing.
+ * Detection uses official UIKit screen capture notifications.
  */
 internal class IosPlatformProtection : PlatformProtection {
     private val detection = CaptureDetection()

@@ -11,6 +11,13 @@ import platform.UIKit.UIView
  * excludes from capture. This lifts that canvas **out** of the text field into the app's own
  * hierarchy, then reparents the window's content inside it.
  *
+ * **Important / Platform Risk**: This relies on an undocumented iOS internal view hierarchy
+ * (`_UITextLayoutCanvasView` / `CanvasView`). While stable across multiple major iOS releases,
+ * Apple does not guarantee internal view hierarchies and could alter or remove this subview in
+ * future iOS versions. If the internal view cannot be found, `create()` safely returns `null` and
+ * protection degrades gracefully to [io.github.composeshield.SupportLevel.Unsupported] with
+ * `MechanismUnavailable` rather than throwing or crashing.
+ *
  * Every failure path returns `null` rather than throwing. The caller reports that as
  * [io.github.composeshield.SupportLevel.Unsupported] with `MechanismUnavailable` — an honest
  * "this stopped working" rather than a false claim of protection.
@@ -93,7 +100,13 @@ internal class SecureContainer private constructor(
                 field.subviews
                     .filterIsInstance<UIView>()
                     .firstOrNull { it.isCanvasLike() }
-                    ?: return null
+                    ?: run {
+                        println(
+                            "[ComposeShield] WARNING: Failed to locate secure CanvasView in UITextField subviews. " +
+                                "SecureContainer protection is unavailable on this iOS runtime.",
+                        )
+                        return null
+                    }
 
             canvas.removeFromSuperview()
             return SecureContainer(owner = field, canvas = canvas)
