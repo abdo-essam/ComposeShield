@@ -287,6 +287,8 @@ jobs:
     name: Publish to Maven Central
     runs-on: ubuntu-latest
     needs: [generate-report, docs-gate]
+    permissions:
+      contents: write
     steps:
         # renovate: datasource=github-actions
       - uses: actions/checkout@v7
