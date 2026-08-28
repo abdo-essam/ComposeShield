@@ -25,6 +25,13 @@ private val isOnMainThread: Boolean
  *
  * Calls already on the main thread — which is every call from composition, since `DisposableEffect`
  * runs on the applier thread — run inline and return the real result.
+ *
+ * @param ifDeferred the value returned immediately when execution must be posted asynchronously.
+ *   Note: for background callers, the result of [block] is posted asynchronously and its return
+ *   value is not observable synchronously. Callers requiring synchronous confirmation must be on
+ *   the main thread.
+ * @param block the action to execute inline if on the main thread, or post to [mainHandler] otherwise.
+ * @return the direct evaluation of [block] if already on the main thread; [ifDeferred] otherwise.
  */
 internal inline fun <T> onMainThread(
     ifDeferred: T,

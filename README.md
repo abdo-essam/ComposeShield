@@ -17,16 +17,18 @@
 
 ComposeShield is a lightweight screen-capture protection library for Kotlin Multiplatform,
 built for Android and iOS. It blocks screenshots and screen recordings, detects active capture,
-and hides app content in the OS task switcher — behind a single declarative API on
-**Android 24+** and **iOS 15+** (Kotlin 2.4+, Compose Multiplatform 1.11+).
+and hides app content in the OS task switcher — behind a single API on
+**Android 24+** and **iOS 15+**.
 
-- **Declarative** — wrap any UI in a `SecureContent` boundary; protection follows composition,
-  so there is nothing to tear down and no lifecycle to get wrong.
-- **Cross-platform** — one API on Android and iOS, backed by each platform's strongest official
-  mechanism (`FLAG_SECURE` / screen-capture detection on Android, secure-text-entry containers on iOS).
+It is designed for seamless integration across all mobile environments:
+- **Jetpack Compose / Compose Multiplatform** — declarative protection that follows composition.
+- **Native Android (XML/Views)** — imperative protection for traditional View-based apps.
+- **Native iOS (Swift/UIKit)** — native Swift support for UIKit-based applications.
+
+- **Declarative** — wrap any UI in a `SecureContent` boundary; protection follows composition.
+- **Cross-platform** — one API on Android and iOS, backed by each platform's strongest official mechanism.
 - **Observable** — capture state, screenshot events, and protection failures are exposed as flows.
-- **Fail-safe by design** — if a mechanism fails, your UI keeps working and you get an event;
-  nothing ever throws.
+- **Fail-safe by design** — if a mechanism fails, your UI keeps working and you get an event.
 
 ```kotlin
 // Anything composed inside the boundary is protected.
@@ -121,23 +123,39 @@ On Android this stream is unavailable while screenshot prevention is active — 
 
 ### Imperative API
 
-`SecureContent {}` is the right choice whenever you're inside a `@Composable` — protection
-follows composition automatically and there is nothing to release manually. The imperative API
-exists for the cases where there is **no composable context**:
+`SecureContent {}` is the right choice whenever you're inside a `@Composable`. The imperative API
+exists for **Native iOS (Swift)**, **Android XML (Views)**, and cases where there is no composable context:
 
-**App-wide policy from `Application.onCreate`**
-
+**Native Android XML (Activity/Fragment)**
 ```kotlin
-class MyApp : Application() {
-    override fun onCreate() {
-        super.onCreate()
-        ComposeShield.protect() // composables don't exist yet
+class SensitiveActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_sensitive)
+        ComposeShield.protect() // Works with standard Android Views
     }
 }
 ```
 
-**ViewModel or navigation observer**
+**App-wide policy from `Application.onCreate`**
+```kotlin
+class MyApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        ComposeShield.protect()
+    }
+}
+```
 
+**Native Swift / Objective-C**
+```swift
+// In your iOS App or ViewController
+ComposeShield.shared.protect(capabilities: nil)
+// ... later
+ComposeShield.shared.unprotect(capabilities: nil)
+```
+
+**ViewModel or navigation observer**
 ```kotlin
 class PaymentViewModel : ViewModel() {
     private val handle = ComposeShield.protect()
@@ -148,9 +166,7 @@ class PaymentViewModel : ViewModel() {
 }
 ```
 
-**Scoped protection with `use {}`** — automatically released when the block exits, even on
-exception:
-
+**Scoped protection with `use {}`** — automatically released when the block exits:
 ```kotlin
 suspend fun fetchSensitiveData(): Data {
     return ComposeShield.protect().use {
@@ -159,21 +175,12 @@ suspend fun fetchSensitiveData(): Data {
 }
 ```
 
-**Native Swift / Objective-C**
-
-```swift
-ComposeShield.shared.protect()
-// ... later
-ComposeShield.shared.unprotect()
-```
-
 Both paths share **one reference counter**. If a `SecureContent` boundary is composed *and*
-`protect()` was called from a ViewModel, protection lifts only once both are released — neither
-can accidentally unprotect the other.
+`protect()` was called from a ViewModel, protection lifts only once both are released.
 
 | | `SecureContent {}` | `protect()` / imperative |
 |---|---|---|
-| **Where** | Inside `@Composable` | Anywhere (ViewModel, Application, Swift, coroutines) |
+| **Where** | Inside `@Composable` | Anywhere (XML, Swift, ViewModel, Application) |
 | **Lifetime** | Tied to composition | Manual or `use {}` scope |
 | **Teardown** | Automatic | `unprotect()` or `use {}` |
 
