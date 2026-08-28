@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -20,7 +20,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		G000000 /* root */ = {
+		G000000 = {
 			isa = PBXGroup;
 			children = (
 				G001000 /* iosApp */,
@@ -138,6 +138,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -150,6 +151,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -164,8 +166,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				ARCHS = arm64;
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -181,6 +181,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -193,6 +194,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -201,8 +203,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				ARCHS = arm64;
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_FAST_MATH = YES;
@@ -215,25 +215,27 @@
 		BC002001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
-				FRAMEWORK_SEARCH_PATHS = (
+				DEVELOPMENT_TEAM = PF8ZDTB84B;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(SRCROOT)/../../composeshield/build/bin/iosArm64/debugFramework",
+				);
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
 					"$(inherited)",
 					"$(SRCROOT)/../../composeshield/build/bin/iosSimulatorArm64/debugFramework",
-					"$(SRCROOT)/../../composeshield/build/bin/iosArm64/debugFramework",
-					"$(SRCROOT)/../../composeshield/build/bin/iosSimulatorArm64/$(CONFIGURATION:lower)Framework",
-					"$(SRCROOT)/../../composeshield/build/bin/iosArm64/$(CONFIGURATION:lower)Framework",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				ARCHS = arm64;
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -243,7 +245,7 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
-					"ComposeShield",
+					ComposeShield,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.composeshield.sample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -261,12 +263,14 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
-				FRAMEWORK_SEARCH_PATHS = (
+				DEVELOPMENT_TEAM = PF8ZDTB84B;
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(SRCROOT)/../../composeshield/build/bin/iosArm64/releaseFramework",
+				);
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
 					"$(inherited)",
 					"$(SRCROOT)/../../composeshield/build/bin/iosSimulatorArm64/releaseFramework",
-					"$(SRCROOT)/../../composeshield/build/bin/iosArm64/releaseFramework",
-					"$(SRCROOT)/../../composeshield/build/bin/iosSimulatorArm64/$(CONFIGURATION:lower)Framework",
-					"$(SRCROOT)/../../composeshield/build/bin/iosArm64/$(CONFIGURATION:lower)Framework",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -282,7 +286,7 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
-					"ComposeShield",
+					ComposeShield,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.composeshield.sample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -314,7 +318,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = PROJECT /* Project object */;
 }
