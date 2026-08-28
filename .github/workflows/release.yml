@@ -24,7 +24,7 @@ jobs:
 
       - name: Check for prior passing report
         id: check
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const sha = context.sha;
