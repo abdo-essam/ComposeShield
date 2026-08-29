@@ -23,7 +23,7 @@ dokka = "2.2.0"
 
 # Android test runner & rules for instrumentation tests
 androidxTestCore = "1.7.0"
-androidxTestRunner = "1.6.2"
+androidxTestRunner = "1.7.0"
 androidxTestRules = "1.7.0"
 androidxTestExtJunit = "1.3.0"
 androidxTestUiautomator = "2.4.0"
