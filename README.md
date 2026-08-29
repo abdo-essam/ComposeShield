@@ -25,20 +25,20 @@ It is designed for seamless integration across all mobile environments:
 - **Native Android (XML/Views)** — imperative protection for traditional View-based apps.
 - **Native iOS (Swift/UIKit)** — native Swift support for UIKit-based applications.
 
+- **Full-App or Per-Screen Protection** — wrap your root UI once to secure the entire app, or scope to individual screens.
 - **Declarative** — wrap any UI in a `SecureContent` boundary; protection follows composition.
 - **Cross-platform** — one API on Android and iOS, backed by each platform's strongest official mechanism.
 - **Observable** — capture state, screenshot events, and protection failures are exposed as flows.
 - **Fail-safe by design** — if a mechanism fails, your UI keeps working and you get an event.
 
 ```kotlin
-// Anything composed inside the boundary is protected.
-// This is your UI — rendered exactly as usual.
+// Protect your entire application with a single root wrapper:
 SecureContent {
-    AccountBalance(balance = user.balance)
+    AppContent()
 }
 ```
 
-> `AccountBalance` stands for your own composables — it is not part of the library.
+> `AppContent` stands for your own root navigation or composables — it is not part of the library.
 
 ## Installation
 
@@ -55,8 +55,8 @@ resolve automatically.
 
 ### Protect the entire app
 
-Because protection is scoped to the *window*, wrapping your root composable secures every screen
-in the application:
+Because protection is scoped to the *window*, wrapping your root composable secures every screen,
+dialog, and popup across the entire application:
 
 ```kotlin
 @Composable
@@ -70,7 +70,7 @@ fun App() {
 Prefer to control it outside composition? Acquire protection once at startup instead:
 
 ```kotlin
-ComposeShield.protect() // e.g. from Application.onCreate / app init
+ComposeShield.protect() // e.g. from Application.onCreate, AppDelegate, or app init
 ```
 
 `AppNavHost` stands for your own navigation host — it is not part of the library.
@@ -82,10 +82,9 @@ no teardown call to forget.
 
 ```kotlin
 @Composable
-fun PaymentScreen() {
+fun SensitiveScreen() {
     SecureContent {
-        CardNumber(number = card.maskedNumber)
-        Cvc(hint = "•••")
+        SensitiveContent()
     }
 }
 ```
@@ -157,7 +156,7 @@ ComposeShield.shared.unprotect(capabilities: nil)
 
 **ViewModel or navigation observer**
 ```kotlin
-class PaymentViewModel : ViewModel() {
+class SensitiveViewModel : ViewModel() {
     private val handle = ComposeShield.protect()
 
     override fun onCleared() {
