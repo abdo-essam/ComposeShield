@@ -1,132 +1,148 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/logo-light.png">
-    <img src="assets/logo-dark.png" alt="ComposeShield" width="360">
+    <img src="assets/logo-dark.png" alt="ComposeShield Logo" width="380">
   </picture>
 </p>
 
 <p align="center">
-  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.4%2B-7F52FF.svg?logo=kotlin&logoColor=white" alt="Kotlin"></a>
-  <a href="https://github.com/abdo-essam/ComposeShield/actions/workflows/ci.yml"><img src="https://github.com/abdo-essam/ComposeShield/actions/workflows/ci.yml/badge.svg" alt="GitHub Actions"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="Apache 2.0 License"></a>
-  <a href="https://central.sonatype.com/artifact/io.github.abdo-essam/composeshield"><img src="https://img.shields.io/maven-central/v/io.github.abdo-essam/composeshield" alt="Maven Central"></a>
-  <a href="https://github.com/sponsors/abdo-essam"><img src="https://img.shields.io/badge/Sponsor-%E2%99%A5-ff69b4.svg" alt="Sponsor"></a>
+  <strong>Multiplatform screen-capture prevention and detection for Kotlin Multiplatform, Android, and iOS.</strong>
 </p>
 
-## What is ComposeShield? ✨
+<p align="center">
+  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.0%2B-7F52FF.svg?logo=kotlin&logoColor=white" alt="Kotlin"></a>
+  <a href="https://central.sonatype.com/artifact/io.github.abdo-essam/composeshield"><img src="https://img.shields.io/maven-central/v/io.github.abdo-essam/composeshield" alt="Maven Central"></a>
+  <a href="https://github.com/abdo-essam/ComposeShield/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/abdo-essam/ComposeShield/ci.yml?branch=main" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="Apache 2.0 License"></a>
+  <a href="https://developer.android.com"><img src="https://img.shields.io/badge/Android-API%2024%2B-3DDC84.svg?logo=android&logoColor=white" alt="Android"></a>
+  <a href="https://developer.apple.com/ios/"><img src="https://img.shields.io/badge/iOS-15.0%2B-000000.svg?logo=apple&logoColor=white" alt="iOS"></a>
+</p>
 
-ComposeShield is a lightweight screen-capture protection library for Kotlin Multiplatform,
-built for Android and iOS. It blocks screenshots and screen recordings, detects active capture,
-and hides app content in the OS task switcher — behind a single API on
-**Android 24+** and **iOS 15+**.
+---
 
-It is designed for seamless integration across all mobile environments:
-- **Jetpack Compose / Compose Multiplatform** — declarative protection that follows composition.
-- **Native Android (XML/Views)** — imperative protection for traditional View-based apps.
-- **Native iOS (Swift/UIKit)** — native Swift support for UIKit-based applications.
+## Overview
 
-- **Declarative** — wrap any UI in a `SecureContent` boundary; protection follows composition.
-- **Cross-platform** — one API on Android and iOS, backed by each platform's strongest official mechanism.
-- **Observable** — capture state, screenshot events, and protection failures are exposed as flows.
-- **Fail-safe by design** — if a mechanism fails, your UI keeps working and you get an event.
+**ComposeShield** is a lightweight, zero-overhead screen-capture protection library for Kotlin Multiplatform (Android & iOS). It blocks screenshots and screen recordings, detects active capture sessions, and automatically obscures app previews in the OS task switcher / recents menu.
+
+Whether you need to shield an **entire application** with a single line of code, guard **individual sensitive screens**, or manage protection imperatively from ViewModels, traditional Views, or Swift/UIKit, ComposeShield delivers a unified, lifecycle-safe API backed by each operating system's strongest native security mechanisms.
+
+### Key Features
+
+- **Full-App or Granular Protection** — Wrap your root UI once to secure the entire app (including dialogs and popups), or scope protection to specific screens.
+- **Declarative & Composition-Aware** — Use `SecureContent {}` to automatically acquire and release protection with Compose lifecycle—never leak protection or forget teardown.
+- **Multi-Paradigm Support** — Native integration across Jetpack Compose, Compose Multiplatform, Android Views/XML, and Native iOS (Swift/UIKit).
+- **Real-Time Capture Detection** — Reactive `StateFlow` streams for live screen recording, mirroring, and external display detection.
+- **Screenshot Event Stream** — Receive post-hoc screenshot notifications without exposing sensitive screen contents.
+- **Automatic Child Window Inheritance** — Compose `Dialog`, `Popup`, and `ModalBottomSheet` automatically inherit protection without boilerplate.
+- **Fail-Safe by Design** — Built to never crash host applications. If an OS mechanism is unavailable, your UI continues to render smoothly and emits diagnostic failure events.
+
+---
+
+## Quick Start: Protect Your Entire App
+
+Protecting every screen in your application requires just a single root wrapper:
 
 ```kotlin
-// Anything composed inside the boundary is protected.
-// This is your UI — rendered exactly as usual.
-SecureContent {
-    AccountBalance(balance = user.balance)
+@Composable
+fun App() {
+    // Secures all screens, dialogs, popups, and recents switcher thumbnails
+    SecureContent {
+        AppContent()
+    }
 }
 ```
 
-> `AccountBalance` stands for your own composables — it is not part of the library.
+Or initialize app-wide protection imperatively at startup:
+
+```kotlin
+// Android (Application.onCreate), iOS (AppDelegate / SwiftUI App.init), or Common setup:
+ComposeShield.protect()
+```
+
+---
 
 ## Installation
 
+Add the dependency to your project's `build.gradle.kts`:
+
+### Kotlin Multiplatform (`commonMain`)
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation("io.github.abdo-essam:composeshield:0.1.0")
+        }
+    }
+}
+```
+
+### Android-Only (Jetpack Compose / Views)
 ```kotlin
 dependencies {
     implementation("io.github.abdo-essam:composeshield:0.1.0")
 }
 ```
 
-In a Kotlin Multiplatform project, declare it in `commonMain` — the Android and iOS implementations
-resolve automatically.
+---
 
-## Usage
+## Usage Guide
 
-### Protect the entire app
+### 1. Declarative Protection (`SecureContent`)
 
-Because protection is scoped to the *window*, wrapping your root composable secures every screen
-in the application:
+`SecureContent` is the recommended approach for Jetpack Compose and Compose Multiplatform. Protection is acquired when entering composition and automatically released when disposed.
 
+#### Protect the Entire Application
 ```kotlin
 @Composable
 fun App() {
     SecureContent {
-        AppNavHost()
+        AppNavHost() // Secures the entire window hierarchy
     }
 }
 ```
 
-Prefer to control it outside composition? Acquire protection once at startup instead:
-
-```kotlin
-ComposeShield.protect() // e.g. from Application.onCreate / app init
-```
-
-`AppNavHost` stands for your own navigation host — it is not part of the library.
-
-### Protect a single screen
-
-Protection is acquired when the boundary enters composition and released when it leaves — there is
-no teardown call to forget.
-
+#### Protect a Single Screen
 ```kotlin
 @Composable
-fun PaymentScreen() {
+fun SensitiveScreen() {
     SecureContent {
-        CardNumber(number = card.maskedNumber)
-        Cvc(hint = "•••")
+        SensitiveContent()
     }
 }
 ```
 
-> **What gets protected?** While a `SecureContent` boundary is composed, the *entire window* is
-> protected — including siblings outside the boundary. Content in a separate window (a dialog with
-> its own window, split screen) is not protected.
-> See [platform notes](docs/platform-notes.md#window-scoping).
+> **Window Scoping Note:** Mobile operating systems apply hardware-level capture protection at the *window level*. When `SecureContent` is active, the entire window hosting the composable is protected against screenshots and recordings.
 
-### Detect screen recording
+---
 
-```kotlin
-val captureState by ComposeShield.captureState.collectAsState()
+### 2. Dialog and Popup Protection
 
-if (captureState == CaptureState.Active) {
-    RecordingWarningBanner()
-}
-```
+In Jetpack Compose and Compose Multiplatform, child surfaces like `Dialog`, `Popup`, and Material3 `ModalBottomSheet` create separate platform windows.
 
-> `Inactive` means *"no evidence of capture"*, not *"not being captured."* Never gate sensitive
-> content on detection alone — use `SecureContent` for prevention.
-
-### Be notified after a screenshot
+ComposeShield automatically attaches protection to any child window created inside a `SecureContent` block—no extra wrappers required:
 
 ```kotlin
-LaunchedEffect(Unit) {
-    ComposeShield.screenshotEvents.collect {
-        // A screenshot was taken — log it, show a toast, etc.
+SecureContent {
+    Column {
+        SensitiveContent()
+
+        if (showSheet) {
+            // ModalBottomSheet creates its own window — automatically secured!
+            ModalBottomSheet(onDismissRequest = { showSheet = false }) {
+                BottomSheetContent()
+            }
+        }
     }
 }
 ```
 
-On Android this stream is unavailable while screenshot prevention is active — check
-`ComposeShield.supportLevel(Capability.ScreenshotEvents)`.
+---
 
-### Imperative API
+### 3. Imperative API (Views, Swift, ViewModels)
 
-`SecureContent {}` is the right choice whenever you're inside a `@Composable`. The imperative API
-exists for **Native iOS (Swift)**, **Android XML (Views)**, and cases where there is no composable context:
+For non-composable architectures, Native Android (XML), Native iOS (Swift), or business logic controllers, use the imperative API:
 
-**Native Android XML (Activity/Fragment)**
+#### Native Android (Activity / Fragment)
 ```kotlin
 class SensitiveActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -137,9 +153,9 @@ class SensitiveActivity : AppCompatActivity() {
 }
 ```
 
-**App-wide policy from `Application.onCreate`**
+#### Application Startup (App-Wide Policy)
 ```kotlin
-class MyApp : Application() {
+class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         ComposeShield.protect()
@@ -147,90 +163,145 @@ class MyApp : Application() {
 }
 ```
 
-**Native Swift / Objective-C**
+#### Native iOS (Swift / UIKit)
 ```swift
-// In your iOS App or ViewController
+import ComposeShield
+
+// In your AppDelegate, SceneDelegate, or UIViewController
 ComposeShield.shared.protect(capabilities: nil)
-// ... later
+
+// To release protection
 ComposeShield.shared.unprotect(capabilities: nil)
 ```
 
-**ViewModel or navigation observer**
+#### ViewModel / Scoped Coroutines
 ```kotlin
-class PaymentViewModel : ViewModel() {
-    private val handle = ComposeShield.protect()
+class SensitiveViewModel : ViewModel() {
+    private val protectionHandle = ComposeShield.protect()
 
     override fun onCleared() {
-        handle.unprotect()
+        protectionHandle.unprotect()
     }
+}
+
+// Or execute a block with automatic RAII scoping:
+suspend fun executeSensitiveOperation(): Result = ComposeShield.protect().use {
+    api.fetchConfidentialData()
 }
 ```
 
-**Scoped protection with `use {}`** — automatically released when the block exits:
+---
+
+### 4. Detecting Screen Recording & Streaming
+
+Observe live screen recording, mirroring, and external display connections reactively:
+
 ```kotlin
-suspend fun fetchSensitiveData(): Data {
-    return ComposeShield.protect().use {
-        api.fetchSensitiveData()
+@Composable
+fun SecurityMonitor() {
+    val captureState by ComposeShield.captureState.collectAsState()
+
+    if (captureState == CaptureState.Active) {
+        RecordingWarningBanner()
     }
 }
 ```
 
-Both paths share **one reference counter**. If a `SecureContent` boundary is composed *and*
-`protect()` was called from a ViewModel, protection lifts only once both are released.
+> **Important:** `CaptureState.Inactive` signifies *"no active capture detected"*, not an absolute guarantee. Always rely on `SecureContent` / `protect()` for prevention rather than gating sensitive UI on detection alone.
 
-| | `SecureContent {}` | `protect()` / imperative |
-|---|---|---|
-| **Where** | Inside `@Composable` | Anywhere (XML, Swift, ViewModel, Application) |
-| **Lifetime** | Tied to composition | Manual or `use {}` scope |
-| **Teardown** | Automatic | `unprotect()` or `use {}` |
+---
 
-### Handle protection failures
+### 5. Screenshot Event Notifications
 
-If a mechanism fails to install or breaks mid-session, your UI keeps working and you get an event:
+Listen for post-hoc screenshot events (e.g. to log security audit events or show advisory notices):
+
+```kotlin
+LaunchedEffect(Unit) {
+    ComposeShield.screenshotEvents.collect {
+        analytics.logSecurityEvent("screenshot_captured")
+    }
+}
+```
+
+*(Note: On Android, screenshot detection callbacks are precluded by the OS while `FLAG_SECURE` prevention is active.)*
+
+---
+
+### 6. Resilience & Failure Handling
+
+If an underlying OS mechanism is unavailable or fails at runtime, ComposeShield ensures the app remains stable and notifies your diagnostic handlers:
 
 ```kotlin
 SecureContent(
-    onProtectionFailure = { failedCapability -> logger.warn("Failed: $failedCapability") }
+    onProtectionFailure = { failedCapability ->
+        logger.warn("Protection mechanism unavailable for $failedCapability")
+    }
 ) {
     SensitiveContent()
 }
 ```
 
-## Platform support
+---
 
-| Capability | Android | iOS |
-|---|---|---|
-| Screenshot & recording prevention | ✅ (API 24+) | ✅ (iOS 15+) |
-| Capture detection | ✅ (API 35+) | ✅ (iOS 15+) |
-| Screenshot events | ✅ (API 34+)† | ✅ (iOS 15+) |
-| Task switcher protection | ✅ (API 33+) | ✅ (iOS 15+) |
+## Unified Lifetime Model
 
-† Unavailable while screenshot prevention is active on Android.
+ComposeShield uses a unified, reference-counted state engine. Imperative claims (`ComposeShield.protect()`) and declarative boundaries (`SecureContent {}`) interoperate seamlessly without race conditions:
 
-Full details: [capability matrix](docs/capability-matrix.md) ·
-[platform notes](docs/platform-notes.md) · [security limitations](docs/security-limitations.md)
+| Approach | Context | Lifetime | Teardown |
+|---|---|---|---|
+| **`SecureContent {}`** | Jetpack Compose / Compose Multiplatform | Tied to composition | Automatic on disposal |
+| **`ComposeShield.protect()`** | Application, Activity, Swift, ViewModel | Explicit handle | `handle.unprotect()` or `use {}` |
 
-## Limitations
+---
 
-No software can prevent photographing the screen with another device, or capture on rooted or
-jailbroken devices. ComposeShield provides the strongest protection each OS officially offers.
+## Platform Support & Mechanisms
 
-**v1 iOS physical device tests** are `manual_required` — automated physical validation
-requires a CI-connected iPhone, which is not yet in the pipeline. Android physical tests
-run automatically on Firebase Test Lab on every release. iOS physical coverage will be
-automated in a future release.
+| Capability | Android | iOS | Underlying Native Mechanism |
+|:---|:---:|:---:|:---|
+| **Screenshot Prevention** | ✅&nbsp;API&nbsp;24+ | ✅&nbsp;iOS&nbsp;15+ | **Android:** `FLAG_SECURE`<br>**iOS:** Secure layer reparenting |
+| **Recording Prevention** | ✅&nbsp;API&nbsp;24+ | ✅&nbsp;iOS&nbsp;15+ | **Android:** `FLAG_SECURE`<br>**iOS:** Secure layer reparenting |
+| **Capture Detection** | ✅&nbsp;API&nbsp;35+ | ✅&nbsp;iOS&nbsp;15+ | **Android:** `ScreenRecordingCallback`<br>**iOS:** `UITraitSceneCaptureState` |
+| **Screenshot Events** | ✅&nbsp;API&nbsp;34+† | ✅&nbsp;iOS&nbsp;15+ | **Android:** `ScreenCaptureCallback`<br>**iOS:** `userDidTakeScreenshotNotification` |
+| **Task Switcher Obscuring** | ✅&nbsp;API&nbsp;33+ | ✅&nbsp;iOS&nbsp;15+ | **Android:** `setRecentsScreenshotEnabled`<br>**iOS:** Scene transition overlay |
+
+† *On Android, screenshot event callbacks are intentionally suppressed by the OS while `FLAG_SECURE` is active.*
+
+For in-depth architecture and platform notes, see:
+- 📖 [Platform Notes](docs/platform-notes.md)
+- 📊 [Capability Matrix](docs/capability-matrix.md)
+- 🛡️ [Security Limitations](docs/security-limitations.md)
+
+---
+
+## Security Model & Boundary
+
+ComposeShield enforces the strongest official, review-compliant protections provided by Android and iOS. However, please note the physical and platform security boundaries:
+- **Physical Observation:** No software can prevent a screen from being photographed by an external camera.
+- **Rooted / Jailbroken Devices:** Custom ROMs, Frida scripts, or LSPosed modules can hook OS-level APIs and bypass platform security flags.
+- **Simulators:** Simulators and emulators render directly to desktop framebuffers and do not enforce hardware-level capture restrictions. Always validate protection on physical devices.
+
+---
 
 ## Support & Sponsoring 💖
 
 If ComposeShield helps protect your application or team, please consider [sponsoring the project on GitHub](https://github.com/sponsors/abdo-essam) or starring the repository ⭐!
 
-## Contact
+---
 
-Maintainer: **Abdo Essam** — abdo-essam@hotmail.com
+## Vulnerability Reporting & Security
 
-For security vulnerabilities, please use [GitHub's private vulnerability reporting](https://github.com/abdo-essam/ComposeShield/security/advisories/new)
-or email directly. Do not file public issues for security bugs.
+Please **do not** file public GitHub issues for security vulnerabilities. Report security findings directly to **abdo-essam@hotmail.com** or submit a confidential report via [GitHub Private Vulnerability Reporting](https://github.com/abdo-essam/ComposeShield/security/advisories/new).
+
+---
 
 ## License
 
-Apache 2.0 — see [LICENSE](LICENSE).
+```
+Copyright 2026 Abdo Essam
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+```

@@ -18,8 +18,9 @@ import io.github.composeshield.internal.shieldCore
  * where hand-managed protection usually leaks.
  *
  * ```kotlin
+ * // Wrap your root composable to protect the entire application, or scope to a screen
  * SecureContent {
- *     AccountBalance(balance)
+ *     AppContent()
  * }
  * ```
  *
