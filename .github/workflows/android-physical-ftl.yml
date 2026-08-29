@@ -41,7 +41,7 @@ jobs:
           java-version: '21'
 
         # renovate: datasource=github-actions
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Authenticate to GCP
         id: auth
