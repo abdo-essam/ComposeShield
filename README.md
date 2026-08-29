@@ -256,15 +256,15 @@ ComposeShield uses a unified, reference-counted state engine. Imperative claims 
 
 ## Platform Support & Mechanisms
 
-| Capability | Android | Android Mechanism | iOS | iOS Mechanism |
-|---|:---:|---|:---:|---|
-| **Screenshot Prevention** | ✅ API 24+ | `FLAG_SECURE` | ✅ iOS 15+ | Secure layer reparenting |
-| **Recording Prevention** | ✅ API 24+ | `FLAG_SECURE` | ✅ iOS 15+ | Secure layer reparenting |
-| **Capture Detection** | ✅ API 35+ | `ScreenRecordingCallback` | ✅ iOS 15+ | `UITraitSceneCaptureState` |
-| **Screenshot Events** | ✅ API 34+ | `ScreenCaptureCallback` | ✅ iOS 15+ | `userDidTakeScreenshotNotification` |
-| **Task Switcher Obscuring** | ✅ API 33+ | `setRecentsScreenshotEnabled` | ✅ iOS 15+ | Scene transition overlay |
+| Capability | Android | iOS | Underlying Native Mechanism |
+|:---|:---:|:---:|:---|
+| **Screenshot Prevention** | ✅&nbsp;API&nbsp;24+ | ✅&nbsp;iOS&nbsp;15+ | **Android:** `FLAG_SECURE`<br>**iOS:** Secure layer reparenting |
+| **Recording Prevention** | ✅&nbsp;API&nbsp;24+ | ✅&nbsp;iOS&nbsp;15+ | **Android:** `FLAG_SECURE`<br>**iOS:** Secure layer reparenting |
+| **Capture Detection** | ✅&nbsp;API&nbsp;35+ | ✅&nbsp;iOS&nbsp;15+ | **Android:** `ScreenRecordingCallback`<br>**iOS:** `UITraitSceneCaptureState` |
+| **Screenshot Events** | ✅&nbsp;API&nbsp;34+† | ✅&nbsp;iOS&nbsp;15+ | **Android:** `ScreenCaptureCallback`<br>**iOS:** `userDidTakeScreenshotNotification` |
+| **Task Switcher Obscuring** | ✅&nbsp;API&nbsp;33+ | ✅&nbsp;iOS&nbsp;15+ | **Android:** `setRecentsScreenshotEnabled`<br>**iOS:** Scene transition overlay |
 
- *On Android, screenshot event callbacks are intentionally suppressed by the OS while `FLAG_SECURE` is active.*
+† *On Android, screenshot event callbacks are intentionally suppressed by the OS while `FLAG_SECURE` is active.*
 
 For in-depth architecture and platform notes, see:
 - 📖 [Platform Notes](docs/platform-notes.md)
