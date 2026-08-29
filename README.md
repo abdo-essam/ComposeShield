@@ -6,12 +6,12 @@
 </p>
 
 <p align="center">
-  <strong>Comprehensive, multiplatform screen-capture prevention and detection for Kotlin Multiplatform, Android, and iOS.</strong>
+  <strong>Multiplatform screen-capture prevention and detection for Kotlin Multiplatform, Android, and iOS.</strong>
 </p>
 
 <p align="center">
   <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.0%2B-7F52FF.svg?logo=kotlin&logoColor=white" alt="Kotlin"></a>
-  <a href="https://central.sonatype.com/artifact/io.github.abdo-essam/composeshield"><img src="https://img.shields.io/maven-central/v/io.github.abdo-essam/composeshield?color=blue" alt="Maven Central"></a>
+  <a href="https://central.sonatype.com/artifact/io.github.abdo-essam/composeshield"><img src="https://img.shields.io/maven-central/v/io.github.abdo-essam/composeshield" alt="Maven Central"></a>
   <a href="https://github.com/abdo-essam/ComposeShield/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/abdo-essam/ComposeShield/ci.yml?branch=main" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="Apache 2.0 License"></a>
   <a href="https://developer.android.com"><img src="https://img.shields.io/badge/Android-API%2024%2B-3DDC84.svg?logo=android&logoColor=white" alt="Android"></a>
@@ -28,13 +28,13 @@ Whether you need to shield an **entire application** with a single line of code,
 
 ### Key Features
 
-- 🛡️ **Full-App or Granular Protection** — Wrap your root UI once to secure the entire app (including dialogs and popups), or scope protection to specific screens.
-- 🧩 **Declarative & Composition-Aware** — Use `SecureContent {}` to automatically acquire and release protection with Compose lifecycle—never leak protection or forget teardown.
-- ⚡ **Multi-Paradigm Support** — Native integration across Jetpack Compose, Compose Multiplatform, Android Views/XML, and Native iOS (Swift/UIKit).
-- 📡 **Real-Time Capture Detection** — Reactive `StateFlow` streams for live screen recording, mirroring, and external display detection.
-- 📸 **Screenshot Event Stream** — Receive post-hoc screenshot notifications without exposing sensitive screen contents.
-- 🪟 **Automatic Child Window Inheritance** — Compose `Dialog`, `Popup`, and `ModalBottomSheet` automatically inherit protection without boilerplate.
-- 🔒 **Fail-Safe by Design** — Built to never crash host applications. If an OS mechanism is unavailable, your UI continues to render smoothly and emits diagnostic failure events.
+- **Full-App or Granular Protection** — Wrap your root UI once to secure the entire app (including dialogs and popups), or scope protection to specific screens.
+- **Declarative & Composition-Aware** — Use `SecureContent {}` to automatically acquire and release protection with Compose lifecycle—never leak protection or forget teardown.
+- **Multi-Paradigm Support** — Native integration across Jetpack Compose, Compose Multiplatform, Android Views/XML, and Native iOS (Swift/UIKit).
+- **Real-Time Capture Detection** — Reactive `StateFlow` streams for live screen recording, mirroring, and external display detection.
+- **Screenshot Event Stream** — Receive post-hoc screenshot notifications without exposing sensitive screen contents.
+- **Automatic Child Window Inheritance** — Compose `Dialog`, `Popup`, and `ModalBottomSheet` automatically inherit protection without boilerplate.
+- **Fail-Safe by Design** — Built to never crash host applications. If an OS mechanism is unavailable, your UI continues to render smoothly and emits diagnostic failure events.
 
 ---
 
