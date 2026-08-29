@@ -19,7 +19,7 @@ robolectric = "4.16.1"
 detekt = "1.23.8"
 spotless = "8.10.1"
 ktlint = "1.8.0"
-dokka = "2.0.0"
+dokka = "2.2.0"
 
 # Android test runner & rules for instrumentation tests
 androidxTestCore = "1.7.0"
