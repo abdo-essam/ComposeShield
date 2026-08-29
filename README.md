@@ -16,7 +16,6 @@
   <a href="https://central.sonatype.com/artifact/io.github.abdo-essam/composeshield"><img src="https://img.shields.io/maven-central/v/io.github.abdo-essam/composeshield?color=blue" alt="Maven Central"></a>
   <a href="https://github.com/abdo-essam/ComposeShield/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/abdo-essam/ComposeShield/ci.yml?branch=main" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="Apache 2.0 License"></a>
-  <a href="https://github.com/sponsors/abdo-essam"><img src="https://img.shields.io/badge/Sponsor-%E2%99%A5-ff69b4.svg" alt="Sponsor"></a>
 </p>
 
 ---
@@ -257,15 +256,15 @@ ComposeShield uses a unified, reference-counted state engine. Imperative claims 
 
 ## Platform Support & Mechanisms
 
-| Capability | Android (API 24+) | iOS (iOS 15.0+) | Underlying Native Mechanism |
-|---|:---:|:---:|---|
-| **Screenshot Prevention** | ✅ | ✅ | Android `FLAG_SECURE` / iOS Secure Layer Reparenting |
-| **Recording Prevention** | ✅ | ✅ | Android `FLAG_SECURE` / iOS Secure Layer Reparenting |
-| **Capture Detection** | ✅ (API 35+) | ✅ (iOS 15+) | Android `ScreenRecordingCallback` / iOS `UITraitSceneCaptureState` |
-| **Screenshot Events** | ✅ (API 34+)† | ✅ (iOS 15+) | Android `ScreenCaptureCallback` / iOS `userDidTakeScreenshotNotification` |
-| **Task Switcher Obscuring** | ✅ (API 33+) | ✅ (iOS 15+) | Android `setRecentsScreenshotEnabled` & `FLAG_SECURE` / iOS Scene Transition Overlays |
+| Capability | Android | Android Mechanism | iOS | iOS Mechanism |
+|---|:---:|---|:---:|---|
+| **Screenshot Prevention** | ✅ API 24+ | `FLAG_SECURE` | ✅ iOS 15+ | Secure layer reparenting |
+| **Recording Prevention** | ✅ API 24+ | `FLAG_SECURE` | ✅ iOS 15+ | Secure layer reparenting |
+| **Capture Detection** | ✅ API 35+ | `ScreenRecordingCallback` | ✅ iOS 15+ | `UITraitSceneCaptureState` |
+| **Screenshot Events** | ✅ API 34+† | `ScreenCaptureCallback` | ✅ iOS 15+ | `userDidTakeScreenshotNotification` |
+| **Task Switcher Obscuring** | ✅ API 33+ | `setRecentsScreenshotEnabled` | ✅ iOS 15+ | Scene transition overlay |
 
-† *On Android, screenshot event callbacks are intentionally suppressed by the OS when `FLAG_SECURE` is active.*
+† *On Android, screenshot event callbacks are intentionally suppressed by the OS while `FLAG_SECURE` is active.*
 
 For in-depth architecture and platform notes, see:
 - 📖 [Platform Notes](docs/platform-notes.md)
