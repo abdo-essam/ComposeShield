@@ -81,7 +81,7 @@ jobs:
       - name: Upload iOS simulator screenshots
         if: always()
         # renovate: datasource=github-actions
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ci-ios-sim-screenshots-${{ github.run_id }}
           path: build/ios-sim-results/*.png

@@ -139,7 +139,7 @@ jobs:
       - name: Upload JUnit XML
         if: always()
         # renovate: datasource=github-actions
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_prefix }}-junit-xml-${{ github.run_id }}
           path: ftl-results/
@@ -148,7 +148,7 @@ jobs:
       - name: Upload protected screenshot evidence
         if: always()
         # renovate: datasource=github-actions
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_prefix }}-screenshots-${{ github.run_id }}
           path: ftl-results/**/*.png
@@ -159,7 +159,7 @@ jobs:
       - name: Upload test run videos
         if: always()
         # renovate: datasource=github-actions
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_prefix }}-videos-${{ github.run_id }}
           path: ftl-results/**/*.mp4
