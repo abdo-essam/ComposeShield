@@ -30,7 +30,7 @@ jobs:
           java-version: '21'
 
         # renovate: datasource=github-actions
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Common logic tests
         run: ./gradlew :composeshield:testAndroidHostTest
@@ -69,7 +69,7 @@ jobs:
           java-version: '21'
 
         # renovate: datasource=github-actions
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: iOS simulator tests
         run: ./gradlew :composeshield:iosSimulatorArm64Test
@@ -159,7 +159,7 @@ jobs:
           java-version: '21'
 
         # renovate: datasource=github-actions
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Download Android FTL JUnit XML results
         uses: actions/download-artifact@v8
