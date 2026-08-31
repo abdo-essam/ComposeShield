@@ -38,7 +38,6 @@ class DialogWindowProtectionTest {
     @get:Rule
     internal val host = RobolectricComposeHost()
 
-
     @Test
     fun `SecureContextWrapper returns SecureWindowManager for WINDOW_SERVICE`() =
         runComposeUiTest {
@@ -60,7 +59,6 @@ class DialogWindowProtectionTest {
                 assertIsNot<SecureWindowManager>(service)
             }
         }
-
 
     @Test
     fun `Dialog window inside SecureContent has FLAG_SECURE`() =

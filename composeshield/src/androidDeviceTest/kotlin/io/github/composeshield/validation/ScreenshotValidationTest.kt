@@ -37,7 +37,6 @@ class ScreenshotValidationTest {
     @get:Rule
     val activityRule = ActivityScenarioRule(ShieldValidationActivity::class.java)
 
-
     /**
      * Activates ComposeShield, captures a screenshot via [Screenshot.capture],
      * and asserts the [SHIELD_TEST_SECRET_001] marker is absent from the known region.
@@ -61,7 +60,6 @@ class ScreenshotValidationTest {
         )
     }
 
-
     /**
      * Deactivates ComposeShield, captures a screenshot, and asserts the marker IS present.
      * This proves the marker-detection mechanism works (no false negatives or false positives).
@@ -82,7 +80,6 @@ class ScreenshotValidationTest {
         )
     }
 
-
     @Test
     fun screenshotAfterShieldDisabled_markerPresent() {
         activityRule.scenario.onActivity { it.enableShield(true) }
@@ -101,7 +98,6 @@ class ScreenshotValidationTest {
         )
     }
 
-
     @Test
     fun screenshotValidation_idempotent() {
         activityRule.scenario.onActivity { activity ->
@@ -115,7 +111,6 @@ class ScreenshotValidationTest {
             message = "I-001 FAILED: double-enable produced inconsistent protection state.",
         )
     }
-
 
     @Test
     fun screenshotAfterRelease_markerPresent() {
@@ -131,7 +126,6 @@ class ScreenshotValidationTest {
             message = "R-001 FAILED: marker did not return after ComposeShield scope was released.",
         )
     }
-
 
     /**
      * Captures the current screen as a [Bitmap] using the in-process

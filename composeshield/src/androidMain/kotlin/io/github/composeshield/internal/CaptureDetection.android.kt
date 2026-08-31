@@ -54,9 +54,7 @@ internal class CaptureDetection {
                 trySend(
                     when {
                         recording || mirroring -> PlatformCaptureReading.Capturing
-
                         supportsRecordingCallback -> PlatformCaptureReading.NotCapturing
-
                         else -> PlatformCaptureReading.Indeterminate
                     },
                 )

@@ -22,11 +22,8 @@ import io.github.composeshield.SupportLevel.Unsupported.Reason
 internal actual fun expectedSupport(capability: Capability): SupportLevel =
     when (capability) {
         Capability.ScreenshotPrevention, Capability.RecordingPrevention -> SupportLevel.Supported
-
         Capability.CaptureDetection -> atLeast(Build.VERSION_CODES.VANILLA_ICE_CREAM)
-
         Capability.ScreenshotEvents -> atLeast(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-
         Capability.TaskSwitcherProtection -> atLeast(Build.VERSION_CODES.TIRAMISU)
     }
 
