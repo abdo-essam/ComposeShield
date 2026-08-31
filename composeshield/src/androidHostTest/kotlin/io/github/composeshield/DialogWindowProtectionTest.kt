@@ -23,14 +23,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertIsNot
 import kotlin.test.assertTrue
 
-/**
- * Contract tests for automatic dialog-window protection (SC-Dialog).
- *
- * Verifies that a Compose [Dialog] declared inside [SecureContent] receives
- * [WindowManager.LayoutParams.FLAG_SECURE] on its own window without the developer placing
- * [SecureContent] inside the dialog body, and that dialogs outside [SecureContent] are
- * unaffected.
- */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 @OptIn(ExperimentalTestApi::class)

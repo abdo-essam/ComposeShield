@@ -7,18 +7,6 @@ import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
 import platform.UIKit.UIApplicationDidBecomeActiveNotification
 
-/**
- * Emits each time the application becomes active.
- *
- * `didBecomeActive` rather than `willEnterForeground`: the re-poll it drives reads
- * `UIScreen.captured`, and that read is only trustworthy once the app is actually active. Reading it
- * mid-transition risks the same stale answer as the cold-launch defect the re-poll exists to correct
- *.
- *
- * Also fires after a transient interruption — a notification banner, the control centre — where no
- * capture state changed. That is the right trade: the re-poll is cheap and idempotent, whereas a
- * missed foreground leaves a stale reading standing for the rest of the session.
- */
 internal class ForegroundEvents {
     fun events(): Flow<Unit> =
         callbackFlow {

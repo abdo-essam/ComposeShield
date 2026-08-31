@@ -6,13 +6,6 @@ import io.github.composeshield.SupportLevel.Unsupported.Reason
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * Contract tests C5 and C6 — query-time support resolution.
- *
- * The property under test is that support is *re-derived on every call*. A matrix resolved once at
- * startup would keep reporting `Supported` for a capability that had since been precluded or had
- * silently broken, which is the precise failure the library exists to prevent.
- */
 class SupportResolverTest {
     private val window = WindowKey("test-window")
 

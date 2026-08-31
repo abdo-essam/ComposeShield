@@ -12,13 +12,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.time.Duration.Companion.seconds
 
-/**
- * Asserts that an iOS capture reading reaches the published state without being softened.
- *
- * Verifies that an iOS reading published into [CaptureStateSource] produces the right
- * [CaptureState], and specifically that cold-launch and Live Activity readings never
- * resolve to a false negative.
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 class DetectionTest {
     @Test
@@ -89,5 +82,4 @@ class DetectionTest {
     }
 }
 
-/** Comfortably past the suppression window, so a held transition has resolved either way. */
 private val SETTLE = 2.seconds

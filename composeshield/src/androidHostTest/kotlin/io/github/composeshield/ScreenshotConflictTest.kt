@@ -12,18 +12,6 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
 
-/**
- * The Android prevention/detection conflict against the platform implementation.
- *
- * [io.github.composeshield.internal.ScreenshotEventsTest] proves the resolver applies the rule when a
- * platform reports the exclusion. This proves the *Android* platform reports it, and that the
- * resulting support level moves with the live registry rather than being fixed at startup.
- *
- * The conflict is real platform behaviour, not a library choice: AOSP `Activity.java` documents that
- * the capture callback "is not invoked if the activity window has FLAG_SECURE set". Prevention wins,
- * and the superseded capability must say so — a consumer left collecting `screenshotEvents` that will
- * never arrive has no way to tell that from "no screenshots were taken".
- */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class ScreenshotConflictTest {

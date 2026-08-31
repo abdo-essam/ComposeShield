@@ -21,7 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/** Large page heading. */
 @Composable
 internal fun Heading(text: String) {
     BasicText(
@@ -30,7 +29,6 @@ internal fun Heading(text: String) {
     )
 }
 
-/** Titled card grouping related controls. */
 @Composable
 internal fun Section(
     title: String,
@@ -50,7 +48,6 @@ internal fun Section(
     }
 }
 
-/** Tappable ON/OFF row labelled with [label]. */
 @Composable
 internal fun Toggle(
     label: String,
@@ -77,7 +74,6 @@ internal fun Toggle(
     }
 }
 
-/** Selectable pill for a single option within an option group. */
 @Composable
 internal fun Chip(
     label: String,
@@ -103,7 +99,6 @@ internal fun Chip(
     }
 }
 
-/** Key-value row with a monospace value. */
 @Composable
 internal fun Readout(
     label: String,
@@ -126,7 +121,6 @@ internal fun Readout(
     }
 }
 
-/** Dimmed explanatory note, smaller than body text. */
 @Composable
 internal fun Note(text: String) {
     BasicText(
@@ -135,7 +129,6 @@ internal fun Note(text: String) {
     )
 }
 
-/** Monospace log line. */
 @Composable
 internal fun Mono(text: String) {
     BasicText(
@@ -144,7 +137,6 @@ internal fun Mono(text: String) {
     )
 }
 
-/** Clickable action button. */
 @Composable
 internal fun ActionButton(
     label: String,

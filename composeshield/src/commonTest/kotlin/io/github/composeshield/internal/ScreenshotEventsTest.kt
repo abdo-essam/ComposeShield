@@ -9,13 +9,6 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * Screenshot events and their delivery guarantees.
- *
- * The event carries no payload to avoid conveying sensitive content.
- * Delivery guarantees: exactly one emission per screenshot, an empty stream where unsupported,
- * and reporting dynamic preclusion when Android FLAG_SECURE is active.
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ScreenshotEventsTest {
     @Test
@@ -127,7 +120,6 @@ class ScreenshotEventsTest {
         }
 
     private companion object {
-        /** Enough to catch a conflated or dropped emission without depending on buffer sizing. */
         const val SCREENSHOT_BURST = 5
     }
 }

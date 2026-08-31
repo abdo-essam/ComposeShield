@@ -38,16 +38,6 @@ import io.github.composeshield.ProtectionHandle
 import io.github.composeshield.SecureContent
 import io.github.composeshield.TaskSwitcherProtection
 
-/**
- * Demonstrates all five capabilities against a visible marker.
- *
- * The marker is the point: screenshot the app with protection on and it should be absent, then
- * again with protection off and it should be present. Everything else on screen — the live support
- * readout and the event log — exists to explain *why* a given attempt behaved the way it did.
- *
- * Automated tests assert the library *requested* protection. Only a device screenshot confirms the
- * OS *honoured* it.
- */
 @Composable
 fun SampleApp() {
     val log = remember { EventLog() }
@@ -241,12 +231,6 @@ private fun SampleHostContent(
     }
 }
 
-/**
- * A dialog window with secret content.
- *
- * Notice there is NO [SecureContent] call inside this composable. Protection is inherited
- * automatically from the host [SecureContent] boundary.
- */
 @Composable
 private fun SampleDialog(onDismiss: () -> Unit) {
     Dialog(onDismissRequest = onDismiss) {
@@ -288,9 +272,6 @@ private fun SampleDialog(onDismiss: () -> Unit) {
     }
 }
 
-/**
- * A popup window with secret content.
- */
 @Composable
 private fun SamplePopup(onDismiss: () -> Unit) {
     Popup(
@@ -330,13 +311,6 @@ private fun SamplePopup(onDismiss: () -> Unit) {
     }
 }
 
-/**
- * A bottom sheet window with secret content.
- *
- * This bottom sheet creates its own separate [android.view.Window]. Notice there is NO
- * [SecureContent] call inside this composable: protection is inherited automatically from the host
- * [SecureContent] boundary.
- */
 @Composable
 private fun SampleBottomSheet(onDismiss: () -> Unit) {
     Dialog(

@@ -11,18 +11,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/**
- * Asserts that `SecureContent` causes no extra recompositions beyond what its content requires.
- *
- * A boundary that added recompositions on top of its content's own would be a performance
- * hazard and a correctness risk: each extra recomposition of the key slot
- * releases and re-applies `FLAG_SECURE` on a live window, producing surface flicker.
- *
- * The key property: `SecureContent` reads `shieldCore.registry.snapshots` (to decide whether to
- * obscure content) but must not read `ComposeShield.captureState`. The two are independent flows.
- *
- * **Runs under Robolectric** — `runComposeUiTest` needs a real composition host.
- */
 @RunWith(RobolectricTestRunner::class)
 @OptIn(ExperimentalTestApi::class)
 class RecompositionTest {

@@ -10,27 +10,12 @@ import platform.UIKit.UISceneDidDisconnectNotification
 import platform.UIKit.UIWindowScene
 import platform.darwin.NSObjectProtocol
 
-/**
- * iOS's implementation of the platform boundary.
- *
- * Prevention uses internal secure container reparenting ([SecureContainer]).
- * Note: [SecureContainer] relies on undocumented UIKit internal view structures
- * that exclude secure text field canvases from screen capture. If unavailable on a given iOS
- * runtime, prevention gracefully reports failure/unsupported rather than crashing.
- * Detection uses official UIKit screen capture notifications.
- */
 internal class IosPlatformProtection : PlatformProtection {
     private val detection = CaptureDetection()
     private val screenshots = ScreenshotEvents()
     private val appSwitcher = AppSwitcher()
     private val foreground = ForegroundEvents()
 
-    /**
-     * Retained observer token for scene teardown.
-     *
-     * The notification center does not keep the block-based observer's block alive on its own, so
-     * this must be stored for the instance's lifetime or the observer silently stops firing.
-     */
     @Suppress("unused", "UnusedPrivateMember")
     private val sceneDisconnectObserver: NSObjectProtocol
 
@@ -45,13 +30,8 @@ internal class IosPlatformProtection : PlatformProtection {
             }
     }
 
-    /** Live secure containers, one per protected window, so protection can be undone precisely. */
     private val containers = mutableMapOf<WindowKey, SecureContainer>()
 
-    /**
-     * `false` — unlike Android, the screenshot notification fires regardless of what the window is
-     * doing, so prevention and screenshot events coexist here.
-     */
     override val preventionPrecludesScreenshotEvents: Boolean = false
 
     override fun applyProtection(

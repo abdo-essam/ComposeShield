@@ -5,10 +5,6 @@ import io.github.composeshield.TaskSwitcherProtection
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * Validation test for iOS app-switcher protection (A-002).
- * Mapped to requirement matrix ID in config/test-id-map.yml.
- */
 class IosAppSwitcherValidationTest {
     @Test
     fun appSwitcherWithProtectionOn_markerAbsent() {

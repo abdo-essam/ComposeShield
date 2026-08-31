@@ -5,20 +5,6 @@ import io.github.composeshield.Capability
 import io.github.composeshield.SupportLevel
 import io.github.composeshield.SupportLevel.Unsupported.Reason
 
-/**
- * The Android rows of `docs/capability-matrix.md`, transcribed.
- *
- * The version gates are the interesting part and they are not uniform — 33 for standalone recents,
- * 34 for screenshot events, 35 for recording detection — because each rests on a different platform
- * API that arrived in a different release. Below its floor each reports `OsVersionTooLow` with no
- * fallback: every candidate fallback would produce a false "you are not being captured", and for a
- * security library that is worse than an honest "unsupported".
- *
- * Note this deliberately reports the *platform* verdict, before the registry layers preclusion on
- * top. `ScreenshotEvents` drops to `PrecludedByActiveCapability` while prevention is active, which is
- * covered by [ScreenshotEventsTest] and by C6 — asserting it here would require the matrix to encode
- * live registry state, which the published document does not and should not.
- */
 internal actual fun expectedSupport(capability: Capability): SupportLevel =
     when (capability) {
         Capability.ScreenshotPrevention, Capability.RecordingPrevention -> SupportLevel.Supported

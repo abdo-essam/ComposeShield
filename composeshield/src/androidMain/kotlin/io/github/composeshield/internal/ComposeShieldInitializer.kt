@@ -8,23 +8,6 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 
-/**
- * Initializes ComposeShield's activity-lifecycle tracker before any [Activity.onCreate] runs.
- *
- * A [ContentProvider] is the standard Android-library pattern for zero-user-setup initialization
- * (used by WorkManager, Firebase App, Glide, and many others). The OS calls [onCreate] during
- * [Application.attachBaseContext], which happens **before** any [Activity.onCreate] and therefore
- * before [Activity.onResume] — guaranteeing that the lifecycle callbacks are in place before the
- * first activity ever reaches the resumed state.
- *
- * This provider is registered in the library's `AndroidManifest.xml` and merged automatically
- * into the consuming application's manifest by the Android Gradle Plugin. No user code required.
- *
- * **Why a [ContentProvider] rather than [Application.registerActivityLifecycleCallbacks] lazily?**
- * Lazy registration (from a composable or from the first `protect()` call) races with the activity
- * lifecycle: by the time the first composable runs, [Activity.onResume] has already fired, so the
- * callback misses the current session entirely. A [ContentProvider] sidesteps the race entirely.
- */
 internal class ComposeShieldInitializer : ContentProvider() {
     override fun onCreate(): Boolean {
         val application = context?.applicationContext as? Application ?: return true
@@ -61,14 +44,6 @@ internal class ComposeShieldInitializer : ContentProvider() {
     ): Int = 0
 }
 
-/**
- * Registers [Application.ActivityLifecycleCallbacks] so every resumed activity's window is
- * present in the [windows] table.
- *
- * Split from [ComposeShieldInitializer] so it can also be called from [anyRegisteredActivity] as a
- * last-resort fallback (e.g. in tests or processes where the [ContentProvider] is suppressed via
- * `tools:node="remove"`).
- */
 internal fun installActivityTracker(application: Application) {
     application.registerActivityLifecycleCallbacks(
         object : Application.ActivityLifecycleCallbacks {

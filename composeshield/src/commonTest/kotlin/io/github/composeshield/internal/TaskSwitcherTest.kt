@@ -7,7 +7,6 @@ import kotlin.test.assertContains
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/** App-switcher protection and the no-double-application rule. */
 class TaskSwitcherTest {
     private val platform = FakePlatformProtection()
     private val registry = ProtectionRegistry(platform)

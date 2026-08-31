@@ -11,39 +11,11 @@ import org.junit.runner.RunWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/**
- * Screenshot validation tests — run on a real physical Android device via Firebase Test Lab.
- *
- * **Validation strategy (protected screenshot evidence)**:
- * The test renders the [SHIELD_TEST_SECRET_001] marker in a known region of the screen.
- * When ComposeShield protection is active, the test asserts the marker is **absent** from
- * a captured bitmap sample of that region. The test does NOT assert a specific output colour
- * (solid black, blur, placeholder); only marker absence matters. This decouples the assertion
- * from OS implementation details and focuses on the actual guarantee: protected content is
- * not exposed.
- *
- * **Negative control** (C-002): with protection OFF, the marker IS detectable — confirming
- * the detection mechanism itself works and eliminating false positives.
- *
- * Requirement coverage:
- * - C-001: protection ON → marker absent
- * - C-002: protection OFF → marker present (negative control)
- * - C-003: shield disabled after active → marker returns
- * - I-001: double-enable idempotency
- * - R-001: cleanup after scope ends → marker returns
- */
 @RunWith(AndroidJUnit4::class)
 class ScreenshotValidationTest {
     @get:Rule
     val activityRule = ActivityScenarioRule(ShieldValidationActivity::class.java)
 
-    /**
-     * Activates ComposeShield, captures a screenshot via [Screenshot.capture],
-     * and asserts the [SHIELD_TEST_SECRET_001] marker is absent from the known region.
-     *
-     * Passes when: the OS honored the protection request and the content is not detectable.
-     * Fails when: the marker is detectable — the OS did NOT honor the protection.
-     */
     @Test
     fun screenshotWithProtectionOn_markerAbsent() {
         activityRule.scenario.onActivity { activity ->
@@ -60,10 +32,6 @@ class ScreenshotValidationTest {
         )
     }
 
-    /**
-     * Deactivates ComposeShield, captures a screenshot, and asserts the marker IS present.
-     * This proves the marker-detection mechanism works (no false negatives or false positives).
-     */
     @Test
     fun screenshotWithProtectionOff_markerPresent() {
         activityRule.scenario.onActivity { activity ->
@@ -127,11 +95,6 @@ class ScreenshotValidationTest {
         )
     }
 
-    /**
-     * Captures the current screen as a [Bitmap] using the in-process
-     * [androidx.test.runner.screenshot.Screenshot] API — trustworthy proof
-     * of OS-level enforcement (spec Assumption 3).
-     */
     private fun captureScreenshot(): Bitmap? {
         androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         Thread.sleep(300)
@@ -142,7 +105,6 @@ class ScreenshotValidationTest {
         }
     }
 
-    /** Returns a brief description of the bitmap for failure messages. */
     private fun Bitmap?.describe(): String {
         if (this == null) return "bitmap=null (OS blocked capture via FLAG_SECURE)"
         val cx = width / 2

@@ -14,16 +14,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/**
- * Asserts the registry remains correct under concurrent mutation.
- *
- * The registry is a compare-and-set loop over an immutable snapshot. This test suite verifies
- * that concurrent requests across threads do not suffer lost updates or race conditions.
- *
- * `Dispatchers.Default` is used deliberately rather than the test dispatcher. A single-threaded
- * dispatcher would serialise every acquire and the contention these tests exist to provoke would
- * never happen.
- */
 class ThreadSafetyTest {
     private val platform = FakePlatformProtection()
     private val registry = ProtectionRegistry(platform)
@@ -124,10 +114,8 @@ class ThreadSafetyTest {
         }
 
     private companion object {
-        /** Enough callers to provoke compare-and-set retries without making the test slow. */
         const val CONCURRENT_CALLERS = 64
 
-        /** Rounds of release-vs-acquire contention for the serialization regression guard. */
         const val RACE_ROUNDS = 200
     }
 }

@@ -7,11 +7,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/**
- * Reference-counting and protection claim lifecycle tests.
- *
- * These tests ensure protection is never prematurely released while any screen or component still requests it.
- */
 class ProtectionRegistryTest {
     private val platform = FakePlatformProtection()
     private val registry = ProtectionRegistry(platform)

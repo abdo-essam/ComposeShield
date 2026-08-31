@@ -8,58 +8,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
-/**
- * The single place all protection state lives.
- *
- * Reference-counts requests, resolves the effective capability set per window,
- * and drives [PlatformProtection] when — and only when — the outcome actually changes.
- *
- * **Reference counting is a correctness requirement, not an optimisation.** Only one physical
- * protection primitive exists per window, so a departing screen that cleared it directly would
- * unprotect a still-visible screen underneath, with nothing to report the exposure.
- *
- * **Thread-safety**: mutations are a compare-and-set over an immutable [RegistryState] snapshot, so
- * no caller observes a half-applied change and no caller ever retries a platform call. Platform
- * application is marshalled to the main thread by the actuals themselves. Reconciliation — the
- * decide → platform-call → record sequence — is additionally serialized behind [reconcileLock]:
- * without it, a release and an acquire racing on one window can interleave so that the acquire's
- * reconcile skips on an `applied` entry the release is about to invalidate, leaving an active
- * request unprotected with nothing left to re-trigger the reconcile.
- *
- * **Capability sets are copied on entry** (`acquire`, `acquireShared`): a caller mutating a set
- * after handing it over must not be able to change what was requested — or what the applied-cache
- * believes was requested — after the fact.
- *
- * @param platform the platform primitive to delegate to.
- * @param onProtectionFailure invoked when a mechanism fails to install or stops working, so the
- *   failure is observable as it happens rather than only by polling support state.
- */
 @OptIn(ExperimentalAtomicApi::class)
 internal class ProtectionRegistry(
     private val platform: PlatformProtection,
     private val onProtectionFailure: (Capability) -> Unit = {},
 ) {
-    /** Guards [reconcile] and [releaseWindow]'s platform effects against each other. */
     private val reconcileLock = Any()
 
     private val state = AtomicReference(RegistryState())
     private val _snapshots = MutableStateFlow(RegistryState())
 
-    /** The snapshot as an observable stream. */
     val snapshots: StateFlow<RegistryState> = _snapshots.asStateFlow()
 
-    /** The current snapshot. Safe to read from any thread; never a partially-applied state. */
     val current: RegistryState get() = state.load()
 
-    /**
-     * Records a new request and applies protection if this changed the window's effective set.
-     *
-     * Pass [WindowKey.Unbound] when no host exists yet; the request is held and applied once
-     * [bindWindow] reports one, rather than being dropped.
-     *
-     * @return the request, to be passed back to [release]. Each call produces a distinct claim even
-     *   when the capabilities are identical, so two boundaries count as two.
-     */
     fun acquire(
         window: WindowKey,
         capabilities: Set<Capability>,
@@ -73,18 +35,6 @@ internal class ProtectionRegistry(
         return request
     }
 
-    /**
-     * Records an imperative request, collapsing onto the existing one for the same capabilities.
-     *
-     * **Idempotent, deliberately not reference-counted.** Acquiring twice and releasing once releases
-     * protection — the opposite of the declarative path. A boundary's lifetime is delimited by
-     * composition so counting it is exact; an imperative caller has no such structure, and a policy
-     * object calling `acquire()` on every navigation would leak protection permanently under
-     * reference counting.
-     *
-     * Distinct capability sets remain distinct claims, so this cannot merge two callers wanting
-     * different things.
-     */
     fun acquireShared(
         window: WindowKey,
         capabilities: Set<Capability>,
@@ -103,7 +53,6 @@ internal class ProtectionRegistry(
         return sharedRequest(window, capabilities) ?: request
     }
 
-    /** The existing imperative claim for exactly [capabilities] on [window], if any. */
     private fun sharedRequest(
         window: WindowKey,
         capabilities: Set<Capability>,
@@ -111,10 +60,6 @@ internal class ProtectionRegistry(
         current.requests[window]
             ?.firstOrNull { it.isImperative && it.capabilities == capabilities }
 
-    /**
-     * Releases any active imperative claim matching [capabilities] on [window].
-     * Idempotent — no-op if no matching claim exists.
-     */
     fun releaseShared(
         window: WindowKey,
         capabilities: Set<Capability>,
@@ -122,13 +67,6 @@ internal class ProtectionRegistry(
         sharedRequest(window, capabilities)?.let(::release)
     }
 
-    /**
-     * Drops [request] and withdraws protection if it was the last claim on its window.
-     *
-     * **Idempotent.** Releasing an already-released request is a no-op and does not decrement
-     * anything else — a double release cannot strip protection from a screen that still wants it.
-     * Removal is by identity, so an identically-configured sibling is untouched.
-     */
     fun release(request: ProtectionRequest) {
         val window = request.window
         mutate { snapshot ->
@@ -149,13 +87,6 @@ internal class ProtectionRegistry(
         reconcile(window)
     }
 
-    /**
-     * Re-points requests held against [WindowKey.Unbound] at [window], now that a host exists.
-     *
-     * Without this, a request made before first composition — from application startup, or a
-     * navigation observer running ahead of the UI — would sit unapplied forever while reporting
-     * itself active.
-     */
     fun bindWindow(window: WindowKey) {
         if (window == WindowKey.Unbound) return
 
@@ -172,13 +103,6 @@ internal class ProtectionRegistry(
         reconcile(window)
     }
 
-    /**
-     * Releases every request on [window]. Called when a window is destroyed.
-     *
-     * Without it, a window torn down without its boundaries disposing cleanly would leave requests
-     * outstanding forever — a leak that surfaces as a permanently black screenshot on some
-     * unrelated screen.
-     */
     fun releaseWindow(window: WindowKey) {
         serialized(reconcileLock) {
             mutate { snapshot ->
@@ -192,29 +116,12 @@ internal class ProtectionRegistry(
         }
     }
 
-    /** Sets the app-switcher mode and applies the consequence immediately. */
     fun setTaskSwitcherMode(mode: TaskSwitcherProtection) {
         mutate { snapshot -> snapshot.copy(taskSwitcherMode = mode) }
         val windows = current.requests.keys
         if (windows.isEmpty()) reconcileTaskSwitcher(WindowKey.Unbound) else windows.forEach(::reconcileTaskSwitcher)
     }
 
-    /**
-     * Brings the platform in line with the current snapshot for [window].
-     *
-     * Serialized behind [reconcileLock]: decide, act, and record must not interleave with another
-     * thread's reconcile for any window. Without the lock, a release and an acquire racing on one
-     * window can interleave so that the acquire skips on an `applied` entry the release is about to
-     * invalidate — leaving an active request unprotected with nothing left to re-trigger. The lock is
-     * held across the platform call deliberately: that call runs exactly once per reconcile here, so
-     * the CAS loop's no-re-execution concern does not apply.
-     *
-     * Skipped when the effective capability set equals what the platform was last told to apply
-     * (see [RegistryState.applied]) — a second concurrent request adding nothing new, or releasing
-     * one of two identical requests, needs no main-thread round-trip. A [ProtectionOutcome.Failed]
-     * mechanism is never recorded as applied, so the next reconcile retries the install rather than
-     * trusting a mechanism that is not in force.
-     */
     private fun reconcile(window: WindowKey) {
         serialized(reconcileLock) {
             val capabilities = current.effectiveCapabilities(window)
@@ -249,9 +156,6 @@ internal class ProtectionRegistry(
         }
     }
 
-    /**
-     * Forgets failures for capabilities nothing currently requests.
-     */
     private fun pruneStaleFailures() {
         mutate { snapshot ->
             if (snapshot.failedMechanisms.isEmpty()) return@mutate snapshot
@@ -260,9 +164,6 @@ internal class ProtectionRegistry(
         }
     }
 
-    /**
-     * Records a mechanism failure and reports it.
-     */
     private fun recordFailure(capabilities: Set<Capability>) {
         val prevention = capabilities.filterTo(mutableSetOf()) { it.isPrevention }
         if (prevention.isEmpty()) return
@@ -275,18 +176,12 @@ internal class ProtectionRegistry(
         }
     }
 
-    /**
-     * Applies standalone app-switcher protection, unless capture prevention already covers it.
-     */
     private fun reconcileTaskSwitcher(window: WindowKey) {
         val snapshot = current
         val coveredByPrevention = snapshot.effectiveCapabilities(window).any { it.coversAppSwitcher }
         platform.applyTaskSwitcherProtection(window, snapshot.shouldProtectTaskSwitcher() && !coveredByPrevention)
     }
 
-    /**
-     * Applies [transform] to the snapshot, retrying until it lands uncontended.
-     */
     private inline fun mutate(transform: (RegistryState) -> RegistryState) {
         while (true) {
             val snapshot = state.load()
@@ -300,11 +195,5 @@ internal class ProtectionRegistry(
     }
 }
 
-/**
- * Whether this capability's platform primitive obscures the app-switcher snapshot as a side effect.
- *
- * Android's `FLAG_SECURE` hides the recents thumbnail inseparably, so applying the recents-only
- * primitive on top of it is redundant.
- */
 private val Capability.coversAppSwitcher: Boolean
     get() = this == Capability.ScreenshotPrevention || this == Capability.RecordingPrevention

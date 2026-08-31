@@ -14,12 +14,6 @@ import org.robolectric.RuntimeEnvironment
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/**
- * Verifies that protection never leaks across navigation or window teardown.
- *
- * A leaked FLAG_SECURE does not crash or log; it makes an unrelated screen screenshot as solid black.
- * Reference counting ensures clean teardown even under rapid navigation.
- */
 @RunWith(RobolectricTestRunner::class)
 class LifecycleReleaseTest {
     @Test

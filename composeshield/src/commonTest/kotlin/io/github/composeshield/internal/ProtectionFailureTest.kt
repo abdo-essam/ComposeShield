@@ -11,15 +11,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/**
- * Tests the failure reporting flow and contract.
- *
- * When a platform protection mechanism fails to install or stops working:
- * 1. The failure is recorded, causing `supportLevel` to report `Unsupported(MechanismUnavailable)`.
- * 2. The failure is delivered to `onProtectionFailure` / `protectionFailures` stream.
- * 3. The library does NOT automatically obscure the UI, preserving usability while notifying the app.
- * 4. When the request is released, the failure verdict is cleared.
- */
 class ProtectionFailureTest {
     private val window = WindowKey("test-window")
 

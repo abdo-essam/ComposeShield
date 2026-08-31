@@ -7,52 +7,31 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.onSubscription
 
-/**
- * A scriptable stand-in for the platform layer.
- *
- * The registry's reference counting, posture resolution, and support layering are pure logic, so
- * they should be provable without a device. This fake records what the platform was *asked* to do
- * and lets a test dictate what the platform says back, including edge cases: a mechanism that
- * refuses to install, a capability the OS is too old for, an indeterminate capture reading.
- */
 internal class FakePlatformProtection(
     private val support: Map<Capability, SupportLevel> =
         Capability.entries.associateWith { SupportLevel.Supported },
     override val preventionPrecludesScreenshotEvents: Boolean = true,
 ) : PlatformProtection {
-    /** Guards [protectedWindows], [appSwitcherProtectedWindows], and [applyLog] from concurrent mutation. */
     private val lock = Any()
 
-    /** Windows currently carrying the prevention primitive. */
     val protectedWindows: MutableSet<WindowKey> = mutableSetOf()
 
-    /** Windows carrying standalone app-switcher protection. */
     val appSwitcherProtectedWindows: MutableSet<WindowKey> = mutableSetOf()
 
-    /**
-     * Every apply/clear in order.
-     *
-     * Kept as an ordered log rather than a count so tests can assert on *redundant toggling*, not
-     * just the end state — on a real window each toggle is a surface teardown the user sees.
-     */
     val applyLog: MutableList<String> = mutableListOf()
 
-    /** The capability set most recently requested, for asserting the union is what gets applied. */
     var lastRequestedCapabilities: Set<Capability> = emptySet()
         private set
 
-    /** What [applyProtection] should report. Set to a failure to exercise the posture paths. */
     var nextOutcome: ProtectionOutcome = ProtectionOutcome.Applied
 
     val captureReadings: MutableSharedFlow<PlatformCaptureReading> = MutableSharedFlow(replay = 1)
     val screenshots: MutableSharedFlow<Unit> = MutableSharedFlow()
     val foregrounds: MutableSharedFlow<Unit> = MutableSharedFlow()
 
-    /** How many times the capture-state flow has been collected, to assert a re-poll re-subscribed. */
     var captureSubscriptions: Int = 0
         private set
 
-    /** When false, [observeScreenshotEvents] is empty, as an unsupporting platform must be. */
     var screenshotEventsAvailable: Boolean = true
 
     override fun applyProtection(

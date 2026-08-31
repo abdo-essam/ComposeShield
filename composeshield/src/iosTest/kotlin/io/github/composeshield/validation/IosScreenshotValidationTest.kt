@@ -11,10 +11,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-/**
- * Validation tests for iOS screenshot protection (C-004, C-005).
- * Mapped to requirement matrix IDs in config/test-id-map.yml.
- */
 @OptIn(ExperimentalForeignApi::class)
 class IosScreenshotValidationTest {
     @Test

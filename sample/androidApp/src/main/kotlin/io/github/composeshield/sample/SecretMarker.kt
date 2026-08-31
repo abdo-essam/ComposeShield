@@ -20,18 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/**
- * Renders a visible secret used by both the human sample demo and the instrumentation test pipeline.
- *
- * **Human demo**: screenshot with protection ON — the marker should be absent. Screenshot with
- * protection OFF — the marker should be present.
- *
- * **Pipeline**: [ScreenshotValidationTest] and [AppSwitcherValidationTest] detect presence or
- * absence of this marker by sampling the `SHIELD_TEST_SECRET_001` region in captured bitmaps.
- * The `contentDescription` tag ties the sample app marker to the test pipeline identity.
- *
- * The test asserts *marker absent* (not a specific output colour).
- */
 @Composable
 internal fun SecretMarker() {
     Column(

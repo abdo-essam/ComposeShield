@@ -9,17 +9,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/**
- * Contract test C14 — the secure container is obtained, or its absence is reported honestly.
- *
- * The mechanism relies on an undocumented view that Apple can rename or restructure in any release,
- * so the test asserts a disjunction rather than success: either a container is built, or `create()`
- * returns null so the caller can report `Unsupported(MechanismUnavailable)`. A hard assertion on
- * success would turn a future iOS release into a red build that says nothing about the library.
- *
- * Whether the render server then withholds the content cannot be checked here — the Simulator writes
- * the framebuffer directly and bypasses that path entirely (quickstart M1/M2, device only).
- */
 @OptIn(ExperimentalForeignApi::class)
 class SecureContainerTest {
     @Test

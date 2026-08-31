@@ -14,17 +14,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/**
- * Contract test C12 — the Android prevention primitive is actually applied to the window.
- *
- * The common tests prove the registry *decides* to protect; this proves the decision reaches
- * `FLAG_SECURE`. That gap is where a library like this fails silently: every unit test passes while
- * the flag is never set, and nothing notices until someone screenshots a protected screen.
- *
- * Robolectric rather than an instrumented test because the assertion is "the flag was requested",
- * which is the library's actual contract. Whether the OS then honours the flag is the platform's
- * contract, and only a physical device can confirm it (quickstart M1/M2).
- */
 @RunWith(RobolectricTestRunner::class)
 class SecureFlagTest {
     @Test

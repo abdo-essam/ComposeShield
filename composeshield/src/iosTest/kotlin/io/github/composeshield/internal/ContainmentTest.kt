@@ -14,17 +14,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/**
- * Asserts that a hosted controller is fully contained in the UIKit hierarchy.
- *
- * Adding a child controller's view without the `addChild` / `didMove(toParent:)` calls around it
- * causes UIKit lifecycle issues: appearance callbacks never fire, the responder chain skips the child,
- * and safe-area insets do not propagate.
- *
- * Identity is compared with `==` rather than `===`. Objective-C interop hands out a fresh Kotlin
- * wrapper per property read, so referential identity is not preserved across a `parentViewController`
- * access even when the underlying object is the same one. `==` bridges to `isEqual:`, which is.
- */
 @OptIn(ExperimentalForeignApi::class)
 class ContainmentTest {
     @Test
@@ -84,13 +73,6 @@ class ContainmentTest {
     }
 }
 
-/**
- * The full containment sequence: `addChild` → `addSubview` → layout → `didMove(toParent:)`.
- *
- * Declared here rather than reused from `iosMain` because the production path hosts a
- * `ComposeUIViewController`, which cannot be constructed in a unit test. The sequence itself is what
- * is under test.
- */
 @OptIn(ExperimentalForeignApi::class)
 private fun UIViewController.contain(child: UIViewController) {
     addChildViewController(child)

@@ -13,22 +13,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import kotlin.test.assertFalse
 
-/**
- * App-switcher preview validation test (A-001).
- *
- * Verifies that when ComposeShield is active, the app's recent-apps thumbnail
- * does not expose the [SHIELD_TEST_SECRET_001] marker.
- *
- * **Strategy**: background the app via [UiDevice.pressRecentApps], capture the
- * app-switcher thumbnail using [Screenshot.capture], then sample the marker
- * region using the same detection logic as [ScreenshotValidationTest].
- *
- * Note: The app-switcher thumbnail is OS-managed and device-specific. On some
- * devices the thumbnail is composited before FLAG_SECURE takes effect; in those
- * cases the test will produce `blocked` status (not `failed`).
- *
- * Requirement: A-001
- */
 @RunWith(AndroidJUnit4::class)
 class AppSwitcherValidationTest {
     @get:Rule
@@ -38,10 +22,6 @@ class AppSwitcherValidationTest {
         UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     }
 
-    /**
-     * A-001: With shield active, backgrounds the app and captures the thumbnail.
-     * Asserts the [SHIELD_TEST_SECRET_001] marker is absent from the preview.
-     */
     @Test
     fun appSwitcherWithProtectionOn_markerAbsent() {
         activityRule.scenario.onActivity { it.enableShield(true) }

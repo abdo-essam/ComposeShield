@@ -10,13 +10,6 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * Contract tests C7–C9 — the capture-state pipeline.
- *
- * Every behaviour here exists because of a documented platform defect, not as defensive padding.
- * The asymmetry is the theme: reassuring news is held until it proves itself, alarming news is
- * published immediately.
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 class CaptureStateSourceTest {
     @Test
@@ -152,16 +145,6 @@ class CaptureStateSourceTest {
             )
         }
 
-    /**
-     * Turbine rather than `backgroundScope.launch {}` + [advanceUntilIdle], deliberately.
-     *
-     * `advanceUntilIdle()` is `advanceUntilIdleOr { events.none(TestDispatchEvent::isForeground) }`
-     * — it stops as soon as no *foreground* work remains, and anything launched in
-     * `backgroundScope` is by definition not foreground. A collector attached that way never
-     * resumes, so its list stays empty while `.value` moves on, and the test then fails claiming
-     * the two disagree when the production code is correct. Turbine's `awaitItem()` suspends the
-     * test coroutine instead, which lets the scheduler run the source's collection.
-     */
     @Test
     fun `every collector observes the same value as the current value`() =
         runTest {

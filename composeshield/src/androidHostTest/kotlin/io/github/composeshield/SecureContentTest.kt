@@ -16,24 +16,6 @@ import kotlin.test.assertNotSame
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-/**
- * C1 at the composition level — the boundary's lifetime is the composition's lifetime.
- *
- * [io.github.composeshield.internal.ProtectionRegistryTest] proves the registry counts correctly when
- * told to. This proves `SecureContent` does the telling: entering composition acquires, leaving
- * releases, and nesting behaves. The distinction matters because the failure it guards against is
- * invisible — a boundary that never acquires looks identical to one that does, right up until the
- * screen is captured.
- *
- * **Runs under Robolectric rather than in `commonTest`**, despite `SecureContent` being common code.
- * `runComposeUiTest` needs a real composition host: on the JVM its idling strategy reads
- * `Build.FINGERPRINT`, which is null outside an Android environment. `commonTest` sources compile
- * into this source set anyway, so the boundary is still exercised as common code — only the host
- * differs.
- *
- * The v1 test APIs are deprecated in CMP 1.11; `androidx.compose.ui.test.v2.runComposeUiTest` is the
- * replacement.
- */
 @RunWith(RobolectricTestRunner::class)
 @OptIn(ExperimentalTestApi::class)
 class SecureContentTest {

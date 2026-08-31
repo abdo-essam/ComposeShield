@@ -7,11 +7,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/**
- * The imperative API path and its composition with declarative boundaries.
- *
- * Imperative claims are state-based (idempotent), while declarative boundaries are counted by composition.
- */
 class ImperativeApiTest {
     private val platform = FakePlatformProtection()
     private val registry = ProtectionRegistry(platform)
