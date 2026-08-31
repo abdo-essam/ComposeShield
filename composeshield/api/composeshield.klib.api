@@ -36,6 +36,19 @@ final enum class io.github.composeshield/CaptureState : kotlin/Enum<io.github.co
     final fun values(): kotlin/Array<io.github.composeshield/CaptureState> // io.github.composeshield/CaptureState.values|values#static(){}[0]
 }
 
+final enum class io.github.composeshield/ComposeShieldLogLevel : kotlin/Enum<io.github.composeshield/ComposeShieldLogLevel> { // io.github.composeshield/ComposeShieldLogLevel|null[0]
+    enum entry Debug // io.github.composeshield/ComposeShieldLogLevel.Debug|null[0]
+    enum entry Error // io.github.composeshield/ComposeShieldLogLevel.Error|null[0]
+    enum entry Info // io.github.composeshield/ComposeShieldLogLevel.Info|null[0]
+    enum entry Warn // io.github.composeshield/ComposeShieldLogLevel.Warn|null[0]
+
+    final val entries // io.github.composeshield/ComposeShieldLogLevel.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.composeshield/ComposeShieldLogLevel> // io.github.composeshield/ComposeShieldLogLevel.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.composeshield/ComposeShieldLogLevel // io.github.composeshield/ComposeShieldLogLevel.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.composeshield/ComposeShieldLogLevel> // io.github.composeshield/ComposeShieldLogLevel.values|values#static(){}[0]
+}
+
 final enum class io.github.composeshield/TaskSwitcherProtection : kotlin/Enum<io.github.composeshield/TaskSwitcherProtection> { // io.github.composeshield/TaskSwitcherProtection|null[0]
     enum entry Always // io.github.composeshield/TaskSwitcherProtection.Always|null[0]
     enum entry Automatic // io.github.composeshield/TaskSwitcherProtection.Automatic|null[0]
@@ -46,6 +59,10 @@ final enum class io.github.composeshield/TaskSwitcherProtection : kotlin/Enum<io
 
     final fun valueOf(kotlin/String): io.github.composeshield/TaskSwitcherProtection // io.github.composeshield/TaskSwitcherProtection.valueOf|valueOf#static(kotlin.String){}[0]
     final fun values(): kotlin/Array<io.github.composeshield/TaskSwitcherProtection> // io.github.composeshield/TaskSwitcherProtection.values|values#static(){}[0]
+}
+
+abstract interface io.github.composeshield/ComposeShieldLogger { // io.github.composeshield/ComposeShieldLogger|null[0]
+    abstract fun log(io.github.composeshield/ComposeShieldLogLevel, kotlin/String, kotlin/String, kotlin/Throwable? = ...) // io.github.composeshield/ComposeShieldLogger.log|log(io.github.composeshield.ComposeShieldLogLevel;kotlin.String;kotlin.String;kotlin.Throwable?){}[0]
 }
 
 abstract interface io.github.composeshield/ProtectionHandle : kotlin/AutoCloseable { // io.github.composeshield/ProtectionHandle|null[0]
@@ -95,6 +112,9 @@ final object io.github.composeshield/ComposeShield { // io.github.composeshield/
     final val screenshotEvents // io.github.composeshield/ComposeShield.screenshotEvents|{}screenshotEvents[0]
         final fun <get-screenshotEvents>(): kotlinx.coroutines.flow/Flow<kotlin/Unit> // io.github.composeshield/ComposeShield.screenshotEvents.<get-screenshotEvents>|<get-screenshotEvents>(){}[0]
 
+    final var logger // io.github.composeshield/ComposeShield.logger|{}logger[0]
+        final fun <get-logger>(): io.github.composeshield/ComposeShieldLogger // io.github.composeshield/ComposeShield.logger.<get-logger>|<get-logger>(){}[0]
+        final fun <set-logger>(io.github.composeshield/ComposeShieldLogger) // io.github.composeshield/ComposeShield.logger.<set-logger>|<set-logger>(io.github.composeshield.ComposeShieldLogger){}[0]
     final var taskSwitcherProtection // io.github.composeshield/ComposeShield.taskSwitcherProtection|{}taskSwitcherProtection[0]
         final fun <get-taskSwitcherProtection>(): io.github.composeshield/TaskSwitcherProtection // io.github.composeshield/ComposeShield.taskSwitcherProtection.<get-taskSwitcherProtection>|<get-taskSwitcherProtection>(){}[0]
         final fun <set-taskSwitcherProtection>(io.github.composeshield/TaskSwitcherProtection) // io.github.composeshield/ComposeShield.taskSwitcherProtection.<set-taskSwitcherProtection>|<set-taskSwitcherProtection>(io.github.composeshield.TaskSwitcherProtection){}[0]
@@ -105,11 +125,21 @@ final object io.github.composeshield/ComposeShield { // io.github.composeshield/
     final fun unprotect(kotlin.collections/Set<io.github.composeshield/Capability> = ...) // io.github.composeshield/ComposeShield.unprotect|unprotect(kotlin.collections.Set<io.github.composeshield.Capability>){}[0]
 }
 
+final object io.github.composeshield/ComposeShieldLoggers { // io.github.composeshield/ComposeShieldLoggers|null[0]
+    final val None // io.github.composeshield/ComposeShieldLoggers.None|{}None[0]
+        final fun <get-None>(): io.github.composeshield/ComposeShieldLogger // io.github.composeshield/ComposeShieldLoggers.None.<get-None>|<get-None>(){}[0]
+
+    final fun filtering(io.github.composeshield/ComposeShieldLogLevel, io.github.composeshield/ComposeShieldLogger): io.github.composeshield/ComposeShieldLogger // io.github.composeshield/ComposeShieldLoggers.filtering|filtering(io.github.composeshield.ComposeShieldLogLevel;io.github.composeshield.ComposeShieldLogger){}[0]
+}
+
 final val io.github.composeshield/io_github_composeshield_ComposeShield$stableprop // io.github.composeshield/io_github_composeshield_ComposeShield$stableprop|#static{}io_github_composeshield_ComposeShield$stableprop[0]
+final val io.github.composeshield/io_github_composeshield_ComposeShieldLoggers$stableprop // io.github.composeshield/io_github_composeshield_ComposeShieldLoggers$stableprop|#static{}io_github_composeshield_ComposeShieldLoggers$stableprop[0]
 final val io.github.composeshield/io_github_composeshield_SupportLevel_Supported$stableprop // io.github.composeshield/io_github_composeshield_SupportLevel_Supported$stableprop|#static{}io_github_composeshield_SupportLevel_Supported$stableprop[0]
 final val io.github.composeshield/io_github_composeshield_SupportLevel_Unsupported$stableprop // io.github.composeshield/io_github_composeshield_SupportLevel_Unsupported$stableprop|#static{}io_github_composeshield_SupportLevel_Unsupported$stableprop[0]
 
+final fun (io.github.composeshield/ComposeShieldLoggers).io.github.composeshield/osLog(io.github.composeshield/ComposeShieldLogLevel = ...): io.github.composeshield/ComposeShieldLogger // io.github.composeshield/osLog|osLog@io.github.composeshield.ComposeShieldLoggers(io.github.composeshield.ComposeShieldLogLevel){}[0]
 final fun io.github.composeshield/SecureContent(kotlin.collections/Set<io.github.composeshield/Capability>?, kotlin/Function1<io.github.composeshield/Capability, kotlin/Unit>?, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // io.github.composeshield/SecureContent|SecureContent(kotlin.collections.Set<io.github.composeshield.Capability>?;kotlin.Function1<io.github.composeshield.Capability,kotlin.Unit>?;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun io.github.composeshield/io_github_composeshield_ComposeShield$stableprop_getter(): kotlin/Int // io.github.composeshield/io_github_composeshield_ComposeShield$stableprop_getter|io_github_composeshield_ComposeShield$stableprop_getter(){}[0]
+final fun io.github.composeshield/io_github_composeshield_ComposeShieldLoggers$stableprop_getter(): kotlin/Int // io.github.composeshield/io_github_composeshield_ComposeShieldLoggers$stableprop_getter|io_github_composeshield_ComposeShieldLoggers$stableprop_getter(){}[0]
 final fun io.github.composeshield/io_github_composeshield_SupportLevel_Supported$stableprop_getter(): kotlin/Int // io.github.composeshield/io_github_composeshield_SupportLevel_Supported$stableprop_getter|io_github_composeshield_SupportLevel_Supported$stableprop_getter(){}[0]
 final fun io.github.composeshield/io_github_composeshield_SupportLevel_Unsupported$stableprop_getter(): kotlin/Int // io.github.composeshield/io_github_composeshield_SupportLevel_Unsupported$stableprop_getter|io_github_composeshield_SupportLevel_Unsupported$stableprop_getter(){}[0]
