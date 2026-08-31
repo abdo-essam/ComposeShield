@@ -1,10 +1,10 @@
 package io.github.composeshield
 
-import io.github.composeshield.internal.ProtectionRegistry
+import io.github.composeshield.internal.FakePlatformProtection
 import io.github.composeshield.internal.ProtectionOutcome
+import io.github.composeshield.internal.ProtectionRegistry
 import io.github.composeshield.internal.ShieldLog
 import io.github.composeshield.internal.WindowKey
-import io.github.composeshield.internal.FakePlatformProtection
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -26,16 +26,19 @@ class ComposeShieldLoggerTest {
     fun `filtering drops messages below minimum level`() {
         val entries = mutableListOf<ComposeShieldLogLevel>()
         ComposeShield.logger =
-            ComposeShieldLoggers.filtering(ComposeShieldLogLevel.Warn, object : ComposeShieldLogger {
-                override fun log(
-                    level: ComposeShieldLogLevel,
-                    tag: String,
-                    message: String,
-                    throwable: Throwable?,
-                ) {
-                    entries += level
-                }
-            })
+            ComposeShieldLoggers.filtering(
+                ComposeShieldLogLevel.Warn,
+                object : ComposeShieldLogger {
+                    override fun log(
+                        level: ComposeShieldLogLevel,
+                        tag: String,
+                        message: String,
+                        throwable: Throwable?,
+                    ) {
+                        entries += level
+                    }
+                },
+            )
 
         ShieldLog.debug(message = "debug")
         ShieldLog.warn(message = "warn")
