@@ -36,7 +36,6 @@ import platform.UIKit.UIScreenCapturedDidChangeNotification
 internal class CaptureDetection {
     fun readings(): Flow<PlatformCaptureReading> =
         callbackFlow {
-            // Seed indeterminate initially: at cold launch iOS may report not captured even if recording is active.
             trySend(PlatformCaptureReading.Indeterminate)
 
             val observer =

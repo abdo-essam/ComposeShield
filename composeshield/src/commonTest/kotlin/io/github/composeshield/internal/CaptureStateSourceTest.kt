@@ -56,7 +56,6 @@ class CaptureStateSourceTest {
             platform.captureReadings.emit(PlatformCaptureReading.Capturing)
             advanceUntilIdle()
 
-            // The iOS 26.2 Live Activity flap: inactive briefly, while recording never stopped.
             platform.captureReadings.emit(PlatformCaptureReading.NotCapturing)
             advanceTimeBy(200)
             platform.captureReadings.emit(PlatformCaptureReading.Capturing)
@@ -120,8 +119,6 @@ class CaptureStateSourceTest {
 
             assertEquals(1, platform.captureSubscriptions, "start() subscribes once")
 
-            // Recording begins while the app is backgrounded. The platform emits no transition the
-            // app is alive to observe, so only a re-read on return can discover it.
             platform.foregrounds.emit(Unit)
             advanceUntilIdle()
 
@@ -173,8 +170,6 @@ class CaptureStateSourceTest {
             source.start()
 
             turbineScope {
-                // Both attach before anything is emitted, so this asserts that they agree rather than
-                // that one of them started late.
                 val first = source.state.testIn(backgroundScope)
                 val second = source.state.testIn(backgroundScope)
 

@@ -62,8 +62,6 @@ class SupportResolverTest {
 
     @Test
     fun `an unsupported capability is not relabelled as precluded`() {
-        // Reporting "precluded" for something the OS cannot do anyway would imply that releasing
-        // prevention brings it back, sending a consumer down a dead end.
         val platform =
             FakePlatformProtection(
                 support = mapOf(Capability.ScreenshotEvents to SupportLevel.Unsupported(Reason.OsVersionTooLow)),
@@ -81,8 +79,6 @@ class SupportResolverTest {
 
     @Test
     fun `a failed mechanism outranks every other verdict`() {
-        // Order matters: a broken mechanism is unusable whatever else is true of it, and reporting
-        // it as merely "precluded" would suggest it returns when prevention releases.
         val platform = FakePlatformProtection().apply { nextOutcome = ProtectionOutcome.Failed }
         val registry = ProtectionRegistry(platform)
         val resolver = SupportResolver(platform)

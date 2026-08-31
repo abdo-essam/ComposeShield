@@ -23,8 +23,6 @@ internal class ForegroundEvents {
         callbackFlow {
             val application = anyRegisteredActivity()?.application
             if (application == null) {
-                // No activity registered yet, so nothing to observe through. The subscription stays
-                // open and silent rather than erroring — the flow is re-collected on refresh.
                 awaitClose { }
                 return@callbackFlow
             }
@@ -35,7 +33,6 @@ internal class ForegroundEvents {
                 object : Application.ActivityLifecycleCallbacks {
                     override fun onActivityStarted(activity: Activity) {
                         started++
-                        // The zero-to-one edge only: the app was fully backgrounded and is now not.
                         if (started == 1) trySend(Unit)
                     }
 

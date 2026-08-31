@@ -59,9 +59,6 @@ class ProtectionFailureTest {
 
     @Test
     fun `a failure emitted before any collector attaches is replayed to a late collector`() {
-        // The concrete race: a composed boundary acquires during composition, ahead of its own
-        // failure collector, so the first failure is emitted into an empty room. With no replay
-        // that emission was discarded and onProtectionFailure never fired for it.
         val core =
             ShieldCore(
                 FakePlatformProtection().apply { nextOutcome = ProtectionOutcome.Failed },
@@ -69,8 +66,6 @@ class ProtectionFailureTest {
         core.registry.acquire(WindowKey("unobserved"), setOf(Capability.ScreenshotPrevention))
 
         runTest {
-            // withTimeout so a replay regression fails here, in milliseconds, rather than as a
-            // runTest completion error after its default timeout.
             assertEquals(
                 Capability.ScreenshotPrevention,
                 withTimeout(REPLAY_WAIT_MS) { core.protectionFailures.first() },

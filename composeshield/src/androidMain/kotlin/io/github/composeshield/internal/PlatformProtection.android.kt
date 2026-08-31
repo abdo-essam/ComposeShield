@@ -38,7 +38,6 @@ internal class AndroidPlatformProtection : PlatformProtection {
     ): ProtectionOutcome {
         val target = windowFor(window) ?: return ProtectionOutcome.Deferred
         return onMainThread(ifDeferred = ProtectionOutcome.Deferred) {
-            // addFlags, not setFlags(flags, ALL): the latter clobbers unrelated window flags.
             target.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
             ProtectionOutcome.Applied
         }

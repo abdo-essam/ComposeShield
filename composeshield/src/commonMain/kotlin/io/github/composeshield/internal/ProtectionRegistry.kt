@@ -64,8 +64,6 @@ internal class ProtectionRegistry(
         window: WindowKey,
         capabilities: Set<Capability>,
     ): ProtectionRequest {
-        // Copied so a caller mutating the set afterwards cannot change what was requested — or
-        // what the applied-cache compares against during reconcile.
         val request = ProtectionRequest(capabilities.toSet(), window)
         mutate { snapshot ->
             val existing = snapshot.requests[window].orEmpty()
@@ -164,9 +162,6 @@ internal class ProtectionRegistry(
         mutate { snapshot ->
             val pending = snapshot.requests[WindowKey.Unbound] ?: return@mutate snapshot
             pending.forEach { it.window = window }
-            // The deferred apply parked under Unbound targeted whatever host resolved; once a real
-            // window exists, force a fresh reconcile against it rather than trusting the stale
-            // applied entry (idempotent, at worst one extra platform call).
             snapshot.copy(
                 requests =
                     snapshot.requests - WindowKey.Unbound +
@@ -201,8 +196,6 @@ internal class ProtectionRegistry(
     fun setTaskSwitcherMode(mode: TaskSwitcherProtection) {
         mutate { snapshot -> snapshot.copy(taskSwitcherMode = mode) }
         val windows = current.requests.keys
-        // Always must act even with no requests outstanding — fall back to the unbound key so there
-        // is something to iterate over when the request map is empty.
         if (windows.isEmpty()) reconcileTaskSwitcher(WindowKey.Unbound) else windows.forEach(::reconcileTaskSwitcher)
     }
 
@@ -278,10 +271,6 @@ internal class ProtectionRegistry(
 
         prevention.forEach { capability ->
             println("[ComposeShield] WARNING: Protection mechanism failed for capability: $capability")
-            // The callback runs mid-reconcile on the caller's thread: letting it throw would unwind
-            // through this reconcile path and turn a reported failure into a caller-visible crash.
-            // The swallow is deliberate — [SupportLevel] and [RegistryState.failedMechanisms] stay
-            // truthful; only this best-effort notification channel is affected.
             runCatching { onProtectionFailure(capability) }
         }
     }

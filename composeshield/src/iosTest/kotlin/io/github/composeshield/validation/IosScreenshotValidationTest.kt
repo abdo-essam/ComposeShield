@@ -29,10 +29,8 @@ class IosScreenshotValidationTest {
         val container = SecureContainer.create()
         assertNotNull(container, "SecureContainer must be successfully created on iOS")
 
-        // Enclose secret in secure container
         assertTrue(container.enclose(secretLabel), "SecureContainer should enclose secretLabel")
 
-        // Verify secret is inside container canvas and root has exactly 1 subview (the canvas)
         assertEquals(1, root.subviews.size)
         assertFalse(root.subviews.any { it == secretLabel })
     }
@@ -46,7 +44,6 @@ class IosScreenshotValidationTest {
             }
         root.addSubview(secretLabel)
 
-        // In negative control state, secret view resides directly in normal UIView hierarchy
         assertTrue(root.subviews.any { it == secretLabel })
     }
 }

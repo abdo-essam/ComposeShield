@@ -72,8 +72,6 @@ class ScreenshotConflictTest {
 
     @Test
     fun `recording prevention alone does not preclude screenshot events`() {
-        // The exclusion is tied to FLAG_SECURE being requested for screenshot prevention. Widening it
-        // to any prevention capability would report a capability unsupported while it still works.
         val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
         val window = registerWindow(activity.window, activity)
 
@@ -88,8 +86,6 @@ class ScreenshotConflictTest {
     @Test
     @Config(sdk = [33])
     fun `below API 34 the version floor is reported rather than the conflict`() {
-        // Order matters: reporting PrecludedByActiveCapability on an OS too old for the capability
-        // would imply that releasing prevention brings it back, which is false.
         val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
         val window = registerWindow(activity.window, activity)
 

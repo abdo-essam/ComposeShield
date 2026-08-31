@@ -43,9 +43,6 @@ class DetectionTest {
     @Test
     fun `the cold-launch reading publishes Unknown rather than Inactive`() =
         runTest {
-            // FB14607048: at cold launch iOS reports "not captured" while recording is already
-            // running, so the detection actual seeds Indeterminate. This asserts the consequence —
-            // Unknown reaches the consumer, never the reassuring answer.
             val platform = FakePlatformProtection()
             val source = CaptureStateSource(platform, TestScope(testScheduler))
             source.start()
@@ -65,8 +62,6 @@ class DetectionTest {
     @Test
     fun `a Live Activity flap does not retract an active state`() =
         runTest {
-            // iOS 26.2: expanding a Live Activity from the Dynamic Island reports inactive while
-            // recording continues. Suppression must absorb it.
             val platform = FakePlatformProtection()
             val source = CaptureStateSource(platform, TestScope(testScheduler))
             source.start()
@@ -90,9 +85,6 @@ class DetectionTest {
 
     @Test
     fun `the below-iOS-17 fallback stays readable`() {
-        // UIScreen.isCaptured is what detection falls back to where no scene trait exists. It is
-        // deprecated at 27.0 but not removed; were it to stop being readable, the fallback tier
-        // would lose detection silently.
         assertNotNull(UIScreen.mainScreen.captured)
     }
 }

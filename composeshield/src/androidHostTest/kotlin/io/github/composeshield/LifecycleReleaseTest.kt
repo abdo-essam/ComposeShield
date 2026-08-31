@@ -47,7 +47,6 @@ class LifecycleReleaseTest {
         val registry = ProtectionRegistry(AndroidPlatformProtection())
         val window = registerWindow(activity.window, activity)
 
-        // The real navigation shape: the incoming screen composes before the outgoing one disposes.
         val outgoing = registry.acquire(window, setOf(Capability.ScreenshotPrevention))
         val incoming = registry.acquire(window, setOf(Capability.ScreenshotPrevention))
 

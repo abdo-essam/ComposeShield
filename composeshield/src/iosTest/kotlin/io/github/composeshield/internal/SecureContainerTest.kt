@@ -27,8 +27,6 @@ class SecureContainerTest {
         val container = SecureContainer.create()
 
         if (container == null) {
-            // The expected outcome on an OS whose internals have moved. Recorded rather than failed:
-            // the contract is that this path is reachable and soft, not that it never happens.
             return
         }
 
@@ -94,7 +92,6 @@ class SecureContainerTest {
 
     @Test
     fun `repeated protect and release cycles leave no residual views`() {
-        // Ensure detached secure views do not leak across protect/unprotect cycles.
         val parent = UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))
         val content = UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))
         parent.addSubview(content)

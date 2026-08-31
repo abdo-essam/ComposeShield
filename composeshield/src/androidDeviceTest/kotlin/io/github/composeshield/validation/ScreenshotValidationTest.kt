@@ -37,9 +37,6 @@ class ScreenshotValidationTest {
     @get:Rule
     val activityRule = ActivityScenarioRule(ShieldValidationActivity::class.java)
 
-    // -----------------------------------------------------------------------
-    // C-001 — Protection ON: marker absent (OS enforcement confirmed)
-    // -----------------------------------------------------------------------
 
     /**
      * Activates ComposeShield, captures a screenshot via [Screenshot.capture],
@@ -64,9 +61,6 @@ class ScreenshotValidationTest {
         )
     }
 
-    // -----------------------------------------------------------------------
-    // C-002 — Negative control: protection OFF → marker present
-    // -----------------------------------------------------------------------
 
     /**
      * Deactivates ComposeShield, captures a screenshot, and asserts the marker IS present.
@@ -88,14 +82,10 @@ class ScreenshotValidationTest {
         )
     }
 
-    // -----------------------------------------------------------------------
-    // C-003 — Shield disabled after active → marker returns
-    // -----------------------------------------------------------------------
 
     @Test
     fun screenshotAfterShieldDisabled_markerPresent() {
         activityRule.scenario.onActivity { it.enableShield(true) }
-        // Shield was on — verify protection was applied
         val bitmapProtected = captureScreenshot()
         assertFalse(
             MarkerDetector.isMarkerVisible(bitmapProtected),
@@ -111,9 +101,6 @@ class ScreenshotValidationTest {
         )
     }
 
-    // -----------------------------------------------------------------------
-    // I-001 — Double-enable idempotency
-    // -----------------------------------------------------------------------
 
     @Test
     fun screenshotValidation_idempotent() {
@@ -129,9 +116,6 @@ class ScreenshotValidationTest {
         )
     }
 
-    // -----------------------------------------------------------------------
-    // R-001 — Cleanup after scope ends → marker returns
-    // -----------------------------------------------------------------------
 
     @Test
     fun screenshotAfterRelease_markerPresent() {
@@ -148,9 +132,6 @@ class ScreenshotValidationTest {
         )
     }
 
-    // -----------------------------------------------------------------------
-    // Detection helpers — marker-absent assertion
-    // -----------------------------------------------------------------------
 
     /**
      * Captures the current screen as a [Bitmap] using the in-process

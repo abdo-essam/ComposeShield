@@ -38,7 +38,6 @@ class DialogWindowProtectionTest {
     @get:Rule
     internal val host = RobolectricComposeHost()
 
-    // ── SecureContextWrapper unit tests ──────────────────────────────────────────────────────────
 
     @Test
     fun `SecureContextWrapper returns SecureWindowManager for WINDOW_SERVICE`() =
@@ -62,7 +61,6 @@ class DialogWindowProtectionTest {
             }
         }
 
-    // ── FLAG_SECURE on the dialog window ─────────────────────────────────────────────────────────
 
     @Test
     fun `Dialog window inside SecureContent has FLAG_SECURE`() =
@@ -80,8 +78,6 @@ class DialogWindowProtectionTest {
             }
             waitForIdle()
 
-            // Robolectric may not always create the window synchronously.
-            // Only assert when we actually captured it.
             dialogWindow?.let { window ->
                 assertTrue(
                     window.isFlagSecureSet(),
@@ -124,7 +120,6 @@ class DialogWindowProtectionTest {
                     SecureContent { /* no dialog here while SecureContent is active */ }
                 }
                 if (showDialog) {
-                    // SecureContent is gone at this point — dialog must use plain context
                     Dialog(onDismissRequest = {}) {
                         val view = LocalView.current
                         dialogWindow = (view.parent as? DialogWindowProvider)?.window

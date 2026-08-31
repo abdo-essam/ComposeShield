@@ -38,8 +38,6 @@ class ShieldValidationActivity : ComponentActivity() {
         val root = FrameLayout(this)
         root.setBackgroundColor(Color.BLACK)
 
-        // Marker block — 150×150 dp at (width/4, height/4) so the test's
-        // region sampler hits it reliably across different screen sizes.
         markerView = buildMarkerView()
         root.addView(markerView, buildMarkerLayoutParams())
 

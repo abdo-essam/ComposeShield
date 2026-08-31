@@ -55,16 +55,9 @@ public fun SecureContent(
 ) {
     val window = rememberWindowKey()
 
-    // remember compares its key by equality, not identity, so a consumer allocating a fresh-but-equal
-    // set every recomposition recomputes nothing here and the effect below does not restart. Keying
-    // the effect on the raw parameter instead would release/re-apply protection on each of those
-    // recompositions — the surface-tearing toggle documented above. The copy runs inside remember's
-    // calculation, so equal sets cost no allocation at all on the steady-state path.
     val stableCapabilities = remember(capabilities) { capabilities.toSet() }
 
     val currentOnFailure by rememberUpdatedState(onProtectionFailure)
-    // The failure filter must read the CURRENT set, not the one captured when the collector started:
-    // a capability added mid-session should report its failures, a removed one should stop reporting.
     val currentCapabilities by rememberUpdatedState(capabilities)
 
     DisposableEffect(window, stableCapabilities) {
@@ -76,27 +69,14 @@ public fun SecureContent(
     if (onProtectionFailure != null) {
         LaunchedEffect(Unit) {
             shieldCore.protectionFailures.collect { failed ->
-                // The flow replays its most recent failure to late collectors; that replay can
-                // outlive the failure it describes (the capability was released and has since
-                // installed cleanly — pruned from failedMechanisms). A capability not currently
-                // recorded as failed is stale news, so it is dropped here: fresh failures are
-                // always still in the set when emitted, so nothing genuine is lost.
                 if (failed !in shieldCore.registry.current.failedMechanisms) return@collect
 
                 if (failed in currentCapabilities) {
-                    // A consumer callback runs inside this composition coroutine; letting it throw
-                    // would kill the host app — precisely the failure mode this library exists to
-                    // prevent. The swallow is deliberate: the durable truth (supportLevel and the
-                    // registry's failedMechanisms) is unaffected, only this best-effort channel is.
                     runCatching { currentOnFailure?.invoke(failed) }
                 }
             }
         }
     }
 
-    // Wraps content with a platform-specific interceptor so any child window created inside
-    // (Compose Dialog, Popup, ModalBottomSheet, or any android.app.Dialog subclass) automatically
-    // inherits the active protection. On iOS this is a no-op — popup surfaces share the same
-    // UIWindow and are already covered.
     ProtectedContent(stableCapabilities) { content() }
 }

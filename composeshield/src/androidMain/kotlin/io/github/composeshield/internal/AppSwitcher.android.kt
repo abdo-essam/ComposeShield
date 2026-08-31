@@ -33,7 +33,6 @@ internal class AppSwitcher {
         val activity = activityFor(window) ?: anyRegisteredActivity() ?: return
 
         onMainThread(ifDeferred = Unit) {
-            // Platform flag is setRecentsScreenshotEnabled (inverted relative to protection enabled).
             activity.setRecentsScreenshotEnabled(!enabled)
         }
     }

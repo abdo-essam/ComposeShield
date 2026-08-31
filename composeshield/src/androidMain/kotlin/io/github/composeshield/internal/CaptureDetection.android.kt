@@ -41,7 +41,6 @@ internal class CaptureDetection {
             val displayManager = activity?.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager
 
             if (activity == null) {
-                // With no window we genuinely do not know — report Indeterminate, never NotCapturing.
                 trySend(PlatformCaptureReading.Indeterminate)
                 awaitClose { }
                 return@callbackFlow
@@ -55,8 +54,6 @@ internal class CaptureDetection {
                     when {
                         recording || mirroring -> PlatformCaptureReading.Capturing
 
-                        // Below API 35, the absence of an external display says nothing about
-                        // whether a recorder is running.
                         supportsRecordingCallback -> PlatformCaptureReading.NotCapturing
 
                         else -> PlatformCaptureReading.Indeterminate
@@ -77,7 +74,6 @@ internal class CaptureDetection {
                         publish()
                     }
                 }
-            // The Handler overload (not single-arg): the latter needs API 33 and this path goes back to 24.
             displayManager?.registerDisplayListener(displayListener, Handler(Looper.getMainLooper()))
 
             var recordingCallback: java.util.function.Consumer<Int>? = null
@@ -90,10 +86,6 @@ internal class CaptureDetection {
                     }
                 recordingCallback = callback
 
-                // SECURITY-CRITICAL: this returns the *current* state, and discarding it is a real
-                // vulnerability rather than an untidiness. An attacker who starts recording before the
-                // app launches produces no transition, so a callback-only implementation would report
-                // "not recording" for the entire session.
                 val initial = windowManager.addScreenRecordingCallback(activity.mainExecutor, callback)
                 recording = initial == WindowManager.SCREEN_RECORDING_STATE_VISIBLE
             }
@@ -123,8 +115,6 @@ internal class CaptureDetection {
  */
 private fun DisplayManager?.hasExternalDisplay(): Boolean =
     this?.displays?.any { display ->
-        // `Display.isSecure` is hidden API; the FLAG_SECURE bit is the public equivalent and needs
-        // no reflection to read.
         val secure = display.flags and Display.FLAG_SECURE != 0
         display.displayId != Display.DEFAULT_DISPLAY && !secure
     } == true

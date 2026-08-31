@@ -86,8 +86,6 @@ class ImperativeApiTest {
 
     @Test
     fun `releasing the declarative boundary leaves the imperative claim active`() {
-        // The converse of the above, which is the direction that actually leaks in practice: a screen
-        // navigating away must not unprotect what a background policy still demands.
         val declarative = registry.acquire(window, prevention)
         registry.acquireShared(window, prevention)
 

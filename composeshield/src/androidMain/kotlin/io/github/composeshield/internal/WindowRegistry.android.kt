@@ -35,8 +35,6 @@ internal fun registerWindow(
 ): WindowKey =
     synchronized(windows) {
         windows[window]?.let { existing ->
-            // Re-register to pick up an activity that was absent on first call (e.g. a dialog
-            // composed before its host was attached), without disturbing the established key.
             if (existing.activity == null && activity != null) {
                 windows[window] = Entry(existing.key, activity)
             }

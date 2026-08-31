@@ -32,8 +32,6 @@ internal class ScreenshotEvents {
         return callbackFlow {
             val activity = anyRegisteredActivity()
             if (activity == null) {
-                // Empty rather than an error: an unsupported or unavailable stream must be silent,
-                // so a consumer's collector is never handed an exception.
                 awaitClose { }
                 return@callbackFlow
             }
