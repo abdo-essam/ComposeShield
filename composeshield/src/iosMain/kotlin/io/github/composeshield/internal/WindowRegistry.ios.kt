@@ -65,9 +65,9 @@ internal fun dismissScene(scene: UIWindowScene) {
  */
 internal fun activeWindowScene(): UIWindowScene? =
     try {
-        val app: UIApplication? = UIApplication.sharedApplication
-        val scenes = app?.connectedScenes
-        scenes?.filterIsInstance<UIWindowScene>()?.firstOrNull()
+        val app: UIApplication = UIApplication.sharedApplication
+        val scenes = app.connectedScenes
+        scenes.filterIsInstance<UIWindowScene>().firstOrNull()
     } catch (_: Throwable) {
         null
     }

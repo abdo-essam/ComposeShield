@@ -7,9 +7,7 @@ import android.graphics.Bitmap
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.Until
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -74,7 +72,7 @@ class AppSwitcherValidationTest {
     }
 
     private fun captureScreenshot(): Bitmap? {
-        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         Thread.sleep(300)
         return try {
             androidx.test.runner.screenshot.Screenshot.capture().bitmap
