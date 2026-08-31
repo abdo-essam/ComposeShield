@@ -41,7 +41,6 @@ internal class ShieldCore(
             SupervisorJob() +
                 mainDispatcher() +
                 CoroutineName("ComposeShield") +
-                // Deliberately contained; see the scope's KDoc.
                 CoroutineExceptionHandler { _, _ -> },
         )
 
@@ -74,17 +73,8 @@ internal class ShieldCore(
     val screenshotEvents: Flow<Unit> = platform.observeScreenshotEvents()
 
     init {
-        // Capture-state observation is a long-lived library concern, not a consequence of reading
-        // the public property, so it starts here rather than as a side effect of the getter — a
-        // property read must stay a pure read. start() is idempotent.
         captureStates.start()
 
-        // Cold-start healing. Both Android observers resolve their host through the first
-        // registered activity, so collections begun before any window exists (an imperative
-        // `protect()` from Application.onCreate, say) sit subscribed-but-silent forever: the
-        // foreground flow that drives refresh() is itself one of the dead ones. The first
-        // concrete window binding is the event that changes that — force a genuine re-read
-        // exactly then, and never again. Event-driven; no polling.
         scope.launch {
             var hadConcreteWindow = false
             registry.snapshots.collect { snapshot ->
@@ -136,7 +126,6 @@ private fun mainDispatcher(): CoroutineDispatcher {
         CoroutineScope(
             SupervisorJob() +
                 candidate +
-                // The probe's failures end here, deliberately — see the KDoc above.
                 CoroutineExceptionHandler { _, _ -> },
         )
     return try {

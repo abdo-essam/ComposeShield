@@ -41,7 +41,6 @@ internal class IosPlatformProtection : PlatformProtection {
                 `object` = null,
                 queue = NSOperationQueue.mainQueue,
             ) { note ->
-                // For UIScene lifecycle notifications the posting scene is the notification's object.
                 (note?.`object` as? UIWindowScene)?.let(::dismissScene)
             }
     }

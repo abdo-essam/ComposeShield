@@ -97,7 +97,6 @@ internal class CaptureStateSource(
                 suppressThenPublishInactive()
             }
 
-            // Publish Unknown honestly; never retract a live Active reading.
             PlatformCaptureReading.Indeterminate -> {
                 cancelPendingInactive()
                 if (_state.value != CaptureState.Active) _state.value = CaptureState.Unknown

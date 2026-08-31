@@ -37,10 +37,6 @@ class ScreenshotValidationTest {
     @get:Rule
     val activityRule = ActivityScenarioRule(ShieldValidationActivity::class.java)
 
-    // -----------------------------------------------------------------------
-    // C-001 — Protection ON: marker absent (OS enforcement confirmed)
-    // -----------------------------------------------------------------------
-
     /**
      * Activates ComposeShield, captures a screenshot via [Screenshot.capture],
      * and asserts the [SHIELD_TEST_SECRET_001] marker is absent from the known region.
@@ -64,10 +60,6 @@ class ScreenshotValidationTest {
         )
     }
 
-    // -----------------------------------------------------------------------
-    // C-002 — Negative control: protection OFF → marker present
-    // -----------------------------------------------------------------------
-
     /**
      * Deactivates ComposeShield, captures a screenshot, and asserts the marker IS present.
      * This proves the marker-detection mechanism works (no false negatives or false positives).
@@ -88,14 +80,9 @@ class ScreenshotValidationTest {
         )
     }
 
-    // -----------------------------------------------------------------------
-    // C-003 — Shield disabled after active → marker returns
-    // -----------------------------------------------------------------------
-
     @Test
     fun screenshotAfterShieldDisabled_markerPresent() {
         activityRule.scenario.onActivity { it.enableShield(true) }
-        // Shield was on — verify protection was applied
         val bitmapProtected = captureScreenshot()
         assertFalse(
             MarkerDetector.isMarkerVisible(bitmapProtected),
@@ -111,10 +98,6 @@ class ScreenshotValidationTest {
         )
     }
 
-    // -----------------------------------------------------------------------
-    // I-001 — Double-enable idempotency
-    // -----------------------------------------------------------------------
-
     @Test
     fun screenshotValidation_idempotent() {
         activityRule.scenario.onActivity { activity ->
@@ -128,10 +111,6 @@ class ScreenshotValidationTest {
             message = "I-001 FAILED: double-enable produced inconsistent protection state.",
         )
     }
-
-    // -----------------------------------------------------------------------
-    // R-001 — Cleanup after scope ends → marker returns
-    // -----------------------------------------------------------------------
 
     @Test
     fun screenshotAfterRelease_markerPresent() {
@@ -147,10 +126,6 @@ class ScreenshotValidationTest {
             message = "R-001 FAILED: marker did not return after ComposeShield scope was released.",
         )
     }
-
-    // -----------------------------------------------------------------------
-    // Detection helpers — marker-absent assertion
-    // -----------------------------------------------------------------------
 
     /**
      * Captures the current screen as a [Bitmap] using the in-process

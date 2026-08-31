@@ -125,12 +125,6 @@ class SecureContentTest {
     @Test
     fun `a freshly allocated equal capability set does not restart the protection effect`() =
         runComposeUiTest {
-            // Two traps make this test easy to write vacuously. First, mutableStateOf compares
-            // structurally, so assigning an equal set produces no recomposition at all. Second,
-            // Compose effect keys compare with equals(), so an equal set would not restart the
-            // effect even if the body re-ran. A separate tick state, read inside composition,
-            // forces genuine recompositions while the capability argument stays fresh-but-equal;
-            // the composition counter proves those recompositions really happened.
             val capabilities = mutableStateOf(setOf(Capability.ScreenshotPrevention))
             val tick = mutableStateOf(0)
             var compositions = 0
@@ -168,7 +162,6 @@ class SecureContentTest {
     @Test
     fun `content is composed exactly once`() =
         runComposeUiTest {
-            // The boundary is a pass-through in the ordinary case — it must not skip content or double-compose it.
             var composed = 0
 
             setContent {

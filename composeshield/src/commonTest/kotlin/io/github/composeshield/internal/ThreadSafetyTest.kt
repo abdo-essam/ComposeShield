@@ -74,9 +74,6 @@ class ThreadSafetyTest {
     @Test
     fun `concurrent imperative acquires still collapse onto one claim`() =
         runTest {
-            // The compare-and-set body re-checks for an existing shared request, because a racing
-            // caller can install one between the initial read and the swap. Without that re-check
-            // this produces one claim per thread and the imperative API stops being idempotent.
             val handles =
                 withContext(Dispatchers.Default) {
                     List(CONCURRENT_CALLERS) { async { registry.acquireShared(window, prevention) } }.awaitAll()
@@ -105,8 +102,6 @@ class ThreadSafetyTest {
     @Test
     fun `a release racing an acquire never leaves the new request unapplied`() =
         runTest {
-            // Without serialized reconciliation, the release's clear could invalidate the applied-cache
-            // entry the acquire's reconcile consults, skipping the apply.
             var keeper = registry.acquire(window, prevention)
 
             repeat(RACE_ROUNDS) {

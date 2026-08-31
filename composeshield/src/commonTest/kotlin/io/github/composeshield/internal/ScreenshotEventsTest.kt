@@ -52,7 +52,6 @@ class ScreenshotEventsTest {
     @Test
     fun `an unsupporting platform yields an empty stream rather than an error`() =
         runTest {
-            // A consumer collecting on an OS too old for the capability receives an empty stream.
             val platform = FakePlatformProtection().apply { screenshotEventsAvailable = false }
 
             assertEquals(0, platform.observeScreenshotEvents().count())
@@ -72,7 +71,6 @@ class ScreenshotEventsTest {
     @Test
     fun `events remain available on a platform that does not preclude them`() =
         runTest {
-            // iOS: screenshot notification fires regardless of what the window is doing.
             val platform = FakePlatformProtection(preventionPrecludesScreenshotEvents = false)
             val registry = ProtectionRegistry(platform)
             val resolver = SupportResolver(platform)
@@ -88,7 +86,6 @@ class ScreenshotEventsTest {
     @Test
     fun `active prevention precludes events and releasing restores them`() =
         runTest {
-            // On Android, AOSP does not invoke screen capture callbacks when FLAG_SECURE is set.
             val platform = FakePlatformProtection()
             val registry = ProtectionRegistry(platform)
             val resolver = SupportResolver(platform)

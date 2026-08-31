@@ -55,9 +55,6 @@ class ContainmentTest {
 
     @Test
     fun `content reparented into a secure container keeps its containment`() {
-        // The interaction the test exists for: enclosing moves the *view*, and a view move must not
-        // disturb controller containment. If it did, protecting a screen would break the keyboard on
-        // it — an iOS-only regression no Android test would catch.
         val parent = UIViewController(nibName = null, bundle = null)
         val child = UIViewController(nibName = null, bundle = null)
         parent.contain(child)

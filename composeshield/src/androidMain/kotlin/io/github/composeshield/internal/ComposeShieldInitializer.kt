@@ -32,7 +32,6 @@ internal class ComposeShieldInitializer : ContentProvider() {
         return true
     }
 
-    // ContentProvider contract — none of these are ever called.
     override fun query(
         uri: Uri,
         p: Array<out String>?,
@@ -95,8 +94,6 @@ internal fun installActivityTracker(application: Application) {
             ) = Unit
 
             override fun onActivityDestroyed(activity: Activity) {
-                // Release any outstanding requests so a destroyed window does not leave
-                // protection permanently set on an unrelated screen.
                 keyForActivity(activity)?.let(shieldCore.registry::releaseWindow)
             }
         },

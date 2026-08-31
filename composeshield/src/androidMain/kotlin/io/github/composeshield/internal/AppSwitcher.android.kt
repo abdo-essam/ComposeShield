@@ -1,6 +1,7 @@
 package io.github.composeshield.internal
 
 import android.os.Build
+import androidx.annotation.RequiresApi
 import io.github.composeshield.SupportLevel
 
 /** The API level that introduced `setRecentsScreenshotEnabled`; the capability's single floor. */
@@ -29,12 +30,19 @@ internal class AppSwitcher {
         window: WindowKey,
         enabled: Boolean,
     ) {
-        if (sdkInt < RECENTS_SCREENSHOT_API) return
+        if (Build.VERSION.SDK_INT < RECENTS_SCREENSHOT_API) return
         val activity = activityFor(window) ?: anyRegisteredActivity() ?: return
 
         onMainThread(ifDeferred = Unit) {
-            // Platform flag is setRecentsScreenshotEnabled (inverted relative to protection enabled).
-            activity.setRecentsScreenshotEnabled(!enabled)
+            setRecentsScreenshotEnabled(activity, enabled)
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun setRecentsScreenshotEnabled(
+        activity: android.app.Activity,
+        enabled: Boolean,
+    ) {
+        activity.setRecentsScreenshotEnabled(!enabled)
     }
 }

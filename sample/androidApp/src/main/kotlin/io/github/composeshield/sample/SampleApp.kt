@@ -78,9 +78,6 @@ fun SampleApp() {
     ) {
         Heading("ComposeShield sample")
 
-        // The marker is window-scoped: while SecureContent is composed, the whole screen is
-        // protected — not just the marker region. Any Dialog, Popup, or BottomSheet spawned inside
-        // inherits protection automatically.
         if (boundaryActive) {
             SecureContent(
                 onProtectionFailure = { log.add("boundary reported failure: $it") },
@@ -206,8 +203,6 @@ fun SampleApp() {
             Note("Background the app and check the task switcher. Always works with no boundary composed.")
         }
 
-        // Re-read on every recomposition: support is a function of platform, OS version, AND
-        // currently-active capabilities. Toggling prevention changes ScreenshotEvents on API 34+.
         Section("Live support readout") {
             Capability.entries.forEach { capability ->
                 Readout(capability.name, ComposeShield.supportLevel(capability).describe())

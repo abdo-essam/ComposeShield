@@ -109,7 +109,6 @@ class ProtectionRegistryTest {
 
     @Test
     fun `a request made before a window exists is applied once one appears`() {
-        // Recorded and applied once the window appears, never dropped.
         registry.acquire(WindowKey.Unbound, setOf(Capability.ScreenshotPrevention))
         assertFalse(window in platform.protectedWindows)
 
@@ -203,8 +202,6 @@ class ProtectionRegistryTest {
         subject.acquire(window, setOf(Capability.ScreenshotPrevention))
         assertEquals(1, failing.applyLog.size)
 
-        // A second request changes nothing about the effective set, but the first apply reported
-        // Failed — the mechanism is NOT in force, so this must retry the install, not skip it.
         subject.acquire(window, setOf(Capability.ScreenshotPrevention))
 
         assertEquals(

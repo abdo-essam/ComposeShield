@@ -25,8 +25,6 @@ internal actual fun rememberWindowKey(): WindowKey {
     val activity = LocalActivity.current
 
     return remember(view, activity) {
-        // Dialog window first: dialog content lives in its own window, and the activity flag
-        // does not cover it.
         val window = (view.parent as? DialogWindowProvider)?.window ?: activity?.window
         window?.let { registerWindow(it, activity) } ?: WindowKey.Unbound
     }

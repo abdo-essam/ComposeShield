@@ -2,6 +2,7 @@ package io.github.composeshield.internal
 
 import android.app.Activity
 import android.os.Build
+import androidx.annotation.RequiresApi
 import io.github.composeshield.SupportLevel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -27,13 +28,16 @@ internal class ScreenshotEvents {
     fun support(): SupportLevel = supportedFromApi(SCREEN_CAPTURE_CALLBACKS_API)
 
     fun events(): Flow<Unit> {
-        if (sdkInt < SCREEN_CAPTURE_CALLBACKS_API) return emptyFlow()
+        if (Build.VERSION.SDK_INT < SCREEN_CAPTURE_CALLBACKS_API) return emptyFlow()
 
-        return callbackFlow {
+        return eventsAtApi34()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    private fun eventsAtApi34(): Flow<Unit> =
+        callbackFlow {
             val activity = anyRegisteredActivity()
             if (activity == null) {
-                // Empty rather than an error: an unsupported or unavailable stream must be silent,
-                // so a consumer's collector is never handed an exception.
                 awaitClose { }
                 return@callbackFlow
             }
@@ -42,5 +46,4 @@ internal class ScreenshotEvents {
             activity.registerScreenCaptureCallback(activity.mainExecutor, callback)
             awaitClose { activity.unregisterScreenCaptureCallback(callback) }
         }
-    }
 }

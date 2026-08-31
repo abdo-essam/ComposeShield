@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.Display
 import android.view.WindowManager
+import androidx.annotation.RequiresApi
 import io.github.composeshield.SupportLevel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -41,7 +42,6 @@ internal class CaptureDetection {
             val displayManager = activity?.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager
 
             if (activity == null) {
-                // With no window we genuinely do not know — report Indeterminate, never NotCapturing.
                 trySend(PlatformCaptureReading.Indeterminate)
                 awaitClose { }
                 return@callbackFlow
@@ -54,11 +54,7 @@ internal class CaptureDetection {
                 trySend(
                     when {
                         recording || mirroring -> PlatformCaptureReading.Capturing
-
-                        // Below API 35, the absence of an external display says nothing about
-                        // whether a recorder is running.
                         supportsRecordingCallback -> PlatformCaptureReading.NotCapturing
-
                         else -> PlatformCaptureReading.Indeterminate
                     },
                 )
@@ -77,34 +73,21 @@ internal class CaptureDetection {
                         publish()
                     }
                 }
-            // The Handler overload (not single-arg): the latter needs API 33 and this path goes back to 24.
             displayManager?.registerDisplayListener(displayListener, Handler(Looper.getMainLooper()))
 
-            var recordingCallback: java.util.function.Consumer<Int>? = null
-            if (supportsRecordingCallback) {
-                val windowManager = activity.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-                val callback =
-                    java.util.function.Consumer<Int> { state ->
-                        recording = state == WindowManager.SCREEN_RECORDING_STATE_VISIBLE
-                        publish()
-                    }
-                recordingCallback = callback
-
-                // SECURITY-CRITICAL: this returns the *current* state, and discarding it is a real
-                // vulnerability rather than an untidiness. An attacker who starts recording before the
-                // app launches produces no transition, so a callback-only implementation would report
-                // "not recording" for the entire session.
-                val initial = windowManager.addScreenRecordingCallback(activity.mainExecutor, callback)
-                recording = initial == WindowManager.SCREEN_RECORDING_STATE_VISIBLE
-            }
+            val recordingCallback =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                    registerRecordingCallback(activity, ::publish) { isRecording -> recording = isRecording }
+                } else {
+                    null
+                }
 
             publish()
 
             awaitClose {
                 displayManager?.unregisterDisplayListener(displayListener)
-                if (supportsRecordingCallback && recordingCallback != null) {
-                    val windowManager = activity.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-                    windowManager.removeScreenRecordingCallback(recordingCallback)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM && recordingCallback != null) {
+                    unregisterRecordingCallback(activity, recordingCallback)
                 }
             }
         }
@@ -112,6 +95,35 @@ internal class CaptureDetection {
     private companion object {
         val supportsRecordingCallback: Boolean
             get() = sdkInt >= Build.VERSION_CODES.VANILLA_ICE_CREAM
+    }
+
+    /** Registers the API-35 recording callback and returns its initial state through [updateRecording]. */
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+    private fun registerRecordingCallback(
+        activity: android.app.Activity,
+        publish: () -> Unit,
+        updateRecording: (Boolean) -> Unit,
+    ): java.util.function.Consumer<Int> {
+        val windowManager = activity.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val callback =
+            java.util.function.Consumer<Int> { state ->
+                updateRecording(state == WindowManager.SCREEN_RECORDING_STATE_VISIBLE)
+                publish()
+            }
+        updateRecording(
+            windowManager.addScreenRecordingCallback(activity.mainExecutor, callback) ==
+                WindowManager.SCREEN_RECORDING_STATE_VISIBLE,
+        )
+        return callback
+    }
+
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+    private fun unregisterRecordingCallback(
+        activity: android.app.Activity,
+        callback: java.util.function.Consumer<Int>,
+    ) {
+        val windowManager = activity.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        windowManager.removeScreenRecordingCallback(callback)
     }
 }
 
@@ -123,8 +135,6 @@ internal class CaptureDetection {
  */
 private fun DisplayManager?.hasExternalDisplay(): Boolean =
     this?.displays?.any { display ->
-        // `Display.isSecure` is hidden API; the FLAG_SECURE bit is the public equivalent and needs
-        // no reflection to read.
         val secure = display.flags and Display.FLAG_SECURE != 0
         display.displayId != Display.DEFAULT_DISPLAY && !secure
     } == true

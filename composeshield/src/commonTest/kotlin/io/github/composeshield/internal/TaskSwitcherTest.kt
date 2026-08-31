@@ -15,7 +15,6 @@ class TaskSwitcherTest {
 
     @Test
     fun `Automatic follows outstanding protection requests`() {
-        // By default, protecting a screen also protects its switcher snapshot.
         assertFalse(registry.current.shouldProtectTaskSwitcher())
 
         val request = registry.acquire(window, setOf(Capability.CaptureDetection))
@@ -27,7 +26,6 @@ class TaskSwitcherTest {
 
     @Test
     fun `Always protects the switcher with no boundary composed at all`() {
-        // Usable purely against a shoulder-surfer in the task list, with no capture prevention involved.
         registry.setTaskSwitcherMode(TaskSwitcherProtection.Always)
 
         assertTrue(registry.current.shouldProtectTaskSwitcher())
@@ -60,7 +58,6 @@ class TaskSwitcherTest {
 
     @Test
     fun `the recents primitive is applied where prevention does not cover it`() {
-        // Detection-only protection does not obscure recents, so the standalone primitive is needed.
         registry.acquire(window, setOf(Capability.CaptureDetection))
 
         assertContains(platform.appSwitcherProtectedWindows, window)

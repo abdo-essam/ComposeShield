@@ -48,15 +48,12 @@ class AppSwitcherValidationTest {
     fun appSwitcherWithProtectionOn_markerAbsent() {
         activityRule.scenario.onActivity { it.enableShield(true) }
 
-        // Background the app
         device.pressRecentApps()
         device.waitForIdle(IDLE_TIMEOUT_MS)
 
-        // Capture whatever is now on screen (app-switcher)
         val thumbnail = captureScreenshot()
         val markerVisible = MarkerDetector.isMarkerVisible(thumbnail)
 
-        // Return activity to foreground before tearDown to ensure ActivityScenario can destroy it
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val intent =
             Intent(context, ShieldValidationActivity::class.java).apply {

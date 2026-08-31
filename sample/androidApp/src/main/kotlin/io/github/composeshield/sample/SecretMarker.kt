@@ -39,7 +39,6 @@ internal fun SecretMarker() {
             Modifier
                 .fillMaxWidth()
                 .background(Color(0xFF1B1B1F))
-                // Stable pipeline identifier — do NOT rename without updating MarkerDetector.
                 .semantics { contentDescription = "SHIELD_TEST_SECRET_001" }
                 .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,

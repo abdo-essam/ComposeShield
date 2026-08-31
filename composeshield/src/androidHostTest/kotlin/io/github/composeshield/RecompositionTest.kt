@@ -41,10 +41,6 @@ class RecompositionTest {
             }
             waitForIdle()
 
-            // Content must be composed exactly once. More recompositions during setup imply an
-            // internal state subscription (e.g. snapshots flow emitting an initial value) that
-            // re-enters the content slot immediately — each such re-entry is a needless FLAG_SECURE
-            // toggle on a live window.
             assertEquals(
                 1,
                 compositionCount,
@@ -60,9 +56,6 @@ class RecompositionTest {
 
             setContent {
                 SecureContent {
-                    // Read contentState so this content lambda recomposes when it changes.
-                    // SecureContent must not add further recompositions on top of that single,
-                    // expected restart.
                     @Suppress("UNUSED_EXPRESSION")
                     contentState
                     compositionCount++
@@ -74,9 +67,6 @@ class RecompositionTest {
             contentState++
             waitForIdle()
 
-            // The content lambda read contentState, so exactly one recomposition is expected.
-            // A count higher than +1 means SecureContent's own state subscriptions are
-            // re-entering the content slot an extra time.
             assertEquals(
                 countAfterInitial + 1,
                 compositionCount,
@@ -90,8 +80,6 @@ class RecompositionTest {
     fun `SecureContent does not recompose content on repeated identical capability sets`() =
         runComposeUiTest {
             var compositionCount = 0
-            // A stable top-level val, not a fresh setOf() per call — this is what the library
-            // guarantees via DefaultPreventionCapabilities being a compile-time constant.
             val capabilities = setOf(Capability.ScreenshotPrevention, Capability.RecordingPrevention)
 
             setContent {
@@ -124,9 +112,6 @@ class RecompositionTest {
             waitForIdle()
             val countBeforeChange = compositionCount
 
-            // A real capability-set change must still recompose — the boundary restarts its
-            // DisposableEffect (which is correct: it needs to re-acquire for the new set) and
-            // the content slot is revisited. The count must move by exactly 1, not more.
             capabilities = setOf(Capability.ScreenshotPrevention, Capability.RecordingPrevention)
             waitForIdle()
 
