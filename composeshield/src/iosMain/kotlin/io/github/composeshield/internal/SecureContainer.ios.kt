@@ -101,9 +101,11 @@ internal class SecureContainer private constructor(
                     .filterIsInstance<UIView>()
                     .firstOrNull { it.isCanvasLike() }
                     ?: run {
-                        println(
-                            "[ComposeShield] WARNING: Failed to locate secure CanvasView in UITextField subviews. " +
-                                "SecureContainer protection is unavailable on this iOS runtime.",
+                        ShieldLog.warn(
+                            tag = "SecureContainer",
+                            message =
+                                "Failed to locate secure CanvasView in UITextField subviews; " +
+                                    "SecureContainer protection is unavailable on this iOS runtime.",
                         )
                         return null
                     }

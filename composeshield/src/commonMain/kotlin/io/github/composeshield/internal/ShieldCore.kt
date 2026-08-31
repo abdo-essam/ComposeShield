@@ -41,7 +41,12 @@ internal class ShieldCore(
             SupervisorJob() +
                 mainDispatcher() +
                 CoroutineName("ComposeShield") +
-                CoroutineExceptionHandler { _, _ -> },
+                CoroutineExceptionHandler { _, throwable ->
+                    ShieldLog.error(
+                        message = "Unhandled exception in shield coroutine scope",
+                        throwable = throwable,
+                    )
+                },
         )
 
     private val _protectionFailures =
