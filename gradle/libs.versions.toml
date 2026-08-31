@@ -4,7 +4,7 @@
 # Android Studio releases accept (9.2.1); CI reproducibility and IDE sync both win over currency.
 kotlin = "2.4.10"
 agp = "9.3.2"
-compose = "1.11.1"
+compose = "1.12.0"
 coroutines = "1.11.0"
 
 # Consumer-facing Android dependency. Provides LocalActivity, which walks the ContextWrapper
