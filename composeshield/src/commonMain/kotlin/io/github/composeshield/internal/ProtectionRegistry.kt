@@ -270,7 +270,7 @@ internal class ProtectionRegistry(
         mutate { it.copy(failedMechanisms = it.failedMechanisms + prevention) }
 
         prevention.forEach { capability ->
-            println("[ComposeShield] WARNING: Protection mechanism failed for capability: $capability")
+            ShieldLog.warn(message = "Protection mechanism failed for capability: $capability")
             runCatching { onProtectionFailure(capability) }
         }
     }

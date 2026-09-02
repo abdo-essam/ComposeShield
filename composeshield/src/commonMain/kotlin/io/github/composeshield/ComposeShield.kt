@@ -1,6 +1,7 @@
 package io.github.composeshield
 
 import io.github.composeshield.internal.ProtectionRequest
+import io.github.composeshield.internal.ShieldLog
 import io.github.composeshield.internal.resolveCurrentWindowKey
 import io.github.composeshield.internal.shieldCore
 import kotlinx.coroutines.flow.Flow
@@ -23,6 +24,22 @@ import kotlinx.coroutines.flow.StateFlow
  * the main thread internally.
  */
 public object ComposeShield {
+    /**
+     * Where library diagnostics are delivered.
+     *
+     * Defaults to [ComposeShieldLoggers.None] so production stays quiet. Assign a sink such as
+     * [androidLogcat][ComposeShieldLoggers.androidLogcat] or [osLog][ComposeShieldLoggers.osLog]
+     * during application startup when you want filtered Logcat or unified logging output.
+     *
+     * Security-relevant mechanism failures are always reported through [protectionFailures]
+     * regardless of this setting.
+     */
+    public var logger: ComposeShieldLogger
+        get() = ShieldLog.logger
+        set(value) {
+            ShieldLog.logger = value
+        }
+
     /**
      * Requests protection until the returned handle is unprotected or closed.
      *
