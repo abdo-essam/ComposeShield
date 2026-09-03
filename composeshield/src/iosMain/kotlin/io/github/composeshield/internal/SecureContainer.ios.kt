@@ -83,12 +83,21 @@ internal class SecureContainer private constructor(
          * (`_UITextLayoutCanvasView` on iOS 15+). **Never matched by index**: iOS 17 reordered these
          * subviews, and an index-based lookup would silently adopt a view that is *not* secure.
          */
-        private const val CANVAS_CLASS_MARKER = "CanvasView"
+        internal const val CANVAS_CLASS_MARKER = "CanvasView"
+
+        /**
+         * Locates the secure canvas subview inside [field].
+         */
+        internal fun findCanvasView(field: UITextField): UIView? =
+            field.subviews
+                .filterIsInstance<UIView>()
+                .firstOrNull { it.isCanvasLike() }
 
         /**
          * Builds a secure container, or returns `null` where the mechanism is unavailable.
          *
-         * `null` is an expected outcome on an OS version whose internals have moved, not an error.
+         * If the private canvas subview cannot be detected, reports an actionable failure so the
+         * failure is not silent, and returns `null` for graceful degradation to [ProtectionOutcome.Failed].
          */
         fun create(): SecureContainer? {
             val field = UITextField()
@@ -97,18 +106,20 @@ internal class SecureContainer private constructor(
             field.layoutIfNeeded()
 
             val canvas =
-                field.subviews
-                    .filterIsInstance<UIView>()
-                    .firstOrNull { it.isCanvasLike() }
-                    ?: run {
-                        ShieldLog.warn(
-                            tag = "SecureContainer",
-                            message =
-                                "Failed to locate secure CanvasView in UITextField subviews; " +
-                                    "SecureContainer protection is unavailable on this iOS runtime.",
-                        )
-                        return null
-                    }
+                findCanvasView(field) ?: run {
+                    val detectedSubviews =
+                        field.subviews.filterIsInstance<UIView>().map {
+                            it::class.simpleName ?: it.description ?: "unknown"
+                        }
+                    ShieldLog.error(
+                        tag = "SecureContainer",
+                        message =
+                            "CanvasView was not found in UITextField subviews. " +
+                                "Detected subviews: $detectedSubviews. " +
+                                "Protection was NOT guaranteed on this iOS runtime (ProtectionOutcome.Failed)!",
+                    )
+                    return null
+                }
 
             canvas.removeFromSuperview()
             return SecureContainer(owner = field, canvas = canvas)

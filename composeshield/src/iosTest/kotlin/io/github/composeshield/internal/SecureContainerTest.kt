@@ -3,19 +3,23 @@ package io.github.composeshield.internal
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRectMake
+import platform.UIKit.UITextField
 import platform.UIKit.UIView
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * Contract test C14 — the secure container is obtained, or its absence is reported honestly.
+ * Contract test C14 & CI compatibility test — the secure container is obtained by detecting
+ * UIKit's internal `CanvasView` in the real rendering hierarchy.
  *
- * The mechanism relies on an undocumented view that Apple can rename or restructure in any release,
- * so the test asserts a disjunction rather than success: either a container is built, or `create()`
- * returns null so the caller can report `Unsupported(MechanismUnavailable)`. A hard assertion on
- * success would turn a future iOS release into a red build that says nothing about the library.
+ * The mechanism relies on an undocumented view that Apple can rename or restructure in any release.
+ * In CI running on an iOS Simulator, this must be a hard failure: if Apple renames or removes
+ * `CanvasView`, the test fails fast with an actionable message ("CanvasView was not found") before
+ * releasing broken protection into production.
  *
  * Whether the render server then withholds the content cannot be checked here — the Simulator writes
  * the framebuffer directly and bypasses that path entirely (quickstart M1/M2, device only).
@@ -23,12 +27,26 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalForeignApi::class)
 class SecureContainerTest {
     @Test
-    fun `C14 - a container is obtained or the mechanism reports itself unavailable`() {
-        val container = SecureContainer.create()
+    fun `C14 - CanvasView detection succeeds on CI iOS Simulator runtime`() {
+        val field = UITextField()
+        field.setSecureTextEntry(true)
+        field.layoutIfNeeded()
 
-        if (container == null) {
-            return
-        }
+        val subviews = field.subviews.filterIsInstance<UIView>()
+        val subviewNames = subviews.map { it::class.simpleName ?: it.description ?: "unknown" }
+
+        val canvas = SecureContainer.findCanvasView(field)
+        assertNotNull(
+            canvas,
+            "CanvasView was not found in UITextField subviews (found: $subviewNames). " +
+                "Apple may have renamed or removed UIKit internal CanvasView in this iOS release/SDK.",
+        )
+
+        val container =
+            assertNotNull(
+                SecureContainer.create(),
+                "CanvasView was not found: SecureContainer.create() returned null on iOS Simulator.",
+            )
 
         val parent = UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))
         val content = UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))
@@ -38,8 +56,21 @@ class SecureContainerTest {
     }
 
     @Test
+    fun `when CanvasView is absent findCanvasView returns null`() {
+        val emptyField = UITextField()
+        emptyField.subviews.filterIsInstance<UIView>().forEach { it.removeFromSuperview() }
+
+        val canvas = SecureContainer.findCanvasView(emptyField)
+        assertNull(canvas, "When CanvasView is absent, findCanvasView must return null")
+    }
+
+    @Test
     fun `enclosing reparents content under the canvas without disturbing the view above`() {
-        val container = SecureContainer.create() ?: return
+        val container =
+            assertNotNull(
+                SecureContainer.create(),
+                "CanvasView was not found: SecureContainer.create() returned null",
+            )
 
         val parent = UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))
         val content = UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))
@@ -60,7 +91,11 @@ class SecureContainerTest {
 
     @Test
     fun `enclosing preserves the content frame so layout is unchanged`() {
-        val container = SecureContainer.create() ?: return
+        val container =
+            assertNotNull(
+                SecureContainer.create(),
+                "CanvasView was not found: SecureContainer.create() returned null",
+            )
 
         val parent = UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))
         val content = UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))
@@ -77,7 +112,11 @@ class SecureContainerTest {
 
     @Test
     fun `releasing restores content to its original parent`() {
-        val container = SecureContainer.create() ?: return
+        val container =
+            assertNotNull(
+                SecureContainer.create(),
+                "CanvasView was not found: SecureContainer.create() returned null",
+            )
 
         val parent = UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))
         val content = UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))
@@ -97,7 +136,11 @@ class SecureContainerTest {
         parent.addSubview(content)
 
         repeat(CYCLES) {
-            val container = SecureContainer.create() ?: return
+            val container =
+                assertNotNull(
+                    SecureContainer.create(),
+                    "CanvasView was not found: SecureContainer.create() returned null",
+                )
             container.enclose(content)
             container.release(content)
         }
@@ -108,7 +151,11 @@ class SecureContainerTest {
 
     @Test
     fun `enclosing a view with no superview fails softly`() {
-        val container = SecureContainer.create() ?: return
+        val container =
+            assertNotNull(
+                SecureContainer.create(),
+                "CanvasView was not found: SecureContainer.create() returned null",
+            )
 
         assertFalse(
             container.enclose(UIView(frame = CGRectMake(0.0, 0.0, WIDTH, HEIGHT))),

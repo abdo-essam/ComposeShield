@@ -61,8 +61,25 @@ internal class IosPlatformProtection : PlatformProtection {
         if (containers.containsKey(window)) return ProtectionOutcome.Applied
         val target = windowFor(window) ?: return ProtectionOutcome.Deferred
         val content = target.rootViewController?.view ?: return ProtectionOutcome.Deferred
-        val container = SecureContainer.create() ?: return ProtectionOutcome.Failed
-        if (!container.enclose(content)) return ProtectionOutcome.Failed
+        val container =
+            SecureContainer.create() ?: run {
+                ShieldLog.error(
+                    tag = "PlatformProtection",
+                    message =
+                        "applyProtection failed: SecureContainer could not be created. " +
+                            "ProtectionOutcome.Failed reported.",
+                )
+                return ProtectionOutcome.Failed
+            }
+        if (!container.enclose(content)) {
+            ShieldLog.error(
+                tag = "PlatformProtection",
+                message =
+                    "applyProtection failed: SecureContainer failed to enclose content. " +
+                        "ProtectionOutcome.Failed reported.",
+            )
+            return ProtectionOutcome.Failed
+        }
         containers[window] = container
         return ProtectionOutcome.Applied
     }

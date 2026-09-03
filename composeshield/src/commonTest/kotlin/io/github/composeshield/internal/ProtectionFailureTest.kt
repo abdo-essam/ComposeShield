@@ -88,6 +88,38 @@ class ProtectionFailureTest {
         subject.release(request)
     }
 
+    @Test
+    fun `a failed mechanism logs an error even when no consumer callback is supplied`() {
+        val loggedErrors = mutableListOf<String>()
+        io.github.composeshield.ComposeShield.logger =
+            object : io.github.composeshield.ComposeShieldLogger {
+                override fun log(
+                    level: io.github.composeshield.ComposeShieldLogLevel,
+                    tag: String,
+                    message: String,
+                    throwable: Throwable?,
+                ) {
+                    if (level == io.github.composeshield.ComposeShieldLogLevel.Warn ||
+                        level == io.github.composeshield.ComposeShieldLogLevel.Error
+                    ) {
+                        loggedErrors.add(message)
+                    }
+                }
+            }
+
+        try {
+            val failing = FakePlatformProtection().apply { nextOutcome = ProtectionOutcome.Failed }
+            val subject = ProtectionRegistry(failing)
+
+            subject.acquire(window, setOf(Capability.ScreenshotPrevention))
+
+            assertTrue(loggedErrors.isNotEmpty(), "Failure must be logged when no callback is supplied")
+            assertTrue(loggedErrors.any { it.contains("ScreenshotPrevention") })
+        } finally {
+            io.github.composeshield.ComposeShield.logger = io.github.composeshield.ComposeShieldLoggers.None
+        }
+    }
+
     private companion object {
         const val REPLAY_WAIT_MS = 5_000L
     }

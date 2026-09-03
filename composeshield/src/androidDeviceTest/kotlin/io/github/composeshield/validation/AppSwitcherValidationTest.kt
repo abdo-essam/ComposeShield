@@ -74,7 +74,7 @@ class AppSwitcherValidationTest {
     }
 
     private fun captureScreenshot(): Bitmap? {
-        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         Thread.sleep(300)
         return try {
             androidx.test.runner.screenshot.Screenshot.capture().bitmap

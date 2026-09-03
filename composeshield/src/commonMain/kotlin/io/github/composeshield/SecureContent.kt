@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import io.github.composeshield.internal.ProtectedContent
+import io.github.composeshield.internal.ShieldLog
 import io.github.composeshield.internal.rememberWindowKey
 import io.github.composeshield.internal.shieldCore
 
@@ -66,13 +67,21 @@ public fun SecureContent(
         onDispose { shieldCore.registry.release(request) }
     }
 
-    if (onProtectionFailure != null) {
-        LaunchedEffect(Unit) {
-            shieldCore.protectionFailures.collect { failed ->
-                if (failed !in shieldCore.registry.current.failedMechanisms) return@collect
+    LaunchedEffect(Unit) {
+        shieldCore.protectionFailures.collect { failed ->
+            if (failed !in shieldCore.registry.current.failedMechanisms) return@collect
 
-                if (failed in currentCapabilities) {
-                    runCatching { currentOnFailure?.invoke(failed) }
+            if (failed in currentCapabilities) {
+                val callback = currentOnFailure
+                if (callback != null) {
+                    runCatching { callback.invoke(failed) }
+                } else {
+                    ShieldLog.error(
+                        message =
+                            "Unhandled protection failure for $failed (ProtectionOutcome.Failed): " +
+                                "protection was NOT guaranteed and no onProtectionFailure callback " +
+                                "was supplied to SecureContent! Sensitive content is rendering UNPROTECTED.",
+                    )
                 }
             }
         }

@@ -12,6 +12,7 @@ import io.github.composeshield.SupportLevel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import java.util.function.Consumer
 
 /**
  * Reports whether the screen is being recorded or mirrored to an external display.
@@ -103,10 +104,10 @@ internal class CaptureDetection {
         activity: android.app.Activity,
         publish: () -> Unit,
         updateRecording: (Boolean) -> Unit,
-    ): java.util.function.Consumer<Int> {
+    ): Consumer<Int> {
         val windowManager = activity.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         val callback =
-            java.util.function.Consumer<Int> { state ->
+            Consumer<Int> { state ->
                 updateRecording(state == WindowManager.SCREEN_RECORDING_STATE_VISIBLE)
                 publish()
             }
@@ -120,7 +121,7 @@ internal class CaptureDetection {
     @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     private fun unregisterRecordingCallback(
         activity: android.app.Activity,
-        callback: java.util.function.Consumer<Int>,
+        callback: Consumer<Int>,
     ) {
         val windowManager = activity.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.removeScreenRecordingCallback(callback)
