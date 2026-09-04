@@ -227,7 +227,27 @@ LaunchedEffect(Unit) {
 
 ---
 
-### 6. Resilience & Failure Handling
+### 6. Disabling Protection
+
+ComposeShield is reference-counted. Protection is only withdrawn when **all** active claims (declarative boundaries and imperative handles) are released.
+
+To disable protection for a specific `SecureContent` boundary without removing it from the composition, pass an empty set to the `capabilities` parameter. This is useful for toggling protection dynamically based on app state while keeping the UI tree structure stable.
+
+```kotlin
+SecureContent(
+    capabilities = if (isProtectionEnabled) {
+        DefaultPreventionCapabilities
+    } else {
+        emptySet() // Effectively disables protection for this boundary
+    }
+) {
+    AppContent()
+}
+```
+
+---
+
+### 7. Resilience & Failure Handling
 
 If an underlying OS mechanism is unavailable or fails at runtime, ComposeShield ensures the app remains stable and notifies your diagnostic handlers:
 
