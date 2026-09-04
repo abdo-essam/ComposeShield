@@ -3,6 +3,7 @@ package io.github.composeshield.internal
 import android.app.Activity
 import android.view.Window
 import java.util.WeakHashMap
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Maps opaque [WindowKey]s back to the Android windows they name.
@@ -27,7 +28,7 @@ private class Entry(
     val activity: Activity?,
 )
 
-private var nextWindowId = 0
+private val nextWindowId = AtomicInteger(0)
 
 internal fun registerWindow(
     window: Window,
@@ -40,7 +41,7 @@ internal fun registerWindow(
             }
             return existing.key
         }
-        val key = WindowKey("android-window-${nextWindowId++}")
+        val key = WindowKey("android-window-${nextWindowId.getAndIncrement()}")
         windows[window] = Entry(key, activity)
         key
     }
