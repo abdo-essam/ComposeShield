@@ -13,7 +13,7 @@ activityCompose = "1.13.0"
 
 # Test
 turbine = "1.2.1"
-robolectric = "4.16.1"
+robolectric = "4.17"
 
 # Quality gates. Detekt 2.0 is alpha and moved group IDs — do not adopt (research.md R12).
 detekt = "1.23.8"
