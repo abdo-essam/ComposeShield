@@ -26,7 +26,7 @@ androidxTestCore = "1.7.0"
 androidxTestRunner = "1.7.0"
 androidxTestRules = "1.7.0"
 androidxTestExtJunit = "1.3.0"
-androidxTestUiautomator = "2.4.0"
+androidxTestUiautomator = "2.4.1"
 
 # 0.37.0 specifically: it flipped publishToMavenCentral() to target the Central Portal by
 # default. OSSRH is shut down; pre-0.33 SonatypeHost config is wrong (research.md R13).
